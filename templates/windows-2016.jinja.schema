@@ -1,0 +1,73 @@
+#
+#  Copyright 2018 Google Inc.
+#
+#  Licensed under the Apache License, Version 2.0 (the "License");
+#  you may not use this file except in compliance with the License.
+#  You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+#  Unless required by applicable law or agreed to in writing, software
+#  distributed under the License is distributed on an "AS IS" BASIS,
+#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#  See the License for the specific language governing permissions and
+#  limitations under the License.
+#
+
+info:
+  title: Windows Server 2016 Helper
+  description: Helper template for deploying a simple Windows Server 2016 instance.
+
+required:
+- name
+- zone
+- subnetwork
+- service-account
+- machine-type
+
+properties:
+  name:
+    type: string
+    description: Name of instance.
+  zone:
+    type: string
+    description: Name fo zone.
+  subnetwork:
+    type: string
+    description: URL of subnetwork.
+  service-account:
+    type: string
+    description: Email of service account.
+  machine-type:
+    type: string
+    description: Name of machine type.
+  dependencies:
+    type: array
+    description: Optional resource names for setting explicit dependencies.
+    minItems: 0
+    items:
+      type: string
+    uniqueItems: true
+  tags:
+    type: array
+    description: Optional network tags.
+    minItems: 0
+    items:
+      type: string
+    uniqueItems: true
+  metadata:
+    type: array
+    description: Optional instance metadata.
+    minItems: 0
+    items:
+      type: object
+      required:
+      - key
+      - value
+      properties:
+        key:
+          type: string
+        value:
+          type: string
+    uniqueItems: true
+

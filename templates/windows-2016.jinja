@@ -1,0 +1,61 @@
+#
+#  Copyright 2018 Google Inc.
+#
+#  Licensed under the Apache License, Version 2.0 (the "License");
+#  you may not use this file except in compliance with the License.
+#  You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+#  Unless required by applicable law or agreed to in writing, software
+#  distributed under the License is distributed on an "AS IS" BASIS,
+#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#  See the License for the specific language governing permissions and
+#  limitations under the License.
+#
+
+resources:
+- name: {{ properties['name'] }}
+  type: compute.v1.instance
+  properties:
+    zone: {{ properties['zone'] }}
+    machineType: projects/{{ env['project'] }}/zones/{{ properties['zone'] }}/machineTypes/{{ properties['machine-type'] }}
+{% if properties['metadata']|length > 0 %}
+    metadata:
+      items:
+{% for kv in properties['metadata'] %}
+      - key: {{ kv.key }}
+        value: "{{ kv.value }}"
+{% endfor %}
+{% endif %}
+{% if properties['tags']|length > 0 %}
+    tags:
+      items:
+{% for tag in properties['tags'] %}
+      - {{ tag }}
+{% endfor %}
+{% endif %}
+    disks:
+    - boot: true
+      autoDelete: true
+      initializeParams:
+        diskSizeGb: 50
+        diskType: projects/{{ env['project'] }}/zones/{{ properties['zone'] }}/diskTypes/pd-standard
+        sourceImage: projects/windows-cloud/global/images/windows-server-2016-dc-v20171114
+    networkInterfaces:
+    - subnetwork: {{ properties['subnetwork'] }}
+      accessConfigs:
+      - name: external-nat
+        type: ONE_TO_ONE_NAT
+    serviceAccounts:
+    - email: {{ properties['service-account'] }}
+      scopes:
+      - https://www.googleapis.com/auth/cloud-platform
+{% if properties['dependencies']|length > 0 %}
+  metadata:
+    dependsOn:
+{% for dependency in properties['dependencies'] %}
+    - {{ dependency }}
+{% endfor %}
+{% endif %}
+

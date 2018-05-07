@@ -1,0 +1,80 @@
+#
+#  Copyright 2018 Google Inc.
+#
+#  Licensed under the Apache License, Version 2.0 (the "License");
+#  you may not use this file except in compliance with the License.
+#  You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+#  Unless required by applicable law or agreed to in writing, software
+#  distributed under the License is distributed on an "AS IS" BASIS,
+#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#  See the License for the specific language governing permissions and
+#  limitations under the License.
+#
+
+resources:
+- name: waiter-ctx-connector
+  type: runtimeconfig.v1beta1.waiter
+  properties:
+    waiter: waiter-ctx-connector
+    parent: {{ properties['runtime-config'] }}
+    timeout: 2400s
+    success:
+      cardinality:
+        path: setup/citrix/connector
+{% for zone in properties['zones'] %}
+- name: waiter-ctx-cc-{{ loop.index }}-{{ properties['suffix'] }}
+  type: runtimeconfig.v1beta1.waiter
+  properties:
+    waiter: waiter-ctx-cc-{{ loop.index }}-{{ properties['suffix'] }}
+    parent: {{ properties['runtime-config'] }}
+    timeout: 2400s
+    success:
+      cardinality:
+        path: bootstrap/ctx-cc-{{ loop.index }}-{{ properties['suffix'] }}/success
+- name: ctx-cc-{{ loop.index }}-{{ properties['suffix'] }}
+  type: windows-2016.jinja
+  properties:
+    name: ctx-cc-{{ loop.index }}-{{ properties['suffix'] }}
+    zone: {{ zone }}
+    machine-type: n1-standard-2
+    subnetwork: {{ properties['subnetwork'] }}
+    service-account: {{ properties['service-account'] }}
+    metadata:
+    - key: domain-name
+      value: {{ properties['domain-name'] }}
+    - key: netbios-name
+      value: {{ properties['netbios-name'] }}
+    - key: kms-key
+      value: {{ properties['kms-key'] }}
+    - key: gcs-prefix
+      value: {{ properties['gcs-prefix'] }}
+    - key: runtime-config
+      value: {{ properties['runtime-config'] }}
+    - key: remove-address
+      value: "true"
+    - key: wait-on
+      value: waiter-ctx-dc-2-{{ properties['suffix'] }}
+    - key: windows-startup-script-url
+      value: {{ properties['gcs-prefix'] }}/bootstrap/domain-member.ps1
+    - key: post-join-script-url
+      value: {{ properties['gcs-prefix'] }}/bootstrap/ctx-cloud-connector.ps1
+#    - key: post-join-script-url
+#      value: {{ properties['gcs-prefix'] }}/bootstrap/run-as-ctx-domain-user.ps1
+#    - key: ctx-user-script-url
+#      value: {{ properties['gcs-prefix'] }}/bootstrap/ctx-cloud-connector.ps1
+    - key: domain-controller-addresses
+      value: {% for ip in properties['domain-controller-addresses'] %}{{ ip }}{{ "," if not loop.last }}{% endfor %}
+    tags:
+    - ctx-infra
+    - internet-nat
+{% if properties['dependencies']|length > 0 %}
+    dependencies:
+{% for dependency in properties['dependencies'] %}
+    - {{ dependency }}
+{% endfor %}
+{% endif %}
+{% endfor %}
+

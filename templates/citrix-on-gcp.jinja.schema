@@ -1,0 +1,124 @@
+#
+#  Copyright 2018 Google Inc.
+#
+#  Licensed under the Apache License, Version 2.0 (the "License");
+#  you may not use this file except in compliance with the License.
+#  You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+#  Unless required by applicable law or agreed to in writing, software
+#  distributed under the License is distributed on an "AS IS" BASIS,
+#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#  See the License for the specific language governing permissions and
+#  limitations under the License.
+#
+
+info:
+  title: Citrix XenApp
+  description: Minimal Citrix XenApp deployment for Google Cloud Platform.
+
+imports:
+- path: health-checked-nat-instance-group.jinja
+- path: domain-controllers.jinja
+- path: bastion.jinja
+- path: ctx-cloud-connector.jinja
+- path: ctx-xenapp.jinja
+
+required:
+- suffix
+- region
+- zone
+- secondary-zone
+- service-account
+- domain-name
+- netbios-name
+- gcs-prefix
+- kms-key
+- vda-url-gcs
+
+properties:
+  suffix:
+    type: string
+    description: Disambiguation suffix for resources.
+  region:
+    type: string
+    default: us-central1
+    description: Region in which to deploy regional resources, e.g. us-central1.
+  zone:
+    type: string
+    default: us-central1-a
+    description: Zone in which to deploy primary zonal resources, e.g. us-central1-a.
+  secondary-zone:
+    type: string
+    default: us-central1-b
+    description: Zone in which to deploy secondary zonal resources for fault-tolerance, e.g. us-central1-b.
+  service-account:
+    type: string
+    description: Email of service account for bootstrapping instance(s).
+  hosting-connection-service-account: 
+    type: string
+    description: Email of service account for Citrix hosting connection.
+  domain-name:
+    type: string
+    default: foo.bar
+    description: Fully-qualified name of domain.
+  netbios-name:
+    type: string
+    default: FOO
+    description: NetBIOS name of domain.
+  gcs-prefix:
+    type: string
+    description: Cloud Storage prefix for deployment artifacts, e.g. gs://bucket_name/blob_prefix.
+  kms-key:
+    type: string
+    description: Fully qualified name of KMS key used to protect secrets, e.g. projects/{projectsId}/locations/{locationsId}/keyRings/{keyRingsId}/cryptoKeys/{cryptoKeysId}.
+  subnets:
+    type: array
+    description: Region and CIDR properties for subnets.
+    minItems: 1
+    uniqueItems: true
+    items:
+      required:
+      - region
+      - cidr
+      properties:
+        region:
+          type: string
+        cidr:
+          type: string
+    default:
+    - region: us-central1
+      cidr: 10.128.0.0/20
+    - region: europe-west1
+      cidr: 10.132.0.0/20
+    - region: us-west1
+      cidr: 10.138.0.0/20
+    - region: asia-east1
+      cidr: 10.140.0.0/20
+    - region: us-east1
+      cidr: 10.142.0.0/20
+    - region: asia-northeast1
+      cidr: 10.146.0.0/20
+    - region: asia-southeast1
+      cidr: 10.148.0.0/20
+    - region: us-east4
+      cidr: 10.150.0.0/20
+    - region: australia-southeast1
+      cidr: 10.152.0.0/20
+    - region: europe-west2
+      cidr: 10.154.0.0/20
+    - region: europe-west3
+      cidr: 10.156.0.0/20
+    - region: southamerica-east1
+      cidr: 10.158.0.0/20
+    - region: asia-south1
+      cidr: 10.160.0.0/20
+  vda-url-gcs:
+    type: string
+    description: GCS url from which to download VDA installer, e.g. gs://bucket/VDAServerSetup_7.17.exe.
+  workers:
+    type: integer
+    default: 1
+    description: Number of XenApp workers.
+

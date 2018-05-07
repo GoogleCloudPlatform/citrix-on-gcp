@@ -1,0 +1,212 @@
+#
+#  Copyright 2018 Google Inc.
+#
+#  Licensed under the Apache License, Version 2.0 (the "License");
+#  you may not use this file except in compliance with the License.
+#  You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+#  Unless required by applicable law or agreed to in writing, software
+#  distributed under the License is distributed on an "AS IS" BASIS,
+#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#  See the License for the specific language governing permissions and
+#  limitations under the License.
+#
+
+resources:
+- name: citrix-{{ properties['suffix'] }}
+  type: compute.v1.network
+  properties:
+    autoCreateSubnetworks: false
+    description: Citrix XenApp
+{% for subnet in properties['subnets'] %}
+- name: citrix-{{ subnet['region'] }}-{{ properties['suffix'] }}
+  type: compute.v1.subnetwork
+  properties:
+    network: $(ref.citrix-{{ properties['suffix'] }}.selfLink) 
+    ipCidrRange: {{ subnet['cidr'] }}
+    region: {{ subnet['region'] }}
+    privateIpGoogleAccess: true
+{% endfor %}
+- name: citrix-allow-rdp-external-{{ properties['suffix'] }}
+  type: compute.v1.firewall
+  properties:
+    description: External RDP remote management for bastion virtual machines
+    network: $(ref.citrix-{{ properties['suffix'] }}.selfLink)
+    allowed:
+    - IPProtocol: tcp
+      ports:
+      - '3389'
+    direction: INGRESS
+    priority: 65534
+    sourceRanges:
+    - 0.0.0.0/0
+    targetTags:
+    - bastion
+#- name: citrix-allow-rdp-internal-{{ properties['suffix'] }}
+#  type: compute.v1.firewall
+#  properties:
+#    description: Internal RDP remote management for Windows infrastructure and Citrix virtual machines
+#    network: $(ref.citrix-{{ properties['suffix'] }}.selfLink)
+#    allowed:
+#    - IPProtocol: tcp
+#      ports:
+#      - '3389'
+#    direction: INGRESS
+#    priority: 65534
+#    sourceTags:
+#    - bastion
+#    targetTags:
+#    - mgmt
+#    - ctx-infra
+#    - ctx-xa
+#- name: citrix-allow-icmp-{{ properties['suffix'] }}
+#  type: compute.v1.firewall
+#  properties:
+#    description: Internal RDP remote management for Windows infrastructure and Citrix virtual machines
+#    network: $(ref.citrix-{{ properties['suffix'] }}.selfLink)
+#    allowed:
+#    - IPProtocol: icmp
+#    direction: INGRESS
+#    priority: 65534
+#    sourceRanges:
+#    - 10.128.0.0/9
+- name: citrix-allow-internal-{{ properties['suffix'] }}
+  type: compute.v1.firewall
+  properties:
+    description: Allow internal traffic between instances
+    network: $(ref.citrix-{{ properties['suffix'] }}.selfLink)
+    allowed:
+    - IPProtocol: icmp
+    - IPProtocol: tcp
+      ports:
+      - '0-65535'
+    - IPProtocol: udp 
+      ports:
+      - '0-65535'
+    direction: INGRESS
+    priority: 65534
+    sourceRanges:
+    - 10.128.0.0/9
+- name: natfirewall-health-{{ properties['suffix'] }}
+  type: compute.v1.firewall
+  properties:
+    description: Allow http to nat instance health check server
+    network: $(ref.citrix-{{ properties['suffix'] }}.selfLink)
+    allowed:
+    - IPProtocol: tcp
+      ports:
+      - 80
+    direction: INGRESS
+    priority: 65534
+    sourceRanges: # https://cloud.google.com/compute/docs/load-balancing/health-checks#https_ssl_proxy_tcp_proxy_and_internal_load_balancing
+    - 130.211.0.0/22
+    - 35.191.0.0/16
+    targetTags:
+    - natgw
+- name: nat-health-check-{{ properties['suffix'] }}
+  type: compute.v1.httpHealthCheck
+  properties:
+    checkIntervalSec: 30
+    healthyThreshold: 1
+    unhealthyThreshold: 5
+    requestPath: /health-check
+- name: nat-1-{{ properties['suffix'] }}
+  type: health-checked-nat-instance-group.jinja
+  properties:
+    suffix: 1-{{ properties['suffix'] }}
+    network: $(ref.citrix-{{ properties['suffix'] }}.selfLink)
+    subnetwork: $(ref.citrix-{{ properties['region'] }}-{{ properties['suffix'] }}.selfLink)
+    region: {{ properties['region'] }}
+    zone: {{ properties['zone'] }}
+    health-check: $(ref.nat-health-check-{{ properties['suffix'] }}.selfLink)
+- name: nat-2-{{ properties['suffix'] }}
+  type: health-checked-nat-instance-group.jinja
+  properties:
+    suffix: 2-{{ properties['suffix'] }}
+    network: $(ref.citrix-{{ properties['suffix'] }}.selfLink)
+    subnetwork: $(ref.citrix-{{ properties['region'] }}-{{ properties['suffix'] }}.selfLink)
+    region: {{ properties['region'] }}
+    zone: {{ properties['secondary-zone'] }}
+    health-check: $(ref.nat-health-check-{{ properties['suffix'] }}.selfLink)
+- name: config-{{ properties['suffix'] }}
+  type: runtimeconfig.v1beta1.config
+  properties:
+    config: config-{{ properties['suffix'] }}
+- name: domain-controllers
+  type: domain-controllers.jinja
+  properties:
+    suffix: {{ properties['suffix'] }}
+    primary-zone: {{ properties['zone'] }}
+    secondary-zone: {{ properties['secondary-zone'] }}
+    subnetwork: $(ref.citrix-{{ properties['region'] }}-{{ properties['suffix'] }}.selfLink)
+    service-account: {{ properties['service-account'] }}
+    domain-name: {{ properties['domain-name'] }}
+    netbios-name: {{ properties['netbios-name'] }}
+    kms-key: {{ properties['kms-key'] }}
+    gcs-prefix: {{ properties['gcs-prefix'] }}
+    runtime-config: $(ref.config-{{ properties['suffix'] }}.name)
+- name: bastion
+  type: bastion.jinja
+  properties:
+    suffix: {{ properties['suffix'] }}
+    zone: {{ properties['zone'] }}
+    subnetwork: $(ref.citrix-{{ properties['region'] }}-{{ properties['suffix'] }}.selfLink)
+    service-account: {{ properties['service-account'] }}
+{% if properties['hosting-connection-service-account'] %}
+    hosting-connection-service-account: {{ properties['hosting-connection-service-account'] }}
+{% endif %}
+    domain-name: {{ properties['domain-name'] }}
+    netbios-name: {{ properties['netbios-name'] }}
+    kms-key: {{ properties['kms-key'] }}
+    gcs-prefix: {{ properties['gcs-prefix'] }}
+    runtime-config: $(ref.config-{{ properties['suffix'] }}.name)
+    domain-controller-addresses:
+    - $(ref.ctx-dc-1-{{ properties['suffix'] }}.networkInterfaces[0].networkIP)
+    - $(ref.ctx-dc-2-{{ properties['suffix'] }}.networkInterfaces[0].networkIP)
+- name: ctx-cc
+  type: ctx-cloud-connector.jinja
+  properties:
+    suffix: {{ properties['suffix'] }}
+    zones:
+    - {{ properties['zone'] }}
+    - {{ properties['secondary-zone'] }}
+    subnetwork: $(ref.citrix-{{ properties['region'] }}-{{ properties['suffix'] }}.selfLink)
+    service-account: {{ properties['service-account'] }}
+    domain-name: {{ properties['domain-name'] }}
+    netbios-name: {{ properties['netbios-name'] }}
+    kms-key: {{ properties['kms-key'] }}
+    gcs-prefix: {{ properties['gcs-prefix'] }}
+    runtime-config: $(ref.config-{{ properties['suffix'] }}.name)
+    domain-controller-addresses:
+    - $(ref.ctx-dc-1-{{ properties['suffix'] }}.networkInterfaces[0].networkIP)
+    - $(ref.ctx-dc-2-{{ properties['suffix'] }}.networkInterfaces[0].networkIP)
+- name: ctx-xenapp
+  type: ctx-xenapp.jinja
+  properties:
+    suffix: {{ properties['suffix'] }}
+    zones:
+    {% for i in range(properties['workers']) %}
+    - {{ loop.cycle(properties['zone'], properties['secondary-zone']) }}
+    {% endfor %}
+    subnetwork: $(ref.citrix-{{ properties['region'] }}-{{ properties['suffix'] }}.selfLink)
+    service-account: {{ properties['service-account'] }}
+    domain-name: {{ properties['domain-name'] }}
+    netbios-name: {{ properties['netbios-name'] }}
+    kms-key: {{ properties['kms-key'] }}
+    gcs-prefix: {{ properties['gcs-prefix'] }}
+    runtime-config: $(ref.config-{{ properties['suffix'] }}.name)
+    domain-controller-addresses:
+    - $(ref.ctx-dc-1-{{ properties['suffix'] }}.networkInterfaces[0].networkIP)
+    - $(ref.ctx-dc-2-{{ properties['suffix'] }}.networkInterfaces[0].networkIP)
+    vda-url-gcs: {{ properties['vda-url-gcs'] }}
+    ctx-machine-catalog: Catalog-{{ properties['suffix'] }}
+    ctx-delivery-group: Group-{{ properties['suffix'] }}
+{% if properties['hosting-connection-service-account'] %}
+    ctx-hypervisor-connection: Google-Cloud-{{ properties['suffix'] }}
+{% endif %}
+    ctx-cloud-connectors:
+    - ctx-cc-1-{{ properties['suffix'] }}.{{ properties['domain-name'] }}
+    - ctx-cc-2-{{ properties['suffix'] }}.{{ properties['domain-name'] }}
+

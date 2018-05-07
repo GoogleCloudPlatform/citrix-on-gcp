@@ -1,0 +1,98 @@
+#
+#  Copyright 2018 Google Inc.
+#
+#  Licensed under the Apache License, Version 2.0 (the "License");
+#  you may not use this file except in compliance with the License.
+#  You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+#  Unless required by applicable law or agreed to in writing, software
+#  distributed under the License is distributed on an "AS IS" BASIS,
+#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#  See the License for the specific language governing permissions and
+#  limitations under the License.
+#
+
+resources:
+- name: waiter-ctx-dc-1-{{ properties['suffix'] }}
+  type: runtimeconfig.v1beta1.waiter
+  properties:
+    waiter: waiter-ctx-dc-1-{{ properties['suffix'] }}
+    parent: {{ properties['runtime-config'] }}
+    timeout: 2400s
+    success:
+      cardinality:
+        path: bootstrap/ctx-dc-1-{{ properties['suffix'] }}/success
+- name: waiter-ctx-dc-2-{{ properties['suffix'] }}
+  type: runtimeconfig.v1beta1.waiter
+  properties:
+    waiter: waiter-ctx-dc-2-{{ properties['suffix'] }}
+    parent: {{ properties['runtime-config'] }}
+    timeout: 2400s
+    success:
+      cardinality:
+        path: bootstrap/ctx-dc-2-{{ properties['suffix'] }}/success
+- name: ctx-dc-1-{{ properties['suffix'] }}
+  type: windows-2016.jinja
+  properties:
+    name: ctx-dc-1-{{ properties['suffix'] }}
+    zone: {{ properties['primary-zone'] }}
+    machine-type: n1-standard-2
+    subnetwork: {{ properties['subnetwork'] }}
+    service-account: {{ properties['service-account'] }}
+    metadata:
+    - key: domain-name
+      value: {{ properties['domain-name'] }}
+    - key: netbios-name
+      value: {{ properties['netbios-name'] }}
+    - key: kms-key
+      value: {{ properties['kms-key'] }}
+    - key: gcs-prefix
+      value: {{ properties['gcs-prefix'] }}
+    - key: runtime-config
+      value: {{ properties['runtime-config'] }}
+    - key: windows-startup-script-url
+      value: {{ properties['gcs-prefix'] }}/bootstrap/primary-domain-controller-step-1.ps1
+    tags:
+    - mgmt
+{% if properties['dependencies']|length > 0 %}
+    dependencies:
+{% for dependency in properties['dependencies'] %}
+    - {{ dependency }}
+{% endfor %}
+{% endif %}
+- name: ctx-dc-2-{{ properties['suffix'] }}
+  type: windows-2016.jinja
+  properties:
+    name: ctx-dc-2-{{ properties['suffix'] }}
+    zone: {{ properties['secondary-zone'] }}
+    machine-type: n1-standard-2
+    subnetwork: {{ properties['subnetwork'] }}
+    service-account: {{ properties['service-account'] }}
+    metadata:
+    - key: domain-name
+      value: {{ properties['domain-name'] }}
+    - key: netbios-name
+      value: {{ properties['netbios-name'] }}
+    - key: kms-key
+      value: {{ properties['kms-key'] }}
+    - key: gcs-prefix
+      value: {{ properties['gcs-prefix'] }}
+    - key: runtime-config
+      value: {{ properties['runtime-config'] }}
+    - key: wait-on
+      value: waiter-ctx-dc-1-{{ properties['suffix'] }}
+    - key: windows-startup-script-url
+      value: {{ properties['gcs-prefix'] }}/bootstrap/secondary-domain-controller-step-1.ps1
+    - key: domain-controller-address
+      value: $(ref.ctx-dc-1-{{ properties['suffix'] }}.networkInterfaces[0].networkIP)
+    tags:
+    - mgmt
+{% if properties['dependencies']|length > 0 %}
+    dependencies:
+{% for dependency in properties['dependencies'] %}
+    - {{ dependency }}
+{% endfor %}
+{% endif %}
+

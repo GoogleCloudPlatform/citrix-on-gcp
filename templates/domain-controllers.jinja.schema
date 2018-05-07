@@ -1,0 +1,77 @@
+#
+#  Copyright 2018 Google Inc.
+#
+#  Licensed under the Apache License, Version 2.0 (the "License");
+#  you may not use this file except in compliance with the License.
+#  You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+#  Unless required by applicable law or agreed to in writing, software
+#  distributed under the License is distributed on an "AS IS" BASIS,
+#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#  See the License for the specific language governing permissions and
+#  limitations under the License.
+#
+
+info:
+  title: Domain Template
+  description: Deploys primary and secondary domain controllers.
+
+imports:
+- path: windows-2016.jinja
+
+required:
+- suffix
+- subnetwork
+- primary-zone
+- secondary-zone
+- service-account
+- domain-name
+- netbios-name
+- kms-key
+- gcs-prefix
+- runtime-config
+
+properties:
+  suffix:
+    type: string
+    description: Disambiguation suffix for resources.
+  subnetwork:
+    type: string
+    description: Url of subnetwork resource.
+  region:
+    type: string
+    description: Region in which to deploy regional resources, e.g. us-central1.
+  primary-zone:
+    type: string
+    description: Zone in which to deploy primary zonal resources, e.g. us-central1-a.
+  secondary-zone:
+    type: string
+    description: Zone in which to deploy secondary zonal resources, e.g. us-central1-b.
+  service-account:
+    type: string
+    description: Email of service account for tutorial instance(s).
+  dependencies:
+    type: array
+    description: Optional resource names for setting explicit dependencies.
+    minItems: 0
+    items:
+      type: string
+    uniqueItems: true
+  domain-name:
+    type: string
+    description: FQDN for Active Directory domain.
+  netbios-name:
+    type: string
+    description: NetBIOS name for domain.
+  gcs-prefix:
+    type: string
+    description: Cloud Storage prefix for deployment artifacts, e.g. gs://bucket_name/blob_prefix.
+  kms-key:
+    type: string
+    description: Fully qualified name of KMS key used to protect secrets, e.g. projects/{projectsId}/locations/{locationsId}/keyRings/{keyRingsId}/cryptoKeys/{cryptoKeysId}.
+  runtime-config:
+    type: string
+    description: Path of Runtime Config used for variables and waiters.
+
