@@ -38,7 +38,9 @@ Param(
 	[Parameter()][String][ValidateNotNullOrEmpty()]
 	$CTXCustomerID = $(Read-Host "CTXCustomerID"),
 	[Parameter()][String][ValidateNotNullOrEmpty()]
-	$CtxVdaUrlGcs = $(Read-Host "CtxVdaUrlGcs"),
+	$CtxVdaDownloadPage = "https://www.citrix.com/downloads/citrix-cloud/product-software/xenapp-and-xendesktop-service.html",
+	[Parameter()][String][ValidateNotNullOrEmpty()]
+	$CtxVdaInstaller = "VDAServerSetup_7.17.exe",
 	[Parameter()][Boolean]
 	$UseGcpPluginFactory = $False
 )
@@ -248,7 +250,8 @@ resources:
     subnets:
     - region: $Region
       cidr: 10.128.0.0/20
-    vda-url-gcs: $CtxVdaUrlGcs
+    vda-download-page: $CtxVdaDownloadPage
+    vda-installer: $CtxVdaInstaller
     workers: $Workers
 
 "@
@@ -278,6 +281,10 @@ While ( $(gcloud deployment-manager operations list --project $Project --filter 
 		--project $Project
 
 }
+
+
+#Write-Host "*** DEBUG EXIT ***"
+#Exit
 
 
 # set scopes on instances back to default to remove elevated bootstrap permissions

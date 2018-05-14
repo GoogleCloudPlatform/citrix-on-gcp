@@ -86,9 +86,9 @@ properties:
     uniqueItems: true
     items:
       type: string
-  vda-url-gcs:
+  vda-version:
     type: string
-    description: GCS url from which to download VDA installer, e.g. gs://bucket/VDAServerSetup_7.17.exe.
+    description: Version number of VDA Server Setup to download and install, e.g. 7.17 
   ctx-machine-catalog:
     type: string
     description: Name of Citrix Machine Catalog in which this machine belongs.

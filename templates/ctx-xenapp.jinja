@@ -54,8 +54,10 @@ resources:
       value: {% for ip in properties['domain-controller-addresses'] %}{{ ip }}{{ "," if not loop.last }}{% endfor %}
     - key: post-join-script-url
       value: {{ properties['gcs-prefix'] }}/bootstrap/ctx-vda-1.ps1
-    - key: vda-url-gcs
-      value: {{ properties['vda-url-gcs'] }}
+    - key: vda-installer
+      value: {{ properties['vda-installer'] }}
+    - key: vda-download-page
+      value: {{ properties['vda-download-page'] }}
     - key: ctx-machine-catalog
       value: {{ properties['ctx-machine-catalog'] }}
     - key: ctx-delivery-group

@@ -213,7 +213,8 @@ $CtxMachineCatalog = Get-GoogleMetadata "instance/attributes/ctx-machine-catalog
 $CtxDeliveryGroup = Get-GoogleMetadata "instance/attributes/ctx-delivery-group"
 $CtxHypervisorConnection = Get-GoogleMetadata "instance/attributes/ctx-hypervisor-connection"
 $CtxCloudConnectors = Get-GoogleMetadata "instance/attributes/ctx-cloud-connectors"
-$VdaUrlGcs = Get-GoogleMetadata "instance/attributes/vda-url-gcs"
+$CtxVdaInstaller = Get-GoogleMetadata "instance/attributes/vda-installer"
+$CtxVdaDownloadPage = Get-GoogleMetadata "instance/attributes/vda-download-page"
 
 
 Write-Host "Downloading Citrix PoSH installer..."
@@ -237,10 +238,20 @@ Set-XDCredentials -CustomerId $CtxCustomerId -ProfileType CloudAPI -APIKey $CtxC
 
 
 # download & install vda
-Write-Host "Downloading VDA installer from $VdaUrlGcs..."
+Write-Host "Downloading VDA installer..."
+
+$TempFile = New-TemporaryFile
+Invoke-WebRequest -Uri $CtxVdaDownloadPage -OutFile $TempFile.FullName
+$ResponseContent = [IO.File]::ReadAllText($TempFile.FullName)
+Remove-Item -Force $TempFile.FullName
+
+[Regex]$Regex = '//downloads\.citrix\.com/[0-9]+/' + [Regex]::Escape($CtxVdaInstaller) + '\?[^"]+'
+$VdaDownloadUrl = "https:" + $Regex.Matches($ResponseContent)[0].Value
+Write-Host "Download URL: [$VdaDownloadUrl]"
+
 $TempFile = New-TemporaryFile
 $TempFile.MoveTo($TempFile.FullName + ".exe")
-gsutil cp "$VdaUrlGcs" $TempFile.FullName
+Start-BitsTransfer -Source $VdaDownloadUrl -Destination $TempFile.FullName
 
 
 Write-Host "Waiting on Citrix setup from mgmt instance..."
