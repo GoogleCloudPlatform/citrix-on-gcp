@@ -367,10 +367,27 @@ New-BrokerAccessPolicyRule -AllowedConnections "NotViaAG" -AllowedProtocols @("H
 
 New-BrokerAccessPolicyRule -AllowedConnections "ViaAG" -AllowedProtocols @("HDX","RDP") -AllowedUsers "Filtered" -AllowRestart $True -DesktopGroupUid $DG.Uid -Enabled $True -IncludedSmartAccessFilterEnabled $True -IncludedSmartAccessTags @() -IncludedUserFilterEnabled $True -IncludedUsers @($strSID.Value) -Name "$DeliveryGroupName-AG"
 
-$ctxIcon = Get-BrokerIcon -FileName C:\Windows\System32\notepad.exe -index 0
+
+@(
+@{
+name="Notepad"
+path="C:\Windows\System32\notepad.exe"
+}
+) | %{
+
+$path = $_['path']
+$name = $_['name']
+
+Write-Host "Registering app..."
+Write-Host "App Name: [$name]"
+Write-Host "App Path: [$path]"
+
+$ctxIcon = Get-BrokerIcon -FileName "$path" -index 0
 $brokerIcon = New-BrokerIcon -EncodedIconData $ctxIcon.EncodedIconData
 
-New-BrokerApplication -ApplicationType "HostedOnDesktop" -CommandLineArguments "" -CommandLineExecutable "C:\Windows\System32\notepad.exe" -CpuPriorityLevel "Normal" -DesktopGroup $DG.Uid -Enabled $True -IgnoreUserHomeZone $False -MaxPerUserInstances 0 -MaxTotalInstances 0 -Name "Notepad-$Suffix" -Priority 0 -PublishedName "Notepad-$Suffix" -SecureCmdLineArgumentsEnabled $True -ShortcutAddedToDesktop $False -ShortcutAddedToStartMenu $False -UserFilterEnabled $False -Visible $True -WaitForPrinterCreation $False -IconUid $brokerIcon.Uid
+New-BrokerApplication -ApplicationType "HostedOnDesktop" -CommandLineArguments "" -CommandLineExecutable "$path" -CpuPriorityLevel "Normal" -DesktopGroup $DG.Uid -Enabled $True -IgnoreUserHomeZone $False -MaxPerUserInstances 0 -MaxTotalInstances 0 -Name "$name-$Suffix" -Priority 0 -PublishedName "$name-$Suffix" -SecureCmdLineArgumentsEnabled $True -ShortcutAddedToDesktop $False -ShortcutAddedToStartMenu $False -UserFilterEnabled $False -Visible $True -WaitForPrinterCreation $False -IconUid $brokerIcon.Uid
+
+}
 
 
 $HostingServiceAccount = Get-GoogleMetadata "instance/attributes/hosting-connection-service-account"

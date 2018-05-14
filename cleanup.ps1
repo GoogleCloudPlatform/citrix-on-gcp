@@ -74,32 +74,32 @@ $ServiceAccountName = "admin-$Suffix"
 $ServiceAccountEmail = "$ServiceAccountName@$Project.iam.gserviceaccount.com"
 $GcsPrefix = "gs://$Prefix-$ProjectNumber-$Suffix"
 
-#Write-Host "Stop/start to elevate mgmt service account for cleanup..."
-#$Jobs = gcloud compute instances list --project $Project --format "value(name)" | ? { $_ -eq "ctx-mgmt-$Suffix" } | ForEach-Object {
-#        # work in parallel, grouping output
-#        Start-Job -ArgumentList $Project, $_, $ServiceAccountEmail, "$Prefix-$Suffix", "$GcsPrefix/bootstrap/ctx-cleanup-notepad.ps1" -ScriptBlock {
-#                $Project = $args[0]
-#                $Instance = $args[1]
-#                $AdminServiceAccount = $args[2]
-#                $Deployment = $args[3]
-#                $ShutdownScriptUrl = $args[4]
-#                Write-Host "Configuring $Instance for cleanup..."
-#                $Url = $(gcloud deployment-manager resources describe $Instance --deployment $Deployment --project $Project --format "value(url)")
-#                gcloud compute instances stop $Url
-#                gcloud compute instances add-metadata $Url --metadata "windows-startup-script-url=$ShutdownScriptUrl"
-#		gcloud compute instances set-service-account $Url --service-account $AdminServiceAccount --scopes cloud-platform
-#                gcloud compute instances start $Url
-#        }
-#}
-#$Jobs | ForEach-Object { Receive-Job -Job $_ -Wait }
+Write-Host "Stop/start to elevate mgmt service account for cleanup..."
+$Jobs = gcloud compute instances list --project $Project --format "value(name)" | ? { $_ -eq "ctx-mgmt-$Suffix" } | ForEach-Object {
+        # work in parallel, grouping output
+        Start-Job -ArgumentList $Project, $_, $ServiceAccountEmail, "$Prefix-$Suffix", "$GcsPrefix/bootstrap/ctx-cleanup-apps.ps1" -ScriptBlock {
+                $Project = $args[0]
+                $Instance = $args[1]
+                $AdminServiceAccount = $args[2]
+                $Deployment = $args[3]
+                $ShutdownScriptUrl = $args[4]
+                Write-Host "Configuring $Instance for cleanup..."
+                $Url = $(gcloud deployment-manager resources describe $Instance --deployment $Deployment --project $Project --format "value(url)")
+                gcloud compute instances stop $Url
+                gcloud compute instances add-metadata $Url --metadata "windows-startup-script-url=$ShutdownScriptUrl"
+		gcloud compute instances set-service-account $Url --service-account $AdminServiceAccount --scopes cloud-platform
+                gcloud compute instances start $Url
+        }
+}
+$Jobs | ForEach-Object { Receive-Job -Job $_ -Wait }
 
 
+#Write-Host "*** DEBUG EXIT ***"
 #Exit
 
 
 # wait for cleanup script to complete
-#$Rand = -join ((48..57) + (97..122) | Get-Random -Count 6 | % {[char]$_})
-#gcloud beta runtime-config configs waiters create waiter-cleanup-$Rand --success-cardinality-path "cleanup" --config-name config-$Suffix --timeout 1200
+gcloud beta runtime-config configs waiters create waiter-cleanup-$Suffix --success-cardinality-path "cleanup" --config-name config-$Suffix --timeout 1200 --project $Project
 
 
 Write-Host "Cleaning up deployment: $Prefix-$Suffix"

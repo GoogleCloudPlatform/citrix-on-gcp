@@ -116,6 +116,48 @@ Function Remove-ResourceLocation {
   return $response;
 }
 
+Function Remove-EdgeServer {
+  Param (
+    [Parameter(Mandatory=$true)]
+    [string] $id,
+    [Parameter(Mandatory=$true)]
+    [string] $customerId,
+    [Parameter(Mandatory=$true)]
+    [string] $bearerToken
+  )
+
+  $requestUri = [string]::Format("https://agenthub.citrixworkspacesapi.net/{0}/EdgeServers/{1}", $customerId, $id)
+  $headers = @{
+    "Content-Type" = "application/json"
+    "Authorization" = "CWSAuth bearer=$bearerToken"
+  }
+
+  $response = Invoke-RestMethod -Uri $requestUri -Method DELETE -Headers $headers
+
+  return $response;
+}
+
+Function List-EdgeServers {
+  Param (
+    [Parameter(Mandatory=$true)]
+    [string] $locationId,
+    [Parameter(Mandatory=$true)]
+    [string] $customerId,
+    [Parameter(Mandatory=$true)]
+    [string] $bearerToken
+  )
+
+  $requestUri = [string]::Format("https://agenthub.citrixworkspacesapi.net/{0}/EdgeServers?Location={1}", $customerId, $locationId)
+  $headers = @{
+    "Content-Type" = "application/json"
+    "Authorization" = "CWSAuth bearer=$bearerToken"
+  }
+
+  $response = Invoke-RestMethod -Uri $requestUri -Method GET -Headers $headers
+
+  return $response;
+}
+
 Function List-ResourceLocations {
   Param (
     [Parameter(Mandatory=$true)]
@@ -208,18 +250,31 @@ $TSVDACatalogName = "Catalog-$Suffix"
 $TSVDADGName = "Group-$Suffix"
 
 # delete policy rules
-$Params = @{
-Name = $TSVDADGName
-}
-Remove-BrokerAccessPolicyRule @Params
-Remove-BrokerAppEntitlementPolicyRule @Params
-Remove-BrokerEntitlementPolicyRule @Params
+Remove-BrokerAccessPolicyRule "$TSVDADGName-AG"
+Remove-BrokerAccessPolicyRule "$TSVDADGName-Direct"
+Remove-BrokerAppEntitlementPolicyRule "$TSVDADGName"
 
-# remove application
+
+@(
+@{
+name="Notepad"
+path="C:\Windows\System32\notepad.exe"
+}
+) | %{
+
+$path = $_['path']
+$name = $_['name']
+
+Write-Host "Removing app..."
+Write-Host "App Name: [$name]"
+
 $Params = @{
-Name = "Notepad-$Suffix"
+Name = "$name-$Suffix"
 }
 Remove-BrokerApplication @Params
+
+}
+
 
 # remove delivery group
 $Params = @{
@@ -234,10 +289,19 @@ Name = $TSVDACatalogName
 Remove-BrokerCatalog @Params
 
 
-Write-Host "Removing resource location..."
+Write-Host "Getting resource location id..."
 # remove resource location by id
 $Token = GetBearerToken $CtxClientId (Unwrap-SecureString $CtxClientSecretSS)
 $id = Get-Setting "citrix/resource-locations/$Prefix-$Suffix/id"
+
+
+Write-Host "Removing cloud connectors..."
+List-EdgeServers $id $CtxCustomerId $Token | %{
+	Remove-EdgeServer $_.id $CtxCustomerId $Token
+}
+
+
+Write-Host "Removing resource location..."
 Remove-ResourceLocation $id $CtxCustomerId $Token
 
 
