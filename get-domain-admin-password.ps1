@@ -72,6 +72,8 @@ Write-Host "Suffix: [$Suffix]"
 Write-Host "Getting domain admin password for: $Prefix-$Suffix"
 $Temp = New-TemporaryFile
 gsutil cp "gs://$Prefix-$ProjectNumber-$Suffix/output/domain-admin-password.bin" $Temp.FullName
-gcloud kms decrypt --key "projects/$Project/locations/global/keyRings/$Prefix/cryptoKeys/domain-secrets-$Suffix" --ciphertext-file $Temp.FullName --plaintext-file -
+$ClearPass = $(gcloud kms decrypt --key "projects/$Project/locations/global/keyRings/$Prefix/cryptoKeys/domain-secrets-$Suffix" --ciphertext-file $Temp.FullName --plaintext-file -)
 Remove-Item $Temp.FullName
+
+Write-Host $ClearPass
 
