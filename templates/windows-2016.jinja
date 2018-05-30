@@ -41,7 +41,7 @@ resources:
       initializeParams:
         diskSizeGb: 50
         diskType: projects/{{ env['project'] }}/zones/{{ properties['zone'] }}/diskTypes/pd-standard
-        sourceImage: projects/windows-cloud/global/images/windows-server-2016-dc-v20171114
+        sourceImage: projects/windows-cloud/global/images/family/windows-2016
     networkInterfaces:
     - subnetwork: {{ properties['subnetwork'] }}
       accessConfigs:
