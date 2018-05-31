@@ -220,9 +220,8 @@ $CtxVdaDownloadPage = Get-GoogleMetadata "instance/attributes/vda-download-page"
 Write-Host "Downloading Citrix PoSH installer..."
 $TempFile = New-TemporaryFile
 $TempFile.MoveTo($TempFile.FullName + ".exe")
-$downloadsUri = "http://download.apps.cloud.com/CitrixPoshSdk.exe"
-Invoke-WebRequest -Uri $downloadsUri -OutFile $TempFile.FullName
-
+$url = "http://download.apps.cloud.com/CitrixPoshSdk.exe"
+(New-Object System.Net.WebClient).DownloadFile($url, $TempFile.FullName)
 
 Write-Host "Running installer..."
 Start-Process $TempFile.FullName "/q" -Wait
@@ -251,8 +250,7 @@ Write-Host "Download URL: [$VdaDownloadUrl]"
 
 $TempFile = New-TemporaryFile
 $TempFile.MoveTo($TempFile.FullName + ".exe")
-Start-BitsTransfer -Source $VdaDownloadUrl -Destination $TempFile.FullName
-
+(New-Object System.Net.WebClient).DownloadFile($VdaDownloadUrl, $TempFile.FullName)
 
 Write-Host "Waiting on Citrix setup from mgmt instance..."
 $RuntimeConfig = Get-GoogleMetadata "instance/attributes/runtime-config"

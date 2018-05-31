@@ -24,15 +24,6 @@ resources:
     success:
       cardinality:
         path: bootstrap/ctx-dc-1-{{ properties['suffix'] }}/success
-- name: waiter-ctx-dc-2-{{ properties['suffix'] }}
-  type: runtimeconfig.v1beta1.waiter
-  properties:
-    waiter: waiter-ctx-dc-2-{{ properties['suffix'] }}
-    parent: {{ properties['runtime-config'] }}
-    timeout: 2400s
-    success:
-      cardinality:
-        path: bootstrap/ctx-dc-2-{{ properties['suffix'] }}/success
 - name: ctx-dc-1-{{ properties['suffix'] }}
   type: windows-2016.jinja
   properties:
@@ -42,6 +33,13 @@ resources:
     subnetwork: {{ properties['subnetwork'] }}
     service-account: {{ properties['service-account'] }}
     metadata:
+{% if properties['minimal'] %}
+    - key: remove-address
+      value: "false"
+{% else %}
+    - key: remove-address
+      value: "true"
+{% endif %}
     - key: domain-name
       value: {{ properties['domain-name'] }}
     - key: netbios-name
@@ -62,6 +60,16 @@ resources:
     - {{ dependency }}
 {% endfor %}
 {% endif %}
+{% if not properties['minimal'] %}
+- name: waiter-ctx-dc-2-{{ properties['suffix'] }}
+  type: runtimeconfig.v1beta1.waiter
+  properties:
+    waiter: waiter-ctx-dc-2-{{ properties['suffix'] }}
+    parent: {{ properties['runtime-config'] }}
+    timeout: 2400s
+    success:
+      cardinality:
+        path: bootstrap/ctx-dc-2-{{ properties['suffix'] }}/success
 - name: ctx-dc-2-{{ properties['suffix'] }}
   type: windows-2016.jinja
   properties:
@@ -71,6 +79,13 @@ resources:
     subnetwork: {{ properties['subnetwork'] }}
     service-account: {{ properties['service-account'] }}
     metadata:
+{% if properties['minimal'] %}
+    - key: remove-address
+      value: "false"
+{% else %}
+    - key: remove-address
+      value: "true"
+{% endif %}
     - key: domain-name
       value: {{ properties['domain-name'] }}
     - key: netbios-name
@@ -94,5 +109,6 @@ resources:
 {% for dependency in properties['dependencies'] %}
     - {{ dependency }}
 {% endfor %}
+{% endif %}
 {% endif %}
 

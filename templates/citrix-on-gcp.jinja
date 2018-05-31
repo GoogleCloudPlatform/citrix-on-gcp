@@ -24,7 +24,7 @@ resources:
 - name: citrix-{{ subnet['region'] }}-{{ properties['suffix'] }}
   type: compute.v1.subnetwork
   properties:
-    network: $(ref.citrix-{{ properties['suffix'] }}.selfLink) 
+    network: $(ref.citrix-{{ properties['suffix'] }}.selfLink)
     ipCidrRange: {{ subnet['cidr'] }}
     region: {{ subnet['region'] }}
     privateIpGoogleAccess: true
@@ -82,13 +82,14 @@ resources:
     - IPProtocol: tcp
       ports:
       - '0-65535'
-    - IPProtocol: udp 
+    - IPProtocol: udp
       ports:
       - '0-65535'
     direction: INGRESS
     priority: 65534
     sourceRanges:
     - 10.128.0.0/9
+{% if not properties['minimal'] %}
 - name: natfirewall-health-{{ properties['suffix'] }}
   type: compute.v1.firewall
   properties:
@@ -130,6 +131,7 @@ resources:
     region: {{ properties['region'] }}
     zone: {{ properties['secondary-zone'] }}
     health-check: $(ref.nat-health-check-{{ properties['suffix'] }}.selfLink)
+{% endif %}
 - name: config-{{ properties['suffix'] }}
   type: runtimeconfig.v1beta1.config
   properties:
@@ -147,6 +149,7 @@ resources:
     kms-key: {{ properties['kms-key'] }}
     gcs-prefix: {{ properties['gcs-prefix'] }}
     runtime-config: $(ref.config-{{ properties['suffix'] }}.name)
+    minimal: {{ properties['minimal'] }}
 - name: bastion
   type: bastion.jinja
   properties:
@@ -164,14 +167,19 @@ resources:
     runtime-config: $(ref.config-{{ properties['suffix'] }}.name)
     domain-controller-addresses:
     - $(ref.ctx-dc-1-{{ properties['suffix'] }}.networkInterfaces[0].networkIP)
+{% if not properties['minimal'] %}
     - $(ref.ctx-dc-2-{{ properties['suffix'] }}.networkInterfaces[0].networkIP)
+{% endif %}
+    minimal: {{ properties['minimal'] }}
 - name: ctx-cc
   type: ctx-cloud-connector.jinja
   properties:
     suffix: {{ properties['suffix'] }}
     zones:
     - {{ properties['zone'] }}
+{% if not properties['minimal'] %}
     - {{ properties['secondary-zone'] }}
+{% endif %}
     subnetwork: $(ref.citrix-{{ properties['region'] }}-{{ properties['suffix'] }}.selfLink)
     service-account: {{ properties['service-account'] }}
     domain-name: {{ properties['domain-name'] }}
@@ -181,7 +189,10 @@ resources:
     runtime-config: $(ref.config-{{ properties['suffix'] }}.name)
     domain-controller-addresses:
     - $(ref.ctx-dc-1-{{ properties['suffix'] }}.networkInterfaces[0].networkIP)
+{% if not properties['minimal'] %}
     - $(ref.ctx-dc-2-{{ properties['suffix'] }}.networkInterfaces[0].networkIP)
+{% endif %}
+    minimal: {{ properties['minimal'] }}
 - name: ctx-xenapp
   type: ctx-xenapp.jinja
   properties:
@@ -199,7 +210,9 @@ resources:
     runtime-config: $(ref.config-{{ properties['suffix'] }}.name)
     domain-controller-addresses:
     - $(ref.ctx-dc-1-{{ properties['suffix'] }}.networkInterfaces[0].networkIP)
+{% if not properties['minimal'] %}
     - $(ref.ctx-dc-2-{{ properties['suffix'] }}.networkInterfaces[0].networkIP)
+{% endif %}
     vda-installer: {{ properties['vda-installer'] }}
     vda-download-page: {{ properties['vda-download-page'] }}
     ctx-machine-catalog: Catalog-{{ properties['suffix'] }}
@@ -209,5 +222,8 @@ resources:
 {% endif %}
     ctx-cloud-connectors:
     - ctx-cc-1-{{ properties['suffix'] }}.{{ properties['domain-name'] }}
+{% if not properties['minimal'] %}
     - ctx-cc-2-{{ properties['suffix'] }}.{{ properties['domain-name'] }}
+{% endif %}
+    minimal: {{ properties['minimal'] }}
 

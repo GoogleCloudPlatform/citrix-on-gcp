@@ -11,7 +11,32 @@ Clone the repository and run deploy.ps1.
 .\deploy.ps1
 ```
 
-You will be prompted for three values to allow the script to interact with Citrix Cloud APIs:
+Optionally, you can set the "UseMinimalResources" parameter to True, if you
+prefer a "light weight" deployment.
+
+``` shell
+.\deploy.ps1 -UseMinimalResources $True
+```
+
+This flag will reduce overall resource
+consumption by removing some of the formality of the original reference
+architecture, namely:
+- Instances will be deployed with public IPs to avoid necessity of NAT instances
+- Single instances will be deployed instead of highly-available pairs for the
+  following instances categories:
+  - Domain Controllers
+  - Cloud Connectors
+
+With "UseMinimalResources" enabled, the deployment will consume only 8 vCPUs
+during initial deployment, eventually shutting down the management instance to
+maintain steady state consumption of only 6 vCPUs.  The remaining instances can be stopped and
+started at will to minimize resource consumption when the environment is not in
+use.
+
+This smaller deployment footprint can be useful especially when utilizing the [Google Cloud Platform Free Tier
+](https://cloud.google.com/free/) to experiment with Citrix on GCP.
+
+If not otherwise provided, you will be prompted for three parameter values to allow the script to interact with Citrix Cloud APIs:
 - CTXSecureClientID: This is the client ID of a client configured at Citrix Cloud ([cloud.com](https://cloud.com/)) > Identity and Access Management > API Access.
 - CTXSecureClientSecret: This is the secret you were provided when the client ID was created.
 - CTXCustomerID: This is the Customer ID identified on Citrix Cloud ([cloud.com](https://cloud.com/)) > Identity and Access Management > API Access.

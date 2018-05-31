@@ -74,4 +74,8 @@ properties:
   runtime-config:
     type: string
     description: Path of Runtime Config used for variables and waiters.
+  minimal:
+    type: boolean
+    default: False
+    description: Whether or not to minimize resources (e.g. for trial account) instead of deploying with redundancy
 

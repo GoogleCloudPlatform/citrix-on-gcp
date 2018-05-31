@@ -42,7 +42,9 @@ Param(
 	[Parameter()][String][ValidateNotNullOrEmpty()]
 	$CtxVdaInstaller = "VDAServerSetup_7.17.exe",
 	[Parameter()][Boolean]
-	$UseGcpPluginFactory = $False
+	$UseGcpPluginFactory = $False,
+	[Parameter()][Boolean]
+	$UseMinimalResources = $False
 )
 
 Function Unwrap-SecureString() {
@@ -253,6 +255,7 @@ resources:
     vda-download-page: $CtxVdaDownloadPage
     vda-installer: $CtxVdaInstaller
     workers: $Workers
+    minimal: $UseMinimalResources
 
 "@
 If ($UseGcpPluginFactory) {

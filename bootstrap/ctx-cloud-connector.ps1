@@ -194,8 +194,8 @@ Write-Host "Suffix: [$Suffix]"
 Write-Host "Downloading installer..."
 $TempFile = New-TemporaryFile
 $TempFile.MoveTo($TempFile.FullName + ".exe")
-$downloadsUri = "https://downloads.cloud.com/$CtxCustomerId/connector/cwcconnector.exe"
-Invoke-WebRequest -Uri $downloadsUri -OutFile $TempFile.FullName
+$url = "https://downloads.cloud.com/$CtxCustomerId/connector/cwcconnector.exe"
+(New-Object System.Net.WebClient).DownloadFile($url, $TempFile.FullName)
 
 
 Write-Host "Waiting on Citrix Resource Location..."

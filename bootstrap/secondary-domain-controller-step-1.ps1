@@ -93,15 +93,28 @@ Function Wait-RuntimeConfigWaiter {
 	Return $RuntimeWaiter
 }
 
+Function Get-GoogleMetadata() {
+        Param (
+        [Parameter(Mandatory=$True)][String] $Path
+        )
+        Try {
+                Return Invoke-RestMethod -Headers @{"Metadata-Flavor" = "Google"} -Uri http://169.254.169.254/computeMetadata/v1/$Path
+        }
+        Catch {
+                Return $Null
+        }
+}
+
 
 Write-Output "Bootstrap script started..."
 
 
-Write-Output "Removing external address..."
-# windows should have activated before script is invoked, so now remove external address
-$name = Invoke-RestMethod -Headers @{"Metadata-Flavor" = "Google"} -Uri http://169.254.169.254/computeMetadata/v1/instance/name
-$zone = Invoke-RestMethod -Headers @{"Metadata-Flavor" = "Google"} -Uri http://169.254.169.254/computeMetadata/v1/instance/zone
-gcloud compute instances delete-access-config $name --zone $zone
+If ("true" -like (Get-GoogleMetadata "instance/attributes/remove-address")) {
+        Write-Host "Removing external address..."
+        $name = Get-GoogleMetadata "instance/name"
+        $zone = Get-GoogleMetadata "instance/zone"
+        gcloud compute instances delete-access-config $name --zone $zone
+}
 
 
 Write-Output "Fetching metadata parameters..."

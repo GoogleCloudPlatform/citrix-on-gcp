@@ -81,4 +81,8 @@ properties:
     uniqueItems: true
     items:
       type: string
+  minimal:
+    type: boolean
+    default: False
+    description: Whether or not to minimize resources (e.g. for trial account) instead of deploying with redundancy
 

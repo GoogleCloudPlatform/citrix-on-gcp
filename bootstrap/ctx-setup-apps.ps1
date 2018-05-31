@@ -315,9 +315,8 @@ Set-RuntimeConfigVariable -ConfigPath $RuntimeConfig -Variable "setup/citrix/res
 Write-Host "Downloading installer..."
 $TempFile = New-TemporaryFile
 $TempFile.MoveTo($TempFile.FullName + ".exe")
-$downloadsUri = "http://download.apps.cloud.com/CitrixPoshSdk.exe"
-Invoke-WebRequest -Uri $downloadsUri -OutFile $TempFile.FullName
-
+$url = "http://download.apps.cloud.com/CitrixPoshSdk.exe"
+(New-Object System.Net.WebClient).DownloadFile($url, $TempFile.FullName)
 
 Write-Host "Running installer..."
 Start-Process $TempFile.FullName "/q" -Wait
