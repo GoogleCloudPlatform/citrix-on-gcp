@@ -56,7 +56,7 @@ resources:
       value: waiter-ctx-dc-2-{{ properties['suffix'] }}
 {% endif %}
     - key: windows-startup-script-url
-      value: {{ properties['gcs-prefix'] }}/bootstrap/domain-member.ps1
+      value: {{ properties['gcs-prefix'] }}/bootstrap/install-apps.ps1
     - key: domain-controller-addresses
       value: {% for ip in properties['domain-controller-addresses'] %}{{ ip }}{{ "," if not loop.last }}{% endfor %}
     - key: post-join-script-url

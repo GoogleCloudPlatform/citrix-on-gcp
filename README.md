@@ -1,6 +1,22 @@
 ## Overview
 This repository contains scripts and templates to simplify deployment of the resources described in Citrix's [Deploying Citrix Cloud XenApp and XenDesktop Service on the Google Cloud Platform](https://citrix.sharefile.com/d-sd6bf3fabc954f608) published December 2017.
 
+## Sample Apps Branch
+
+The "sample-apps" branch is included to highglight how these scripts can be
+extended to install custom applications. In this branch a variety of popular
+open source applications ([LibreOffice](https://www.libreoffice.org/),
+[Gimp](https://www.gimp.org/), and [Slicer](https://www.slicer.org/)) will
+be installed and configured in XenApp instead of the default Notepad as
+described in the deployment guide.  A new file "bootstrap/install-apps.ps1"
+is introduced along with a few small changes in the following files:
+- bootstrap/ctx-cleanup-apps.ps1
+- bootstrap/ctx-setup-apps.ps1
+- templates/bastion.jinja
+- templates/ctx-xenapp.jinja
+
+You can follow this example to modify the scripts to install your own custom applications.
+
 ## Before you begin
 You'll need a PowerShell environment with the [Google Cloud SDK](https://cloud.google.com/sdk/) installed.
 

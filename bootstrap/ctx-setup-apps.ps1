@@ -369,8 +369,24 @@ New-BrokerAccessPolicyRule -AllowedConnections "ViaAG" -AllowedProtocols @("HDX"
 
 @(
 @{
-name="Notepad"
-path="C:\Windows\System32\notepad.exe"
+name="Gimp" # GIMP 2
+path="C:\Program Files\GIMP 2\bin\gimp-2.10.exe"
+},
+@{
+name="Slicer" # 3D Slicer 4.8.1
+path="C:\Program Files\Slicer\Slicer.exe"
+},
+@{
+name="Writer" # LibreOffice Writer
+path="C:\Program Files\LibreOffice\program\swriter.exe"
+},
+@{
+name="Calc" # LibreOffice Calc
+path="C:\Program Files\LibreOffice\program\scalc.exe"
+},
+@{
+name="Draw" # LibreOffice Draw
+path="C:\Program Files\LibreOffice\program\sdraw.exe"
 }
 ) | %{
 
