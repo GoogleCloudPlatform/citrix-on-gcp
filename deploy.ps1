@@ -40,7 +40,7 @@ Param(
 	[Parameter()][String][ValidateNotNullOrEmpty()]
 	$CtxVdaDownloadPage = "https://www.citrix.com/downloads/citrix-cloud/product-software/xenapp-and-xendesktop-service.html",
 	[Parameter()][String][ValidateNotNullOrEmpty()]
-	$CtxVdaInstaller = "VDAServerSetup_7.17.exe",
+	$CtxVdaInstaller = "VDAServerSetup_7.18.exe",
 	[Parameter()][Boolean]
 	$UseGcpPluginFactory = $False,
 	[Parameter()][Boolean]
