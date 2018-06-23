@@ -35,6 +35,7 @@ required:
 - netbios-name
 - gcs-prefix
 - kms-key
+- vda-download-url
 
 properties:
   suffix:
@@ -113,12 +114,9 @@ properties:
       cidr: 10.158.0.0/20
     - region: asia-south1
       cidr: 10.160.0.0/20
-  vda-insatller:
+  vda-download-url:
     type: string
-    description: File name of VDA installer to be downloaded from specified page, e.g. VDAServerSetup_7.17.exe
-  vda-download-page:
-    type: string
-    description: URL of page on Citrix site from which to extract tokenized download URL for VDA installer, e.g. https://www.citrix.com/downloads/citrix-cloud/product-software/xenapp-and-xendesktop-service.html
+    description: URL from which to doanload VDA installer
   workers:
     type: integer
     default: 1

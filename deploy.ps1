@@ -38,9 +38,7 @@ Param(
 	[Parameter()][String][ValidateNotNullOrEmpty()]
 	$CTXCustomerID = $(Read-Host "CTXCustomerID"),
 	[Parameter()][String][ValidateNotNullOrEmpty()]
-	$CtxVdaDownloadPage = "https://www.citrix.com/downloads/citrix-cloud/product-software/xenapp-and-xendesktop-service.html",
-	[Parameter()][String][ValidateNotNullOrEmpty()]
-	$CtxVdaInstaller = "VDAServerSetup_7.18.exe",
+	$VdaDownloadUrl = "https://storage.googleapis.com/citrix-on-gcp-demo/vda/VDAServerSetup_7.17.exe",
 	[Parameter()][Boolean]
 	$UseGcpPluginFactory = $False,
 	[Parameter()][Boolean]
@@ -252,8 +250,7 @@ resources:
     subnets:
     - region: $Region
       cidr: 10.128.0.0/20
-    vda-download-page: $CtxVdaDownloadPage
-    vda-installer: $CtxVdaInstaller
+    vda-download-url: $VdaDownloadUrl
     workers: $Workers
     minimal: $UseMinimalResources
 

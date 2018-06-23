@@ -32,7 +32,7 @@ required:
 - gcs-prefix
 - runtime-config
 - domain-controller-addresses
-- vda-url-gcs
+- vda-download-url
 - ctx-machine-catalog
 - ctx-delivery-group
 - ctx-cloud-controllers
@@ -86,9 +86,6 @@ properties:
     uniqueItems: true
     items:
       type: string
-  vda-version:
-    type: string
-    description: Version number of VDA Server Setup to download and install, e.g. 7.17 
   ctx-machine-catalog:
     type: string
     description: Name of Citrix Machine Catalog in which this machine belongs.
@@ -109,4 +106,7 @@ properties:
     type: boolean
     default: False
     description: Whether or not to minimize resources (e.g. for trial account) instead of deploying with redundancy
+  vda-download-url:
+    type: string
+    description: URL from which to doanload VDA installer
 
