@@ -213,8 +213,7 @@ $CtxMachineCatalog = Get-GoogleMetadata "instance/attributes/ctx-machine-catalog
 $CtxDeliveryGroup = Get-GoogleMetadata "instance/attributes/ctx-delivery-group"
 $CtxHypervisorConnection = Get-GoogleMetadata "instance/attributes/ctx-hypervisor-connection"
 $CtxCloudConnectors = Get-GoogleMetadata "instance/attributes/ctx-cloud-connectors"
-$CtxVdaInstaller = Get-GoogleMetadata "instance/attributes/vda-installer"
-$CtxVdaDownloadPage = Get-GoogleMetadata "instance/attributes/vda-download-page"
+$VdaDownloadUrl = Get-GoogleMetadata "instance/attributes/vda-download-url"
 
 
 Write-Host "Downloading Citrix PoSH installer..."
@@ -238,19 +237,10 @@ Set-XDCredentials -CustomerId $CtxCustomerId -ProfileType CloudAPI -APIKey $CtxC
 
 # download & install vda
 Write-Host "Downloading VDA installer..."
-
-$TempFile = New-TemporaryFile
-Invoke-WebRequest -Uri $CtxVdaDownloadPage -OutFile $TempFile.FullName
-$ResponseContent = [IO.File]::ReadAllText($TempFile.FullName)
-Remove-Item -Force $TempFile.FullName
-
-[Regex]$Regex = '//downloads\.citrix\.com/[0-9]+/' + [Regex]::Escape($CtxVdaInstaller) + '\?[^"]+'
-$VdaDownloadUrl = "https:" + $Regex.Matches($ResponseContent)[0].Value
-Write-Host "Download URL: [$VdaDownloadUrl]"
-
 $TempFile = New-TemporaryFile
 $TempFile.MoveTo($TempFile.FullName + ".exe")
 (New-Object System.Net.WebClient).DownloadFile($VdaDownloadUrl, $TempFile.FullName)
+
 
 Write-Host "Waiting on Citrix setup from mgmt instance..."
 $RuntimeConfig = Get-GoogleMetadata "instance/attributes/runtime-config"
@@ -278,12 +268,11 @@ Write-Host "Cleaning up..."
 Remove-Item $TempFile.FullName
 
 
-Write-Host "Getting machine catalog..."
-$BrokerCatalog = Get-BrokerCatalog $CtxMachineCatalog
-
-
 Write-Host "Adding machine to catalog and delivery group..."
 If ($CtxHypervisorConnection) {
+
+Write-Host "Getting machine catalog..."
+$BrokerCatalog = Get-BrokerCatalog $CtxMachineCatalog
 
 $HypervisorConnection = Get-BrokerHypervisorConnection $CtxHypervisorConnection
 
@@ -296,7 +285,22 @@ $BrokerMachine = New-BrokerMachine -CatalogUid $BrokerCatalog.Uid -MachineName "
 }
 Else {
 
-$BrokerMachine = New-BrokerMachine -CatalogUid $BrokerCatalog.Uid -MachineName "$Domain\$Env:ComputerName"
+  Do {
+    Try {
+#      $BrokerMachine = New-BrokerMachine -CatalogUid $BrokerCatalog.Uid -MachineName "$Domain\$Env:ComputerName"
+
+      Write-Host "Getting machine catalog..."
+      $BrokerCatalog = Get-BrokerCatalog $CtxMachineCatalog
+      $BrokerMachine = New-BrokerMachine -CatalogUid $BrokerCatalog.Uid -MachineName (Get-ADComputer "$Env:COMPUTERNAME").SID.Value
+      Break
+
+    }
+    Catch {
+      Write-Host $_.ToString() + $_.InvocationInfo.PositionMessage
+      Write-Host "Waiting to try again..."
+      Sleep 15
+    }
+  } While ($True)
 
 }
 Add-BrokerMachine -DesktopGroup $CtxDeliveryGroup -InputObject @($BrokerMachine)

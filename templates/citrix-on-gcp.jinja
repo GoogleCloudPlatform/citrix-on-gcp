@@ -213,8 +213,7 @@ resources:
 {% if not properties['minimal'] %}
     - $(ref.ctx-dc-2-{{ properties['suffix'] }}.networkInterfaces[0].networkIP)
 {% endif %}
-    vda-installer: {{ properties['vda-installer'] }}
-    vda-download-page: {{ properties['vda-download-page'] }}
+    vda-download-url: {{ properties['vda-download-url'] }}
     ctx-machine-catalog: Catalog-{{ properties['suffix'] }}
     ctx-delivery-group: Group-{{ properties['suffix'] }}
 {% if properties['hosting-connection-service-account'] %}
