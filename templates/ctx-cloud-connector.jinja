@@ -20,7 +20,7 @@ resources:
   properties:
     waiter: waiter-ctx-connector
     parent: {{ properties['runtime-config'] }}
-    timeout: 2400s
+    timeout: 3600s
     success:
       cardinality:
         path: setup/citrix/connector
@@ -30,7 +30,7 @@ resources:
   properties:
     waiter: waiter-ctx-cc-{{ loop.index }}-{{ properties['suffix'] }}
     parent: {{ properties['runtime-config'] }}
-    timeout: 2400s
+    timeout: 3600s
     success:
       cardinality:
         path: bootstrap/ctx-cc-{{ loop.index }}-{{ properties['suffix'] }}/success

@@ -20,7 +20,7 @@ resources:
   properties:
     waiter: waiter-ctx-mgmt-{{ properties['suffix'] }}
     parent: {{ properties['runtime-config'] }}
-    timeout: 2400s
+    timeout: 3600s
     success:
       cardinality:
         path: bootstrap/ctx-mgmt-{{ properties['suffix'] }}/success
@@ -29,7 +29,7 @@ resources:
   properties:
     waiter: waiter-ctx-resloc
     parent: $(ref.config-{{ properties['suffix'] }}.name)
-    timeout: 2400s
+    timeout: 3600s
     success:
       cardinality:
         path: setup/citrix/resloc

@@ -21,7 +21,7 @@ resources:
   properties:
     waiter: waiter-ctx-xa-{{ loop.index }}-{{ properties['suffix'] }}
     parent: {{ properties['runtime-config'] }}
-    timeout: 2400s
+    timeout: 3600s
     success:
       cardinality:
         path: bootstrap/ctx-xa-{{ loop.index }}-{{ properties['suffix'] }}/success
