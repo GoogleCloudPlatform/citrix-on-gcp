@@ -115,7 +115,7 @@ gcloud kms keys versions list --key "domain-secrets-$Suffix" --location global -
 $Temp = New-TemporaryFile
 @"
 bindings:
-"@ | Out-File $Temp.FullName
+"@ | Out-File $Temp.FullName -Encoding ASCII
 gcloud kms keys set-iam-policy "domain-secrets-$Suffix" $Temp.FullName --location global --keyring $Prefix --project $Project
 Remove-Item $Temp.FullName
 

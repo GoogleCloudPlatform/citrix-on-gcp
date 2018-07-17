@@ -201,7 +201,7 @@ $Temp = New-TemporaryFile
     "members": ["serviceAccount:$ServiceAccount", "user:$User"]
   }]
 }
-"@ | Out-File $Temp.FullName
+"@ | Out-File $Temp.FullName -Encoding ASCII
 gcloud kms keys set-iam-policy $KmsKey $Temp --project $Project
 Remove-Item $Temp.FullName
 
@@ -210,16 +210,16 @@ Remove-Item $Temp.FullName
 Write-Host "Saving Citrix parameters..."
 $Temp = New-TemporaryFile
 
-$Prefix | Out-File -NoNewLine $Temp.FullName
+$Prefix | Out-File $Temp.FullName -NoNewLine -Encoding ASCII
 gsutil cp $Temp.FullName "gs://$BucketName/settings/prefix"
 
-$Suffix | Out-File -NoNewLine $Temp.FullName
+$Suffix | Out-File $Temp.FullName -NoNewLine -Encoding ASCII
 gsutil cp $Temp.FullName "gs://$BucketName/settings/suffix"
 
-$CTXSecureClientID | Out-File -NoNewLine $Temp.FullName
+$CTXSecureClientID | Out-File $Temp.FullName -NoNewLine -Encoding ASCII
 gsutil cp $Temp.FullName "gs://$BucketName/settings/citrix/client-id"
 
-$CTXCustomerID | Out-File -NoNewLine $Temp.FullName
+$CTXCustomerID | Out-File $Temp.FullName -NoNewLine -Encoding ASCII
 gsutil cp $Temp.FullName "gs://$BucketName/settings/citrix/customer-id"
 
 Unwrap-SecureString $CTXSecureClientSecret | gcloud kms encrypt --key $KmsKey --plaintext-file - --ciphertext-file $Temp.FullName
