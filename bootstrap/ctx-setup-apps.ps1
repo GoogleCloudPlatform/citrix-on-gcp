@@ -353,7 +353,17 @@ $MachineCatalogName = "Catalog-$Suffix"
 $DeliveryGroupName = "Group-$Suffix"
 
 
-New-BrokerCatalog  -AllocationType "Random" -Description "" -IsRemotePC $False -MachinesArePhysical $True -MinimumFunctionalLevel "L7_9" -Name $MachineCatalogName -PersistUserChanges "OnLocal" -ProvisioningType "Manual" -Scope @() -SessionSupport "MultiSession" -ZoneUid $Zone.Uid
+$HostingServiceAccount = Get-GoogleMetadata "instance/attributes/hosting-connection-service-account"
+If ($HostingServiceAccount) {
+
+	New-BrokerCatalog  -AllocationType "Random" -Description "" -IsRemotePC $False -MachinesArePhysical $False -MinimumFunctionalLevel "L7_9" -Name $MachineCatalogName -PersistUserChanges "OnLocal" -ProvisioningType "Manual" -Scope @() -SessionSupport "MultiSession" -ZoneUid $Zone.Uid
+
+} Else {
+
+	New-BrokerCatalog  -AllocationType "Random" -Description "" -IsRemotePC $False -MachinesArePhysical $True -MinimumFunctionalLevel "L7_9" -Name $MachineCatalogName -PersistUserChanges "OnLocal" -ProvisioningType "Manual" -Scope @() -SessionSupport "MultiSession" -ZoneUid $Zone.Uid
+
+}
+
 
 $DG = New-BrokerDesktopGroup  -ColorDepth "TwentyFourBit" -DeliveryType "DesktopsAndApps" -DesktopKind "Shared" -InMaintenanceMode $False -IsRemotePC $False -MinimumFunctionalLevel "L7_9" -Name $DeliveryGroupName -OffPeakBufferSizePercent 10 -PeakBufferSizePercent 10 -PublishedName $DeliveryGroupName -Scope @() -SecureIcaRequired $False -SessionSupport "MultiSession" -ShutdownDesktopsAfterUse $False -TimeZone "UTC"
 
