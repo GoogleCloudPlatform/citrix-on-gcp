@@ -254,7 +254,6 @@ $Arguments = @(
 	"/enable_hdx_ports"
 	"/optimize"
 	"/masterimage"
-	"/baseimage"
 	"/enable_remote_assistance"
 	"/controllers"
 	"$CtxCloudConnectors"
