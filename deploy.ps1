@@ -40,7 +40,7 @@ Param(
 	[Parameter()][String][ValidateNotNullOrEmpty()]
 	$VdaDownloadUrl = "https://storage.googleapis.com/citrix-on-gcp-demo/vda/VDAServerSetup_7.17.exe",
 	[Parameter()][Boolean]
-	$UseGcpPluginFactory = $False,
+	$PowerManaged = $True,
 	[Parameter()][Boolean]
 	$UseMinimalResources = $False
 )
@@ -161,7 +161,7 @@ $ServiceAccount = $AdminServiceAccount
 
 Write-Host "Service Account: [$ServiceAccount]"
 
-If ($UseGcpPluginFactory) {
+If ($PowerManaged) {
 
 $CitrixServiceAccountName = "citrix-$Suffix"
 $CitrixServiceAccount = "$CitrixServiceAccountName@$Project.iam.gserviceaccount.com"
@@ -255,7 +255,7 @@ resources:
     minimal: $UseMinimalResources
 
 "@
-If ($UseGcpPluginFactory) {
+If ($PowerManaged) {
   $ConfigYaml = $ConfigYaml + @"
     hosting-connection-service-account: $CitrixServiceAccount
 "@

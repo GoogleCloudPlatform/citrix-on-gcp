@@ -254,7 +254,6 @@ $Arguments = @(
 	"/enable_hdx_ports"
 	"/optimize"
 	"/masterimage"
-	"/baseimage"
 	"/enable_remote_assistance"
 	"/controllers"
 	"$CtxCloudConnectors"
@@ -280,7 +279,7 @@ $project = Get-GoogleMetadata "project/project-id"
 $region = (Get-GoogleMetadata "instance/zone").Split("/")[-1] -Replace "-[^-]+$","" 
 $name = Get-GoogleMetadata "instance/name"
 
-$BrokerMachine = New-BrokerMachine -CatalogUid $BrokerCatalog.Uid -MachineName "$Domain\$Env:ComputerName" -HostedMachineId "$project`:$region`:$name" -HypervisorConnectionUid $HypervisorConnection.Uid
+$BrokerMachine = New-BrokerMachine -CatalogUid $BrokerCatalog.Uid -MachineName (Get-ADComputer "$Env:COMPUTERNAME").SID.Value -HostedMachineId "$project`:$region`:$name" -HypervisorConnectionUid $HypervisorConnection.Uid
 
 }
 Else {

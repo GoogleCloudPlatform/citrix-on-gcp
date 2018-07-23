@@ -321,6 +321,17 @@ Write-Host "Removing resource location..."
 Remove-ResourceLocation $id $CtxCustomerId $Token
 
 
+$HostingServiceAccount = Get-GoogleMetadata "instance/attributes/hosting-connection-service-account"
+If ($HostingServiceAccount) {
+
+	Write-Host "Removing hosting connection..."
+
+	Remove-Item -Path @("XDHyp:\Connections\Google-Cloud-$Suffix")
+	Remove-BrokerHypervisorConnection -Name "Google-Cloud-$Suffix"
+
+}
+
+
 Write-Host "Signaling completion..."
 # flag completion of bootstrap requires beta gcloud component
 $name = Get-GoogleMetadata "instance/name"
