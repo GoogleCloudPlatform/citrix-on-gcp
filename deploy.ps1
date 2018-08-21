@@ -42,7 +42,9 @@ Param(
 	[Parameter()][Boolean]
 	$PowerManaged = $True,
 	[Parameter()][Boolean]
-	$UseMinimalResources = $False
+	$UseMinimalResources = $False,   # designed for free tier
+	[Parameter()][Boolean]
+	$UseSSD = ! $UseMinimalResources # default free tier ssd quota isn't sufficient
 )
 
 Function Unwrap-SecureString() {
@@ -253,6 +255,7 @@ resources:
     vda-download-url: $VdaDownloadUrl
     workers: $Workers
     minimal: $UseMinimalResources
+    ssd: $UseSSD
 
 "@
 If ($PowerManaged) {

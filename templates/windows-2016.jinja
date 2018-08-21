@@ -40,7 +40,11 @@ resources:
       autoDelete: true
       initializeParams:
         diskSizeGb: 50
+{% if properties['ssd'] %}
         diskType: projects/{{ env['project'] }}/zones/{{ properties['zone'] }}/diskTypes/pd-ssd
+{% else %}
+        diskType: projects/{{ env['project'] }}/zones/{{ properties['zone'] }}/diskTypes/pd-standard
+{% endif %}
         sourceImage: projects/windows-cloud/global/images/family/windows-2016
     networkInterfaces:
     - subnetwork: {{ properties['subnetwork'] }}
