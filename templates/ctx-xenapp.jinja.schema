@@ -109,4 +109,8 @@ properties:
   vda-download-url:
     type: string
     description: URL from which to doanload VDA installer
+  ssd:
+    type: boolean
+    default: False
+    description: Whether or not to use SSD persistent disks for Windows instances
 

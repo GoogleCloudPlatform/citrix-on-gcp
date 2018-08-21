@@ -32,6 +32,7 @@ resources:
     machine-type: n1-standard-2
     subnetwork: {{ properties['subnetwork'] }}
     service-account: {{ properties['service-account'] }}
+    ssd: {{ properties['ssd'] }}
     metadata:
 {% if properties['minimal'] %}
     - key: remove-address
@@ -78,6 +79,7 @@ resources:
     machine-type: n1-standard-2
     subnetwork: {{ properties['subnetwork'] }}
     service-account: {{ properties['service-account'] }}
+    ssd: {{ properties['ssd'] }}
     metadata:
 {% if properties['minimal'] %}
     - key: remove-address

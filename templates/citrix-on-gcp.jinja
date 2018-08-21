@@ -150,6 +150,7 @@ resources:
     gcs-prefix: {{ properties['gcs-prefix'] }}
     runtime-config: $(ref.config-{{ properties['suffix'] }}.name)
     minimal: {{ properties['minimal'] }}
+    ssd: {{ properties['ssd'] }}
 - name: bastion
   type: bastion.jinja
   properties:
@@ -171,6 +172,7 @@ resources:
     - $(ref.ctx-dc-2-{{ properties['suffix'] }}.networkInterfaces[0].networkIP)
 {% endif %}
     minimal: {{ properties['minimal'] }}
+    ssd: {{ properties['ssd'] }}
 - name: ctx-cc
   type: ctx-cloud-connector.jinja
   properties:
@@ -193,6 +195,7 @@ resources:
     - $(ref.ctx-dc-2-{{ properties['suffix'] }}.networkInterfaces[0].networkIP)
 {% endif %}
     minimal: {{ properties['minimal'] }}
+    ssd: {{ properties['ssd'] }}
 - name: ctx-xenapp
   type: ctx-xenapp.jinja
   properties:
@@ -225,4 +228,5 @@ resources:
     - ctx-cc-2-{{ properties['suffix'] }}.{{ properties['domain-name'] }}
 {% endif %}
     minimal: {{ properties['minimal'] }}
+    ssd: {{ properties['ssd'] }}
 

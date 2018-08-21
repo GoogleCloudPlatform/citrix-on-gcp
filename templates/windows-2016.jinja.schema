@@ -70,4 +70,8 @@ properties:
         value:
           type: string
     uniqueItems: true
+  ssd:
+    type: boolean
+    default: False
+    description: Whether or not to use SSD persistent disks
 
