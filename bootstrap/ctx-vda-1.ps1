@@ -148,8 +148,8 @@ Write-Host "Configuring startup metadata..."
 # remove startup script from metadata to prevent rerun on reboot
 $name = Get-GoogleMetadata "instance/name"
 $zone = Get-GoogleMetadata "instance/zone"
-$GcsPrefix = Get-GoogleMetadata "instance/attributes/gcs-prefix"
-gcloud compute instances add-metadata "$name" --zone $zone --metadata "windows-startup-script-url=$GcsPrefix/bootstrap/ctx-vda-2.ps1"
+$BootstrapFrom = Get-GoogleMetadata "instance/attributes/bootstrap-from"
+gcloud compute instances add-metadata "$name" --zone $zone --metadata "windows-startup-script-url=$BootstrapFrom/ctx-vda-2.ps1"
 
 
 Write-Host "Restarting..."

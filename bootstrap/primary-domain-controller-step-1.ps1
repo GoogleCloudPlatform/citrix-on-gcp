@@ -160,9 +160,10 @@ Install-ADDSForest @Params
 
 
 Write-Host "Configuring startup metadata..."
-$name = Invoke-RestMethod -Headers @{"Metadata-Flavor" = "Google"} -Uri http://169.254.169.254/computeMetadata/v1/instance/name
-$zone = Invoke-RestMethod -Headers @{"Metadata-Flavor" = "Google"} -Uri http://169.254.169.254/computeMetadata/v1/instance/zone
-gcloud compute instances add-metadata "$name" --zone $zone --metadata windows-startup-script-url=$GcsPrefix/bootstrap/primary-domain-controller-step-2.ps1
+$name = Get-GoogleMetadata "instance/name"
+$zone = Get-GoogleMetadata "instance/zone"
+$BootstrapFrom = Get-GoogleMetadata "instance/attributes/bootstrap-from"
+gcloud compute instances add-metadata "$name" --zone $zone --metadata windows-startup-script-url=$BootstrapFrom/primary-domain-controller-step-2.ps1
 
 
 Write-Host "Restarting computer..."

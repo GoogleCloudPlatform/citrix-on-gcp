@@ -64,9 +64,9 @@ resources:
     - key: bootstrap-from
       value: {{ properties['bootstrap-from'] }}
     - key: windows-startup-script-url
-      value: {{ properties['gcs-prefix'] }}/bootstrap/domain-member.ps1
+      value: {{ properties['bootstrap-from'] }}/domain-member.ps1
     - key: post-join-script-url
-      value: {{ properties['gcs-prefix'] }}/bootstrap/ctx-setup-apps.ps1
+      value: {{ properties['bootstrap-from'] }}/ctx-setup-apps.ps1
 {% else %}
 {% endif %}
     - key: domain-controller-addresses

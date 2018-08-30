@@ -195,9 +195,10 @@ While ("Error" -eq (Install-ADDSDomainController @Params).Status) {
 
 
 Write-Host "Configuring startup metadata..."
-$name = Invoke-RestMethod -Headers @{"Metadata-Flavor" = "Google"} -Uri http://169.254.169.254/computeMetadata/v1/instance/name
-$zone = Invoke-RestMethod -Headers @{"Metadata-Flavor" = "Google"} -Uri http://169.254.169.254/computeMetadata/v1/instance/zone
-gcloud compute instances add-metadata "$name" --zone $zone --metadata windows-startup-script-url=$GcsPrefix/bootstrap/secondary-domain-controller-step-2.ps1
+$name = Get-GoogleMetadata "instance/name"
+$zone = Get-GoogleMetadata "instance/zone"
+$BootstrapFrom = Get-GoogleMetadata "instance/attributes/bootstrap-from"
+gcloud compute instances add-metadata "$name" --zone $zone --metadata windows-startup-script-url=$BootstrapFrom/secondary-domain-controller-step-2.ps1
 
 
 Write-Output "Restarting computer..."

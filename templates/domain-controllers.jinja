@@ -55,7 +55,7 @@ resources:
     - key: bootstrap-from
       value: {{ properties['bootstrap-from'] }}
     - key: windows-startup-script-url
-      value: {{ properties['gcs-prefix'] }}/bootstrap/primary-domain-controller-step-1.ps1
+      value: {{ properties['bootstrap-from'] }}/primary-domain-controller-step-1.ps1
 {% else %}
 {% endif %}
     tags:
@@ -109,7 +109,7 @@ resources:
     - key: bootstrap-from
       value: {{ properties['bootstrap-from'] }}
     - key: windows-startup-script-url
-      value: {{ properties['gcs-prefix'] }}/bootstrap/secondary-domain-controller-step-1.ps1
+      value: {{ properties['bootstrap-from'] }}/secondary-domain-controller-step-1.ps1
 {% else %}
 {% endif %}
     - key: domain-controller-address
