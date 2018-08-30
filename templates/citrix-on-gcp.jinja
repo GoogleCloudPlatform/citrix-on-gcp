@@ -43,7 +43,7 @@ resources:
   type: gcp-types/cloudkms-v1:projects.locations.keyRings
   properties:
     parent: projects/{{ env["project"] }}/locations/global
-    keyRingId: {{ properties["suffix"] }}
+    keyRingId: {{ properties['keyring'] }}
   metadata:
     dependsOn:
     - api-cloudkms
@@ -56,11 +56,11 @@ resources:
   accessControl:
     gcpIamPolicy:
       bindings:
-      - role: roles/cloudkms.cryptoKeyDecryptor
+      - role: roles/cloudkms.cryptoKeyDecrypter
         members:
         - "{{ properties["admin"] }}"
         - "serviceAccount:$(ref.admin-service-account.email)"
-      - role: roles/cloudkms.cryptoKeyEncryptor
+      - role: roles/cloudkms.cryptoKeyEncrypter
         members:
         - "{{ properties["admin"] }}"
         - "serviceAccount:$(ref.admin-service-account.email)"
@@ -117,7 +117,7 @@ resources:
   properties:
     suffix: {{ properties['suffix'] }}
     region: {{ properties['region'] }}
-    primary-zone: {{ properties['zone'] }}
+    zone: {{ properties['zone'] }}
     secondary-zone: {{ properties['secondary-zone'] }}
     subnets: {{ properties['subnets'] }}
 - name: domain-controllers

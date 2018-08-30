@@ -34,15 +34,12 @@ properties:
     description: Disambiguation suffix for resources.
   region:
     type: string
-    default: us-central1
     description: Region in which to deploy regional resources, e.g. us-central1.
   zone:
     type: string
-    default: us-central1-a
     description: Zone in which to deploy primary zonal resources, e.g. us-central1-a.
   secondary-zone:
     type: string
-    default: us-central1-b
     description: Zone in which to deploy secondary zonal resources for fault-tolerance, e.g. us-central1-b.
   subnets:
     type: array

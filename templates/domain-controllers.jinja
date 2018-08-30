@@ -51,7 +51,9 @@ resources:
       value: {{ properties['gcs-prefix'] }}
     - key: runtime-config
       value: {{ properties['runtime-config'] }}
-{% if properties['bootstrap-from'].startswith('gs://') %}
+{% if properties['bootstrap-from'].startswith('gs://') or
+         properties['bootstrap-from'].startwith('https://') or
+         properties['bootstrap-from'].startwith('http://')  %}
     - key: bootstrap-from
       value: {{ properties['bootstrap-from'] }}
     - key: windows-startup-script-url

@@ -46,23 +46,20 @@ properties:
     description: Disambiguation suffix for resources.
   region:
     type: string
-    default: us-central1
     description: Region in which to deploy regional resources, e.g. us-central1.
   zone:
     type: string
-    default: us-central1-a
     description: Zone in which to deploy primary zonal resources, e.g. us-central1-a.
   secondary-zone:
     type: string
-    default: us-central1-b
     description: Zone in which to deploy secondary zonal resources for fault-tolerance, e.g. us-central1-b.
   domain-name:
     type: string
-    default: foo.bar
+    default: example.com
     description: Fully-qualified name of domain.
   netbios-name:
     type: string
-    default: FOO
+    default: EXAMPLE
     description: NetBIOS name of domain.
   subnets:
     type: array
@@ -123,4 +120,8 @@ properties:
   bootstrap-from:
     type: string
     description: Location of bootstrap artifacts. Can be a GCS prefix, e.g. gs://bucket/path. Or, an image path, e.g. TBD.
+  keyring:
+    type: string
+    description: Name of keyring for secret management.
+    default: citrix-on-gcp
 
