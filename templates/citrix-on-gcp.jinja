@@ -58,12 +58,12 @@ resources:
       bindings:
       - role: roles/cloudkms.cryptoKeyDecryptor
         members:
-        - {{ properties["admin"] }}
-        - serviceAccount:$(ref.admin-service-account.email)
+        - "{{ properties["admin"] }}"
+        - "serviceAccount:$(ref.admin-service-account.email)"
       - role: roles/cloudkms.cryptoKeyEncryptor
         members:
-        - {{ properties["admin"] }}
-        - serviceAccount:$(ref.admin-service-account.email)
+        - "{{ properties["admin"] }}"
+        - "serviceAccount:$(ref.admin-service-account.email)"
 - name: admin-service-account
   type: gcp-types/iam-v1:projects.serviceAccounts
   properties:
@@ -82,7 +82,7 @@ resources:
       bindings:
       - role: roles/iam.serviceAccountKeyAdmin
         members:
-        - serviceAccount: $(ref.admin-service-account.email)
+        - "serviceAccount:$(ref.admin-service-account.email)"
   metadata:
     dependsOn:
     - api-iam
@@ -102,14 +102,13 @@ resources:
       add:
       - role: roles/editor
         members:
-        - serviceAccount:$(ref.admin-service-account.email)
+        - "serviceAccount:$(ref.admin-service-account.email)"
       - role: roles/viewer
         members:
-        - serviceAccount:$(ref.citrix-service-account.email)
+        - "serviceAccount:$(ref.citrix-service-account.email)"
       - role: roles/compute.instanceAdmin
         members:
-        - serviceAccount:$(ref.citrix-service-account.email)
-        - user:user@example.com
+        - "serviceAccount:$(ref.citrix-service-account.email)"
   metadata:
     dependsOn:
     - api-cloudresourcemanager
