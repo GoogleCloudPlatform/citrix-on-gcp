@@ -15,127 +15,112 @@
 #
 
 resources:
-- name: citrix-{{ properties['suffix'] }}
-  type: compute.v1.network
+- name: apis
+  type: apis.jinja
   properties:
-    autoCreateSubnetworks: false
-    description: Citrix XenApp
-{% for subnet in properties['subnets'] %}
-- name: citrix-{{ subnet['region'] }}-{{ properties['suffix'] }}
-  type: compute.v1.subnetwork
-  properties:
-    network: $(ref.citrix-{{ properties['suffix'] }}.selfLink)
-    ipCidrRange: {{ subnet['cidr'] }}
-    region: {{ subnet['region'] }}
-    privateIpGoogleAccess: true
-{% endfor %}
-- name: citrix-allow-rdp-external-{{ properties['suffix'] }}
-  type: compute.v1.firewall
-  properties:
-    description: External RDP remote management for bastion virtual machines
-    network: $(ref.citrix-{{ properties['suffix'] }}.selfLink)
-    allowed:
-    - IPProtocol: tcp
-      ports:
-      - '3389'
-    direction: INGRESS
-    priority: 65534
-    sourceRanges:
-    - 0.0.0.0/0
-    targetTags:
-    - bastion
-#- name: citrix-allow-rdp-internal-{{ properties['suffix'] }}
-#  type: compute.v1.firewall
-#  properties:
-#    description: Internal RDP remote management for Windows infrastructure and Citrix virtual machines
-#    network: $(ref.citrix-{{ properties['suffix'] }}.selfLink)
-#    allowed:
-#    - IPProtocol: tcp
-#      ports:
-#      - '3389'
-#    direction: INGRESS
-#    priority: 65534
-#    sourceTags:
-#    - bastion
-#    targetTags:
-#    - mgmt
-#    - ctx-infra
-#    - ctx-xa
-#- name: citrix-allow-icmp-{{ properties['suffix'] }}
-#  type: compute.v1.firewall
-#  properties:
-#    description: Internal RDP remote management for Windows infrastructure and Citrix virtual machines
-#    network: $(ref.citrix-{{ properties['suffix'] }}.selfLink)
-#    allowed:
-#    - IPProtocol: icmp
-#    direction: INGRESS
-#    priority: 65534
-#    sourceRanges:
-#    - 10.128.0.0/9
-- name: citrix-allow-internal-{{ properties['suffix'] }}
-  type: compute.v1.firewall
-  properties:
-    description: Allow internal traffic between instances
-    network: $(ref.citrix-{{ properties['suffix'] }}.selfLink)
-    allowed:
-    - IPProtocol: icmp
-    - IPProtocol: tcp
-      ports:
-      - '0-65535'
-    - IPProtocol: udp
-      ports:
-      - '0-65535'
-    direction: INGRESS
-    priority: 65534
-    sourceRanges:
-    - 10.128.0.0/9
-{% if not properties['minimal'] %}
-- name: natfirewall-health-{{ properties['suffix'] }}
-  type: compute.v1.firewall
-  properties:
-    description: Allow http to nat instance health check server
-    network: $(ref.citrix-{{ properties['suffix'] }}.selfLink)
-    allowed:
-    - IPProtocol: tcp
-      ports:
-      - 80
-    direction: INGRESS
-    priority: 65534
-    sourceRanges: # https://cloud.google.com/compute/docs/load-balancing/health-checks#https_ssl_proxy_tcp_proxy_and_internal_load_balancing
-    - 130.211.0.0/22
-    - 35.191.0.0/16
-    targetTags:
-    - natgw
-- name: nat-health-check-{{ properties['suffix'] }}
-  type: compute.v1.httpHealthCheck
-  properties:
-    checkIntervalSec: 30
-    healthyThreshold: 1
-    unhealthyThreshold: 5
-    requestPath: /health-check
-- name: nat-1-{{ properties['suffix'] }}
-  type: health-checked-nat-instance-group.jinja
-  properties:
-    suffix: 1-{{ properties['suffix'] }}
-    network: $(ref.citrix-{{ properties['suffix'] }}.selfLink)
-    subnetwork: $(ref.citrix-{{ properties['region'] }}-{{ properties['suffix'] }}.selfLink)
-    region: {{ properties['region'] }}
-    zone: {{ properties['zone'] }}
-    health-check: $(ref.nat-health-check-{{ properties['suffix'] }}.selfLink)
-- name: nat-2-{{ properties['suffix'] }}
-  type: health-checked-nat-instance-group.jinja
-  properties:
-    suffix: 2-{{ properties['suffix'] }}
-    network: $(ref.citrix-{{ properties['suffix'] }}.selfLink)
-    subnetwork: $(ref.citrix-{{ properties['region'] }}-{{ properties['suffix'] }}.selfLink)
-    region: {{ properties['region'] }}
-    zone: {{ properties['secondary-zone'] }}
-    health-check: $(ref.nat-health-check-{{ properties['suffix'] }}.selfLink)
-{% endif %}
-- name: config-{{ properties['suffix'] }}
-  type: runtimeconfig.v1beta1.config
+    enabled:
+    - compute
+    - cloudkms
+    - runtimeconfig
+    - cloudresourcemanager
+    - iam
+- name: config
+  type: gcp-types/runtimeconfig-v1beta1:projects.configs
   properties:
     config: config-{{ properties['suffix'] }}
+  metadata:
+    dependsOn:
+    - api-runtimeconfig
+- name: bucket
+  type: gcp-types/storage-v1:buckets
+  properties:
+    name: citrix-on-gcp-{{ properties['suffix'] }}-{{ env['project_number'] }}
+#    predefinedAcl: projectPrivate
+#    projection: full
+    location: {{ properties['region'] }}
+#    storageClass: STANDARD
+- name: keyRing
+  type: gcp-types/cloudkms-v1:projects.locations.keyRings
+  properties:
+    parent: projects/{{ env["project"] }}/locations/global
+    keyRingId: {{ properties["suffix"] }}
+  metadata:
+    dependsOn:
+    - api-cloudkms
+- name: cryptoKey
+  type: gcp-types/cloudkms-v1:projects.locations.keyRings.cryptoKeys
+  properties:
+    parent: $(ref.keyRing.name)
+    cryptoKeyId: domain-secrets-{{ properties['suffix'] }}
+    purpose: ENCRYPT_DECRYPT
+  accessControl:
+    gcpIamPolicy:
+      bindings:
+      - role: roles/cloudkms.cryptoKeyDecryptor
+        members:
+        - {{ properties["admin"] }}
+        - serviceAccount:$(ref.admin-service-account.email)
+      - role: roles/cloudkms.cryptoKeyEncryptor
+        members:
+        - {{ properties["admin"] }}
+        - serviceAccount:$(ref.admin-service-account.email)
+- name: admin-service-account
+  type: gcp-types/iam-v1:projects.serviceAccounts
+  properties:
+    accountId: admin-{{ properties['suffix'] }}
+    displayName: 'Admin service account for bootstrapping domain-joined servers with elevated permissions'
+  metadata:
+    dependsOn:
+    - api-iam
+- name: citrix-service-account
+  type: gcp-types/iam-v1:projects.serviceAccounts
+  properties:
+    accountId: citrix-{{ properties['suffix'] }}
+    displayName: 'Service account for Citrix machine catalog for GCP'
+  accessControl:
+    gcpIamPolicy:
+      bindings:
+      - role: roles/iam.serviceAccountKeyAdmin
+        members:
+        - serviceAccount: $(ref.admin-service-account.email)
+  metadata:
+    dependsOn:
+    - api-iam
+- name: get-iam-policy
+  action: gcp-types/cloudresourcemanager-v1:cloudresourcemanager.projects.getIamPolicy
+  properties:
+    resource: {{ env['project'] }}
+  metadata:
+    dependsOn:
+    - api-cloudresourcemanager
+- name: add-iam-policy
+  action: gcp-types/cloudresourcemanager-v1:cloudresourcemanager.projects.setIamPolicy
+  properties:
+    resource: {{ env['project'] }}
+    policy: $(ref.get-iam-policy)
+    gcpIamPolicyPatch:
+      add:
+      - role: roles/editor
+        members:
+        - serviceAccount:$(ref.admin-service-account.email)
+      - role: roles/viewer
+        members:
+        - serviceAccount:$(ref.citrix-service-account.email)
+      - role: roles/compute.instanceAdmin
+        members:
+        - serviceAccount:$(ref.citrix-service-account.email)
+        - user:user@example.com
+  metadata:
+    dependsOn:
+    - api-cloudresourcemanager
+- name: network
+  type: network.jinja
+  properties:
+    suffix: {{ properties['suffix'] }}
+    region: {{ properties['region'] }}
+    primary-zone: {{ properties['zone'] }}
+    secondary-zone: {{ properties['secondary-zone'] }}
+    subnets: {{ properties['subnets'] }}
 - name: domain-controllers
   type: domain-controllers.jinja
   properties:
@@ -143,29 +128,28 @@ resources:
     primary-zone: {{ properties['zone'] }}
     secondary-zone: {{ properties['secondary-zone'] }}
     subnetwork: $(ref.citrix-{{ properties['region'] }}-{{ properties['suffix'] }}.selfLink)
-    service-account: {{ properties['service-account'] }}
+    service-account: $(ref.admin-service-account.email)
     domain-name: {{ properties['domain-name'] }}
     netbios-name: {{ properties['netbios-name'] }}
-    kms-key: {{ properties['kms-key'] }}
-    gcs-prefix: {{ properties['gcs-prefix'] }}
-    runtime-config: $(ref.config-{{ properties['suffix'] }}.name)
+    kms-key: $(ref.cryptoKey.name)
+    gcs-prefix: gs://$(ref.bucket.name)/
+    runtime-config: $(ref.config.name)
     minimal: {{ properties['minimal'] }}
     ssd: {{ properties['ssd'] }}
+    bootstrap-from: {{ properties['bootstrap-from'] }}
 - name: bastion
   type: bastion.jinja
   properties:
     suffix: {{ properties['suffix'] }}
     zone: {{ properties['zone'] }}
     subnetwork: $(ref.citrix-{{ properties['region'] }}-{{ properties['suffix'] }}.selfLink)
-    service-account: {{ properties['service-account'] }}
-{% if properties['hosting-connection-service-account'] %}
-    hosting-connection-service-account: {{ properties['hosting-connection-service-account'] }}
-{% endif %}
+    service-account: $(ref.admin-service-account.email)
+    hosting-connection-service-account: $(ref.citrix-service-account.email)
     domain-name: {{ properties['domain-name'] }}
     netbios-name: {{ properties['netbios-name'] }}
-    kms-key: {{ properties['kms-key'] }}
-    gcs-prefix: {{ properties['gcs-prefix'] }}
-    runtime-config: $(ref.config-{{ properties['suffix'] }}.name)
+    kms-key: $(ref.cryptoKey.name)
+    gcs-prefix: gs://$(ref.bucket.name)/
+    runtime-config: $(ref.config.name)
     domain-controller-addresses:
     - $(ref.ctx-dc-1-{{ properties['suffix'] }}.networkInterfaces[0].networkIP)
 {% if not properties['minimal'] %}
@@ -173,6 +157,7 @@ resources:
 {% endif %}
     minimal: {{ properties['minimal'] }}
     ssd: {{ properties['ssd'] }}
+    bootstrap-from: {{ properties['bootstrap-from'] }}
 - name: ctx-cc
   type: ctx-cloud-connector.jinja
   properties:
@@ -183,12 +168,12 @@ resources:
     - {{ properties['secondary-zone'] }}
 {% endif %}
     subnetwork: $(ref.citrix-{{ properties['region'] }}-{{ properties['suffix'] }}.selfLink)
-    service-account: {{ properties['service-account'] }}
+    service-account: $(ref.admin-service-account.email)
     domain-name: {{ properties['domain-name'] }}
     netbios-name: {{ properties['netbios-name'] }}
-    kms-key: {{ properties['kms-key'] }}
-    gcs-prefix: {{ properties['gcs-prefix'] }}
-    runtime-config: $(ref.config-{{ properties['suffix'] }}.name)
+    kms-key: $(ref.cryptoKey.name)
+    gcs-prefix: gs://$(ref.bucket.name)/
+    runtime-config: $(ref.config.name)
     domain-controller-addresses:
     - $(ref.ctx-dc-1-{{ properties['suffix'] }}.networkInterfaces[0].networkIP)
 {% if not properties['minimal'] %}
@@ -196,6 +181,7 @@ resources:
 {% endif %}
     minimal: {{ properties['minimal'] }}
     ssd: {{ properties['ssd'] }}
+    bootstrap-from: {{ properties['bootstrap-from'] }}
 - name: ctx-xenapp
   type: ctx-xenapp.jinja
   properties:
@@ -205,12 +191,12 @@ resources:
     - {{ loop.cycle(properties['zone'], properties['secondary-zone']) }}
     {% endfor %}
     subnetwork: $(ref.citrix-{{ properties['region'] }}-{{ properties['suffix'] }}.selfLink)
-    service-account: {{ properties['service-account'] }}
+    service-account: $(ref.admin-service-account.email)
     domain-name: {{ properties['domain-name'] }}
     netbios-name: {{ properties['netbios-name'] }}
-    kms-key: {{ properties['kms-key'] }}
-    gcs-prefix: {{ properties['gcs-prefix'] }}
-    runtime-config: $(ref.config-{{ properties['suffix'] }}.name)
+    kms-key: $(ref.cryptoKey.name)
+    gcs-prefix: gs://$(ref.bucket.name)/
+    runtime-config: $(ref.config.name)
     domain-controller-addresses:
     - $(ref.ctx-dc-1-{{ properties['suffix'] }}.networkInterfaces[0].networkIP)
 {% if not properties['minimal'] %}
@@ -229,4 +215,5 @@ resources:
 {% endif %}
     minimal: {{ properties['minimal'] }}
     ssd: {{ properties['ssd'] }}
+    bootstrap-from: {{ properties['bootstrap-from'] }}
 

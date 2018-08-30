@@ -51,8 +51,13 @@ resources:
       value: {{ properties['gcs-prefix'] }}
     - key: runtime-config
       value: {{ properties['runtime-config'] }}
+{% if properties['bootstrap-from'].startswith('gs://') %}
+    - key: bootstrap-from
+      value: {{ properties['bootstrap-from'] }}
     - key: windows-startup-script-url
       value: {{ properties['gcs-prefix'] }}/bootstrap/primary-domain-controller-step-1.ps1
+{% else %}
+{% endif %}
     tags:
     - mgmt
 {% if properties['dependencies']|length > 0 %}
@@ -100,8 +105,13 @@ resources:
       value: {{ properties['runtime-config'] }}
     - key: wait-on
       value: waiter-ctx-dc-1-{{ properties['suffix'] }}
+{% if properties['bootstrap-from'].startswith('gs://') %}
+    - key: bootstrap-from
+      value: {{ properties['bootstrap-from'] }}
     - key: windows-startup-script-url
       value: {{ properties['gcs-prefix'] }}/bootstrap/secondary-domain-controller-step-1.ps1
+{% else %}
+{% endif %}
     - key: domain-controller-address
       value: $(ref.ctx-dc-1-{{ properties['suffix'] }}.networkInterfaces[0].networkIP)
     tags:

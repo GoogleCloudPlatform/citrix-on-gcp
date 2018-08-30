@@ -65,14 +65,15 @@ resources:
     - key: wait-on
       value: waiter-ctx-dc-2-{{ properties['suffix'] }}
 {% endif %}
+{% if properties['bootstrap-from'].startswith('gs://') %}
+    - key: bootstrap-from
+      value: {{ properties['bootstrap-from'] }}
     - key: windows-startup-script-url
       value: {{ properties['gcs-prefix'] }}/bootstrap/domain-member.ps1
     - key: post-join-script-url
       value: {{ properties['gcs-prefix'] }}/bootstrap/ctx-cloud-connector.ps1
-#    - key: post-join-script-url
-#      value: {{ properties['gcs-prefix'] }}/bootstrap/run-as-ctx-domain-user.ps1
-#    - key: ctx-user-script-url
-#      value: {{ properties['gcs-prefix'] }}/bootstrap/ctx-cloud-connector.ps1
+{% else %}
+{% endif %}
     - key: domain-controller-addresses
       value: {% for ip in properties['domain-controller-addresses'] %}{{ ip }}{{ "," if not loop.last }}{% endfor %}
     tags:

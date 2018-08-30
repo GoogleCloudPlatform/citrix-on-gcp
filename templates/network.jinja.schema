@@ -15,32 +15,20 @@
 #
 
 info:
-  title: Citrix XenApp
-  description: Minimal Citrix XenApp deployment for Google Cloud Platform.
+  title: network.jinja
+  description: Network resources for Citrix deployment.
 
 imports:
-- path: apis.jinja
-- path: network.jinja
-- path: domain-controllers.jinja
-- path: bastion.jinja
-- path: ctx-cloud-connector.jinja
-- path: ctx-xenapp.jinja
+- path: health-checked-nat-instance-group.jinja
 
 required:
-- admin
 - suffix
 - region
 - zone
 - secondary-zone
-- domain-name
-- netbios-name
-- vda-download-url
-- bootstrap-from
+- subnets
 
 properties:
-  admin:
-    type: string
-    description: Admin principal in form of user:email, group:email, serviceAccount:email, etc.
   suffix:
     type: string
     description: Disambiguation suffix for resources.
@@ -56,14 +44,6 @@ properties:
     type: string
     default: us-central1-b
     description: Zone in which to deploy secondary zonal resources for fault-tolerance, e.g. us-central1-b.
-  domain-name:
-    type: string
-    default: foo.bar
-    description: Fully-qualified name of domain.
-  netbios-name:
-    type: string
-    default: FOO
-    description: NetBIOS name of domain.
   subnets:
     type: array
     description: Region and CIDR properties for subnets.
@@ -105,22 +85,4 @@ properties:
       cidr: 10.158.0.0/20
     - region: asia-south1
       cidr: 10.160.0.0/20
-  vda-download-url:
-    type: string
-    description: URL from which to doanload VDA installer
-  workers:
-    type: integer
-    default: 1
-    description: Number of XenApp workers.
-  minimal:
-    type: boolean
-    default: False
-    description: Whether or not to minimize resources (e.g. for trial account) instead of deploying with redundancy
-  ssd:
-    type: boolean
-    default: False
-    description: Whether or not to use SSD persistent disks for Windows instances
-  bootstrap-from:
-    type: string
-    description: Location of bootstrap artifacts. Can be a GCS prefix, e.g. gs://bucket/path. Or, an image path, e.g. TBD.
 

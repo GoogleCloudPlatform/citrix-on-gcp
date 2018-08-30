@@ -36,6 +36,7 @@ required:
 - ctx-machine-catalog
 - ctx-delivery-group
 - ctx-cloud-controllers
+- bootstrap-from
 
 properties:
   suffix:
@@ -113,4 +114,7 @@ properties:
     type: boolean
     default: False
     description: Whether or not to use SSD persistent disks for Windows instances
+  bootstrap-from:
+    type: string
+    description: Location of bootstrap artifacts. Can be a GCS prefix, e.g. gs://bucket/path. Or, an image path, e.g. TBD.
 

@@ -32,6 +32,7 @@ required:
 - gcs-prefix
 - runtime-config
 - domain-controller-addresses
+- bootstrap-from
 
 properties:
   suffix:
@@ -89,3 +90,7 @@ properties:
     type: boolean
     default: False
     description: Whether or not to use SSD persistent disks for Windows instances
+  bootstrap-from:
+    type: string
+    description: Location of bootstrap artifacts. Can be a GCS prefix, e.g. gs://bucket/path. Or, an image path, e.g. TBD.
+
