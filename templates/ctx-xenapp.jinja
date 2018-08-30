@@ -25,6 +25,9 @@ resources:
     success:
       cardinality:
         path: bootstrap/ctx-xa-{{ loop.index }}-{{ properties['suffix'] }}/success
+  metadata:
+    dependsOn:
+    - ctx-xa-{{ loop.index }}-{{ properties['suffix'] }}
 - name: ctx-xa-{{ loop.index }}-{{ properties['suffix'] }}
   type: windows-2016.jinja
   properties:

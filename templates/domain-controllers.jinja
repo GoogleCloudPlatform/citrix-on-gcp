@@ -24,6 +24,9 @@ resources:
     success:
       cardinality:
         path: bootstrap/ctx-dc-1-{{ properties['suffix'] }}/success
+  metadata:
+    dependsOn:
+    - ctx-dc-1-{{ properties['suffix'] }}
 - name: ctx-dc-1-{{ properties['suffix'] }}
   type: windows-2016.jinja
   properties:
@@ -78,6 +81,9 @@ resources:
     success:
       cardinality:
         path: bootstrap/ctx-dc-2-{{ properties['suffix'] }}/success
+  metadata:
+    dependsOn:
+    - ctx-dc-2-{{ properties['suffix'] }}
 - name: ctx-dc-2-{{ properties['suffix'] }}
   type: windows-2016.jinja
   properties:
