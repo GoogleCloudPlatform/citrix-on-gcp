@@ -153,7 +153,7 @@ $DomainAdminCredentials = New-Object `
 
 Write-Output "Configuring network..."
 # reconfigure dhcp address as static to avoid warnings during dcpromo
-$IpAddr = Get-NetIPAddress -InterfaceAlias Ethernet
+$IpAddr = Get-NetIPAddress -InterfaceAlias Ethernet -AddressFamily IPv4
 $IpConf = Get-NetIPConfiguration -InterfaceAlias Ethernet
 Set-NetIPInterface `
 	-InterfaceAlias Ethernet `
