@@ -46,12 +46,15 @@ properties:
     description: Disambiguation suffix for resources.
   region:
     type: string
+    default: us-east4
     description: Region in which to deploy regional resources, e.g. us-central1.
   zone:
     type: string
+    default: us-east4-a
     description: Zone in which to deploy primary zonal resources, e.g. us-central1-a.
   secondary-zone:
     type: string
+    default: us-east4-b
     description: Zone in which to deploy secondary zonal resources for fault-tolerance, e.g. us-central1-b.
   domain-name:
     type: string
@@ -76,34 +79,11 @@ properties:
         cidr:
           type: string
     default:
-    - region: us-central1
-      cidr: 10.128.0.0/20
-    - region: europe-west1
-      cidr: 10.132.0.0/20
-    - region: us-west1
-      cidr: 10.138.0.0/20
-    - region: asia-east1
-      cidr: 10.140.0.0/20
-    - region: us-east1
-      cidr: 10.142.0.0/20
-    - region: asia-northeast1
-      cidr: 10.146.0.0/20
-    - region: asia-southeast1
-      cidr: 10.148.0.0/20
     - region: us-east4
-      cidr: 10.150.0.0/20
-    - region: australia-southeast1
-      cidr: 10.152.0.0/20
-    - region: europe-west2
-      cidr: 10.154.0.0/20
-    - region: europe-west3
-      cidr: 10.156.0.0/20
-    - region: southamerica-east1
-      cidr: 10.158.0.0/20
-    - region: asia-south1
-      cidr: 10.160.0.0/20
+      cidr: 10.0.0.0/16
   vda-download-url:
     type: string
+    default: https://storage.googleapis.com/citrix-on-gcp-demo/vda/VDAServerSetup_7.17.exe  
     description: URL from which to doanload VDA installer
   workers:
     type: integer
