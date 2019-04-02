@@ -71,14 +71,6 @@ Install-WindowsFeature -name AD-Domain-Services -IncludeManagementTools
 #	gcloud compute instances delete-access-config $name --zone $zone
 #}
 
-If ("true" -like (Get-GoogleMetadata "instance/attributes/remove-address")) {
-        Write-Host "Removing external address..."
-        $name = Get-GoogleMetadata "instance/name"
-        $zone = Get-GoogleMetadata "instance/zone"
-        gcloud compute instances delete-access-config $name --zone $zone
-}
-
-
 Write-Host "Configuring network..."
 # reconfigure dhcp address as static to avoid warnings during dcpromo
 $IpAddr = Get-NetIPAddress -InterfaceAlias Ethernet

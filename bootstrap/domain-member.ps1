@@ -138,14 +138,6 @@ Function Get-GoogleMetadata() {
 Write-Host "Bootstrap script started..."
 
 
-If ("true" -like (Get-GoogleMetadata "instance/attributes/remove-address")) {
-	Write-Host "Removing external address..."
-	$name = Get-GoogleMetadata "instance/name"
-	$zone = Get-GoogleMetadata "instance/zone"
-	gcloud compute instances delete-access-config $name --zone $zone
-}
-
-
 Write-Host "Adding AD powershell tools..."
 Add-WindowsFeature RSAT-AD-PowerShell
 

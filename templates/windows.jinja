@@ -45,12 +45,9 @@ resources:
 {% else %}
         diskType: projects/{{ env['project'] }}/zones/{{ properties['zone'] }}/diskTypes/pd-standard
 {% endif %}
-        sourceImage: projects/windows-cloud/global/images/family/windows-2016
+        sourceImage: projects/windows-cloud/global/images/family/windows-2019
     networkInterfaces:
     - subnetwork: {{ properties['subnetwork'] }}
-      accessConfigs:
-      - name: external-nat
-        type: ONE_TO_ONE_NAT
     serviceAccounts:
     - email: {{ properties['service-account'] }}
       scopes:

@@ -19,7 +19,7 @@ info:
   description: Deploys domain-joined instance with external IP
 
 imports:
-- path: windows-2016.jinja
+- path: windows.jinja
 
 required:
 - suffix

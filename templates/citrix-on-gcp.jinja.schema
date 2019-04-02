@@ -104,4 +104,9 @@ properties:
     type: string
     description: Name of keyring for secret management.
     default: citrix-on-gcp
+  lifecycle:
+    type: string
+    description: Lifecycle phase of deployment allowing for conditional rendering of template to facilitate two-stage delete (DELETE then ABANDON)
+    default: DEPLOY
+    enum: ["DEPLOY", "DELETE", "ABANDON"]
 

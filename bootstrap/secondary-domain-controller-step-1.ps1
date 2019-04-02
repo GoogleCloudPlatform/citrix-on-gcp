@@ -109,14 +109,6 @@ Function Get-GoogleMetadata() {
 Write-Output "Bootstrap script started..."
 
 
-If ("true" -like (Get-GoogleMetadata "instance/attributes/remove-address")) {
-        Write-Host "Removing external address..."
-        $name = Get-GoogleMetadata "instance/name"
-        $zone = Get-GoogleMetadata "instance/zone"
-        gcloud compute instances delete-access-config $name --zone $zone
-}
-
-
 Write-Output "Fetching metadata parameters..."
 $DomainControllerAddress = Invoke-RestMethod -Headers @{"Metadata-Flavor" = "Google"} -Uri http://169.254.169.254/computeMetadata/v1/instance/attributes/domain-controller-address
 $Domain = Invoke-RestMethod -Headers @{"Metadata-Flavor" = "Google"} -Uri http://169.254.169.254/computeMetadata/v1/instance/attributes/domain-name

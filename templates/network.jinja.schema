@@ -18,9 +18,6 @@ info:
   title: network.jinja
   description: Network resources for Citrix deployment.
 
-imports:
-- path: health-checked-nat-instance-group.jinja
-
 required:
 - suffix
 - region

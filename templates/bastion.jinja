@@ -40,7 +40,7 @@ resources:
     dependsOn:
     - ctx-mgmt-{{ properties['suffix'] }}
 - name: ctx-mgmt-{{ properties['suffix'] }}
-  type: windows-2016.jinja
+  type: windows.jinja
   properties:
     name: ctx-mgmt-{{ properties['suffix'] }}
     zone: {{ properties['zone'] }}

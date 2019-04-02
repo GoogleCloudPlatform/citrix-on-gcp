@@ -45,39 +45,9 @@ resources:
       ports:
       - '3389'
     direction: INGRESS
-    priority: 65534
+    priority: 1000
     sourceRanges:
-    - 0.0.0.0/0
-    targetTags:
-    - bastion
-#- name: citrix-allow-rdp-internal-{{ properties['suffix'] }}
-#  type: compute.v1.firewall
-#  properties:
-#    description: Internal RDP remote management for Windows infrastructure and Citrix virtual machines
-#    network: $(ref.citrix-{{ properties['suffix'] }}.selfLink)
-#    allowed:
-#    - IPProtocol: tcp
-#      ports:
-#      - '3389'
-#    direction: INGRESS
-#    priority: 65534
-#    sourceTags:
-#    - bastion
-#    targetTags:
-#    - mgmt
-#    - ctx-infra
-#    - ctx-xa
-#- name: citrix-allow-icmp-{{ properties['suffix'] }}
-#  type: compute.v1.firewall
-#  properties:
-#    description: Internal RDP remote management for Windows infrastructure and Citrix virtual machines
-#    network: $(ref.citrix-{{ properties['suffix'] }}.selfLink)
-#    allowed:
-#    - IPProtocol: icmp
-#    direction: INGRESS
-#    priority: 65534
-#    sourceRanges:
-#    - 10.128.0.0/9
+    - 35.235.240.0/20
 - name: citrix-allow-internal-{{ properties['suffix'] }}
   type: compute.v1.firewall
   properties:
@@ -92,48 +62,18 @@ resources:
       ports:
       - '0-65535'
     direction: INGRESS
-    priority: 65534
+    priority: 1000
     sourceRanges:
-    - 10.128.0.0/9
-- name: natfirewall-health-{{ properties['suffix'] }}
-  type: compute.v1.firewall
+    - 10.0.0.0/8
+    - 172.16.0.0/12
+    - 192.168.0.0/16
+- name: citrix-on-gcp-router-{{ properties['suffix'] }}
+  type: compute.v1.router
   properties:
-    description: Allow http to nat instance health check server
     network: $(ref.citrix-{{ properties['suffix'] }}.selfLink)
-    allowed:
-    - IPProtocol: tcp
-      ports:
-      - 80
-    direction: INGRESS
-    priority: 65534
-    sourceRanges: # https://cloud.google.com/compute/docs/load-balancing/health-checks#https_ssl_proxy_tcp_proxy_and_internal_load_balancing
-    - 130.211.0.0/22
-    - 35.191.0.0/16
-    targetTags:
-    - natgw
-- name: nat-health-check-{{ properties['suffix'] }}
-  type: compute.v1.httpHealthCheck
-  properties:
-    checkIntervalSec: 30
-    healthyThreshold: 1
-    unhealthyThreshold: 5
-    requestPath: /health-check
-- name: nat-1-{{ properties['suffix'] }}
-  type: health-checked-nat-instance-group.jinja
-  properties:
-    suffix: 1-{{ properties['suffix'] }}
-    network: $(ref.citrix-{{ properties['suffix'] }}.selfLink)
-    subnetwork: $(ref.citrix-{{ properties['region'] }}-{{ properties['suffix'] }}.selfLink)
     region: {{ properties['region'] }}
-    zone: {{ properties['zone'] }}
-    health-check: $(ref.nat-health-check-{{ properties['suffix'] }}.selfLink)
-- name: nat-2-{{ properties['suffix'] }}
-  type: health-checked-nat-instance-group.jinja
-  properties:
-    suffix: 2-{{ properties['suffix'] }}
-    network: $(ref.citrix-{{ properties['suffix'] }}.selfLink)
-    subnetwork: $(ref.citrix-{{ properties['region'] }}-{{ properties['suffix'] }}.selfLink)
-    region: {{ properties['region'] }}
-    zone: {{ properties['secondary-zone'] }}
-    health-check: $(ref.nat-health-check-{{ properties['suffix'] }}.selfLink)
+    nats:
+    - name: citrix-on-gcp-nat-{{ properties['suffix'] }}
+      sourceSubnetworkIpRangesToNat: ALL_SUBNETWORKS_ALL_IP_RANGES
+      natIpAllocateOption: AUTO_ONLY
 

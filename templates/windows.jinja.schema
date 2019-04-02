@@ -15,8 +15,8 @@
 #
 
 info:
-  title: Windows Server 2016 Helper
-  description: Helper template for deploying a simple Windows Server 2016 instance.
+  title: Windows Server 2019 Helper
+  description: Helper template for deploying a simple Windows Server 2019 instance.
 
 required:
 - name

@@ -19,7 +19,7 @@ info:
   description: Deploys primary and secondary domain controllers.
 
 imports:
-- path: windows-2016.jinja
+- path: windows.jinja
 
 required:
 - suffix

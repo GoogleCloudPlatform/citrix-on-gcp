@@ -28,7 +28,7 @@ resources:
     dependsOn:
     - ctx-dc-1-{{ properties['suffix'] }}
 - name: ctx-dc-1-{{ properties['suffix'] }}
-  type: windows-2016.jinja
+  type: windows.jinja
   properties:
     name: ctx-dc-1-{{ properties['suffix'] }}
     zone: {{ properties['primary-zone'] }}
@@ -37,13 +37,6 @@ resources:
     service-account: {{ properties['service-account'] }}
     ssd: {{ properties['ssd'] }}
     metadata:
-{% if properties['minimal'] %}
-    - key: remove-address
-      value: "false"
-{% else %}
-    - key: remove-address
-      value: "true"
-{% endif %}
     - key: domain-name
       value: {{ properties['domain-name'] }}
     - key: netbios-name
@@ -85,7 +78,7 @@ resources:
     dependsOn:
     - ctx-dc-2-{{ properties['suffix'] }}
 - name: ctx-dc-2-{{ properties['suffix'] }}
-  type: windows-2016.jinja
+  type: windows.jinja
   properties:
     name: ctx-dc-2-{{ properties['suffix'] }}
     zone: {{ properties['secondary-zone'] }}
@@ -94,13 +87,6 @@ resources:
     service-account: {{ properties['service-account'] }}
     ssd: {{ properties['ssd'] }}
     metadata:
-{% if properties['minimal'] %}
-    - key: remove-address
-      value: "false"
-{% else %}
-    - key: remove-address
-      value: "true"
-{% endif %}
     - key: domain-name
       value: {{ properties['domain-name'] }}
     - key: netbios-name

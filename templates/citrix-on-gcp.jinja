@@ -15,6 +15,7 @@
 #
 
 resources:
+{% if properties['lifecycle'] == "DEPLOY" %}
 - name: apis
   type: apis.jinja
   properties:
@@ -35,10 +36,8 @@ resources:
   type: gcp-types/storage-v1:buckets
   properties:
     name: citrix-on-gcp-{{ properties['suffix'] }}-{{ env['project_number'] }}
-#    predefinedAcl: projectPrivate
-#    projection: full
     location: {{ properties['region'] }}
-#    storageClass: STANDARD
+{% endif %}
 - name: keyRing
   type: gcp-types/cloudkms-v1:projects.locations.keyRings
   properties:
@@ -58,12 +57,17 @@ resources:
       bindings:
       - role: roles/cloudkms.cryptoKeyDecrypter
         members:
+{% if properties['lifecycle'] == "DEPLOY" %}
         - "{{ properties["admin"] }}"
         - "serviceAccount:$(ref.admin-service-account.email)"
+{% endif %}
       - role: roles/cloudkms.cryptoKeyEncrypter
         members:
+{% if properties['lifecycle'] == "DEPLOY" %}
         - "{{ properties["admin"] }}"
         - "serviceAccount:$(ref.admin-service-account.email)"
+{% endif %}
+{% if properties['lifecycle'] == "DEPLOY" %}
 - name: admin-service-account
   type: gcp-types/iam-v1:projects.serviceAccounts
   properties:
@@ -215,4 +219,5 @@ resources:
     minimal: {{ properties['minimal'] }}
     ssd: {{ properties['ssd'] }}
     bootstrap-from: {{ properties['bootstrap-from'] }}
+{% endif %}
 

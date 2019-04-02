@@ -41,7 +41,7 @@ resources:
     dependsOn:
     - ctx-cc-{{ loop.index }}-{{ properties['suffix'] }}
 - name: ctx-cc-{{ loop.index }}-{{ properties['suffix'] }}
-  type: windows-2016.jinja
+  type: windows.jinja
   properties:
     name: ctx-cc-{{ loop.index }}-{{ properties['suffix'] }}
     zone: {{ zone }}
@@ -61,13 +61,9 @@ resources:
     - key: runtime-config
       value: {{ properties['runtime-config'] }}
 {% if properties['minimal'] %}
-    - key: remove-address
-      value: "false"
     - key: wait-on
       value: waiter-ctx-dc-1-{{ properties['suffix'] }}
 {% else %}
-    - key: remove-address
-      value: "true"
     - key: wait-on
       value: waiter-ctx-dc-2-{{ properties['suffix'] }}
 {% endif %}
