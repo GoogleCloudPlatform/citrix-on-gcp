@@ -48,6 +48,9 @@ resources:
         sourceImage: projects/windows-cloud/global/images/family/windows-2019
     networkInterfaces:
     - subnetwork: {{ properties['subnetwork'] }}
+{% if properties['networkIP']|length > 0 %}
+      networkIP: {{ properties['networkIP'] }}
+{% endif %}
     serviceAccounts:
     - email: {{ properties['service-account'] }}
       scopes:

@@ -201,11 +201,16 @@ Write-Host "Bootstrap script started..."
 
 
 # get settings
-$CtxClientId = Get-Setting "citrix/client-id"
-$CtxClientSecretSS = Get-Setting "citrix/client-secret" -Secure $True
-$CtxCustomerId = Get-Setting "citrix/customer-id"
 $Prefix = Get-Setting "prefix"
 $Suffix = Get-Setting "suffix"
+
+Write-Host "Getting Citrix Creds..."
+$CitrixCredsUrl = Get-GoogleMetadata "instance/attributes/citrix-creds"
+$CitrixCreds = gsutil cat $CitrixCredsUrl | ConvertFrom-Json
+Write-Host "Using client [$Creds.SecureClientId]..."
+$CtxClientId = $Creds.SecureClientId
+$CtxClientSecret = $Creds.SecureClientSecret
+$CtxCustomerId = $Creds.CustomerId
 
 # get metadata
 $Domain = Get-GoogleMetadata "instance/attributes/domain-name"
@@ -232,7 +237,7 @@ Remove-Item $TempFile.FullName
 
 Write-Host "Initializing Citrix PoSH SDK..."
 Add-PSSnapin Citrix*
-Set-XDCredentials -CustomerId $CtxCustomerId -ProfileType CloudAPI -APIKey $CtxClientId -SecretKey (Unwrap-SecureString $CtxClientSecretSS)
+Set-XDCredentials -CustomerId $CtxCustomerId -ProfileType CloudAPI -APIKey $CtxClientId -SecretKey $CtxClientSecret
 
 
 # download & install vda

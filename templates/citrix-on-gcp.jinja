@@ -25,6 +25,7 @@ resources:
     - runtimeconfig
     - cloudresourcemanager
     - iam
+    - dns
 - name: config
   type: gcp-types/runtimeconfig-v1beta1:projects.configs
   properties:
@@ -124,10 +125,14 @@ resources:
     zone: {{ properties['zone'] }}
     secondary-zone: {{ properties['secondary-zone'] }}
     subnets: {{ properties['subnets'] }}
+    domain-name: {{ properties['domain-name'] }}
+    dc-1-address: {{ properties['dc-1-address'] }}
+    dc-2-address: {{ properties['dc-2-address'] }}
 - name: domain-controllers
   type: domain-controllers.jinja
   properties:
     suffix: {{ properties['suffix'] }}
+    region: {{ properties['region'] }}
     primary-zone: {{ properties['zone'] }}
     secondary-zone: {{ properties['secondary-zone'] }}
     subnetwork: $(ref.citrix-{{ properties['region'] }}-{{ properties['suffix'] }}.selfLink)
@@ -153,14 +158,10 @@ resources:
     kms-key: $(ref.cryptoKey.name)
     gcs-prefix: gs://$(ref.bucket.name)/
     runtime-config: $(ref.config.name)
-    domain-controller-addresses:
-    - $(ref.ctx-dc-1-{{ properties['suffix'] }}.networkInterfaces[0].networkIP)
-{% if not properties['minimal'] %}
-    - $(ref.ctx-dc-2-{{ properties['suffix'] }}.networkInterfaces[0].networkIP)
-{% endif %}
     minimal: {{ properties['minimal'] }}
     ssd: {{ properties['ssd'] }}
     bootstrap-from: {{ properties['bootstrap-from'] }}
+    citrix-creds: {{ properties['citrix-creds'] }}
 - name: ctx-cc
   type: ctx-cloud-connector.jinja
   properties:
@@ -177,14 +178,10 @@ resources:
     kms-key: $(ref.cryptoKey.name)
     gcs-prefix: gs://$(ref.bucket.name)/
     runtime-config: $(ref.config.name)
-    domain-controller-addresses:
-    - $(ref.ctx-dc-1-{{ properties['suffix'] }}.networkInterfaces[0].networkIP)
-{% if not properties['minimal'] %}
-    - $(ref.ctx-dc-2-{{ properties['suffix'] }}.networkInterfaces[0].networkIP)
-{% endif %}
     minimal: {{ properties['minimal'] }}
     ssd: {{ properties['ssd'] }}
     bootstrap-from: {{ properties['bootstrap-from'] }}
+    citrix-creds: {{ properties['citrix-creds'] }}
 - name: ctx-xenapp
   type: ctx-xenapp.jinja
   properties:
@@ -200,11 +197,6 @@ resources:
     kms-key: $(ref.cryptoKey.name)
     gcs-prefix: gs://$(ref.bucket.name)/
     runtime-config: $(ref.config.name)
-    domain-controller-addresses:
-    - $(ref.ctx-dc-1-{{ properties['suffix'] }}.networkInterfaces[0].networkIP)
-{% if not properties['minimal'] %}
-    - $(ref.ctx-dc-2-{{ properties['suffix'] }}.networkInterfaces[0].networkIP)
-{% endif %}
     vda-download-url: {{ properties['vda-download-url'] }}
     ctx-machine-catalog: Catalog-{{ properties['suffix'] }}
     ctx-delivery-group: Group-{{ properties['suffix'] }}
@@ -219,5 +211,6 @@ resources:
     minimal: {{ properties['minimal'] }}
     ssd: {{ properties['ssd'] }}
     bootstrap-from: {{ properties['bootstrap-from'] }}
+    citrix-creds: {{ properties['citrix-creds'] }}
 {% endif %}
 

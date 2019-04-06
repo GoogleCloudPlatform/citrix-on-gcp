@@ -24,6 +24,7 @@ imports:
 required:
 - suffix
 - subnetwork
+- region
 - primary-zone
 - secondary-zone
 - service-account
@@ -86,4 +87,12 @@ properties:
   bootstrap-from:
     type: string
     description: Location of bootstrap artifacts. Can be a GCS prefix, e.g. gs://bucket/path. Or, an image path, e.g. TBD.
+  dc-1-address:
+    type: string
+    description: IP address for primary domain controller
+    default: 10.0.0.2
+  dc-2-address:
+    type: string
+    description: IP address for secondary domain controller
+    default: 10.0.0.3
 

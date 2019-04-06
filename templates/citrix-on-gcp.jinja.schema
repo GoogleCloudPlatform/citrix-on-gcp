@@ -36,6 +36,7 @@ required:
 - netbios-name
 - vda-download-url
 - bootstrap-from
+- citrix-creds
 
 properties:
   admin:
@@ -109,4 +110,15 @@ properties:
     description: Lifecycle phase of deployment allowing for conditional rendering of template to facilitate two-stage delete (DELETE then ABANDON)
     default: DEPLOY
     enum: ["DEPLOY", "DELETE", "ABANDON"]
+  dc-1-address:
+    type: string
+    description: IP address for primary domain controller
+    default: 10.0.0.2
+  dc-2-address:
+    type: string
+    description: IP address for secondary domain controller
+    default: 10.0.0.3
+  citrix-creds:
+    type: string
+    description: GCS location of yaml citrix credentials
 

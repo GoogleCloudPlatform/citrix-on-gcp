@@ -24,6 +24,9 @@ required:
 - zone
 - secondary-zone
 - subnets
+- domain-name
+- dc-1-address
+- dc-2-address
 
 properties:
   suffix:
@@ -52,31 +55,13 @@ properties:
           type: string
         cidr:
           type: string
-    default:
-    - region: us-central1
-      cidr: 10.128.0.0/20
-    - region: europe-west1
-      cidr: 10.132.0.0/20
-    - region: us-west1
-      cidr: 10.138.0.0/20
-    - region: asia-east1
-      cidr: 10.140.0.0/20
-    - region: us-east1
-      cidr: 10.142.0.0/20
-    - region: asia-northeast1
-      cidr: 10.146.0.0/20
-    - region: asia-southeast1
-      cidr: 10.148.0.0/20
-    - region: us-east4
-      cidr: 10.150.0.0/20
-    - region: australia-southeast1
-      cidr: 10.152.0.0/20
-    - region: europe-west2
-      cidr: 10.154.0.0/20
-    - region: europe-west3
-      cidr: 10.156.0.0/20
-    - region: southamerica-east1
-      cidr: 10.158.0.0/20
-    - region: asia-south1
-      cidr: 10.160.0.0/20
+  dc-1-address:
+    type: string
+    description: IP address for primary domain controller
+  dc-2-address:
+    type: string
+    description: IP address for secondary domain controller
+  domain-name:
+    type: string
+    description: Fully-qualified name of domain.
 

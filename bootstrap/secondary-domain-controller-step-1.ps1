@@ -110,7 +110,6 @@ Write-Output "Bootstrap script started..."
 
 
 Write-Output "Fetching metadata parameters..."
-$DomainControllerAddress = Invoke-RestMethod -Headers @{"Metadata-Flavor" = "Google"} -Uri http://169.254.169.254/computeMetadata/v1/instance/attributes/domain-controller-address
 $Domain = Invoke-RestMethod -Headers @{"Metadata-Flavor" = "Google"} -Uri http://169.254.169.254/computeMetadata/v1/instance/attributes/domain-name
 $NetBiosName = Invoke-RestMethod -Headers @{"Metadata-Flavor" = "Google"} -Uri http://169.254.169.254/computeMetadata/v1/instance/attributes/netbios-name
 $KmsKey = Invoke-RestMethod -Headers @{"Metadata-Flavor" = "Google"} -Uri http://169.254.169.254/computeMetadata/v1/instance/attributes/kms-key
@@ -141,35 +140,6 @@ Remove-Item $TempFile.FullName
 $DomainAdminCredentials = New-Object `
         -TypeName System.Management.Automation.PSCredential `
         -ArgumentList "$NetBiosName\Administrator",$DomainAdminPassword
-
-
-Write-Output "Configuring network..."
-# reconfigure dhcp address as static to avoid warnings during dcpromo
-$IpAddr = Get-NetIPAddress -InterfaceAlias Ethernet
-$IpConf = Get-NetIPConfiguration -InterfaceAlias Ethernet
-Set-NetIPInterface `
-	-InterfaceAlias Ethernet `
-	-Dhcp Disabled
-New-NetIPAddress `
-	-InterfaceAlias Ethernet `
-	-IPAddress $IpAddr.IPAddress `
-	-AddressFamily IPv4 `
-	-PrefixLength $IpAddr.PrefixLength `
-	-DefaultGateway $IpConf.IPv4DefaultGateway.NextHop
-
-# set dns to domain controller
-Set-DnsClientServerAddress -InterfaceAlias Ethernet -ServerAddresses $DomainControllerAddress
-
-# above can cause network blip, so wait until metadata server is responsive
-$HaveMetadata = $False
-While( ! $HaveMetadata ) { Try {
-        Invoke-RestMethod -Headers @{"Metadata-Flavor" = "Google"} -Uri http://169.254.169.254/ 1>$Null 2>&1
-        $HaveMetadata = $True
-} Catch {
-        Write-Output "Waiting on metadata..."
-        Start-Sleep 5
-} }
-Write-Output "Contacted metadata server. Proceeding..."
 
 
 Write-Output "Promoting to domain controller..."

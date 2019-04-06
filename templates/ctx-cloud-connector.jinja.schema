@@ -31,8 +31,8 @@ required:
 - kms-key
 - gcs-prefix
 - runtime-config
-- domain-controller-addresses
 - bootstrap-from
+- citrix-creds
 
 properties:
   suffix:
@@ -76,13 +76,6 @@ properties:
   runtime-config:
     type: string
     description: Path of Runtime Config used for variables and waiters.
-  domain-controller-addresses:
-    type: array
-    description: List of domain controller addresses.
-    minItems: 1
-    uniqueItems: true
-    items:
-      type: string
   minimal:
     type: boolean
     default: False
@@ -94,4 +87,7 @@ properties:
   bootstrap-from:
     type: string
     description: Location of bootstrap artifacts. Can be a GCS prefix, e.g. gs://bucket/path. Or, an image path, e.g. TBD.
+  citrix-creds:
+    type: string
+    description: GCS location of yaml citrix credentials
 

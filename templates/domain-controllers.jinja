@@ -27,6 +27,13 @@ resources:
   metadata:
     dependsOn:
     - ctx-dc-1-{{ properties['suffix'] }}
+- name: dc-1-address-{{ properties['suffix'] }}
+  type: compute.v1.address
+  properties:
+    address: {{ properties['dc-1-address'] }}
+    addressType: INTERNAL
+    region: {{ properties['region'] }}
+    subnetwork: {{ properties['subnetwork'] }}
 - name: ctx-dc-1-{{ properties['suffix'] }}
   type: windows.jinja
   properties:
@@ -34,6 +41,7 @@ resources:
     zone: {{ properties['primary-zone'] }}
     machine-type: n1-standard-2
     subnetwork: {{ properties['subnetwork'] }}
+    networkIP: {{ properties['dc-1-address'] }}
     service-account: {{ properties['service-account'] }}
     ssd: {{ properties['ssd'] }}
     metadata:
@@ -57,7 +65,9 @@ resources:
 {% else %}
 {% endif %}
     tags:
-    - mgmt
+    - dc
+    - dns
+    - rdp
 {% if properties['dependencies']|length > 0 %}
     dependencies:
 {% for dependency in properties['dependencies'] %}
@@ -77,6 +87,13 @@ resources:
   metadata:
     dependsOn:
     - ctx-dc-2-{{ properties['suffix'] }}
+- name: dc-2-address-{{ properties['suffix'] }}
+  type: compute.v1.address
+  properties:
+    address: {{ properties['dc-2-address'] }}
+    addressType: INTERNAL
+    region: {{ properties['region'] }}
+    subnetwork: {{ properties['subnetwork'] }}
 - name: ctx-dc-2-{{ properties['suffix'] }}
   type: windows.jinja
   properties:
@@ -84,6 +101,7 @@ resources:
     zone: {{ properties['secondary-zone'] }}
     machine-type: n1-standard-2
     subnetwork: {{ properties['subnetwork'] }}
+    networkIP: {{ properties['dc-2-address'] }}
     service-account: {{ properties['service-account'] }}
     ssd: {{ properties['ssd'] }}
     metadata:
@@ -106,10 +124,10 @@ resources:
       value: {{ properties['bootstrap-from'] }}/secondary-domain-controller-step-1.ps1
 {% else %}
 {% endif %}
-    - key: domain-controller-address
-      value: $(ref.ctx-dc-1-{{ properties['suffix'] }}.networkInterfaces[0].networkIP)
     tags:
-    - mgmt
+    - dc
+    - dns
+    - rdp
 {% if properties['dependencies']|length > 0 %}
     dependencies:
 {% for dependency in properties['dependencies'] %}

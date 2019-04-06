@@ -63,43 +63,6 @@ Write-Host "Installing AD features..."
 Install-WindowsFeature -name AD-Domain-Services -IncludeManagementTools
 
 
-#Write-Host "Removing external address in background..."
-#Start-Job -ScriptBlock {
-#	# windows should have activated before script is invoked, so now remove external address
-#	$name = Invoke-RestMethod -Headers @{"Metadata-Flavor" = "Google"} -Uri http://169.254.169.254/computeMetadata/v1/instance/name
-#	$zone = Invoke-RestMethod -Headers @{"Metadata-Flavor" = "Google"} -Uri http://169.254.169.254/computeMetadata/v1/instance/zone
-#	gcloud compute instances delete-access-config $name --zone $zone
-#}
-
-Write-Host "Configuring network..."
-# reconfigure dhcp address as static to avoid warnings during dcpromo
-$IpAddr = Get-NetIPAddress -InterfaceAlias Ethernet
-$IpConf = Get-NetIPConfiguration -InterfaceAlias Ethernet
-Set-NetIPInterface `
-	-InterfaceAlias Ethernet `
-	-Dhcp Disabled
-New-NetIPAddress `
-	-InterfaceAlias Ethernet `
-	-IPAddress $IpAddr.IPAddress `
-	-AddressFamily IPv4 `
-	-PrefixLength $IpAddr.PrefixLength `
-	-DefaultGateway $IpConf.IPv4DefaultGateway.NextHop
-
-# set dns to google cloud default, will be set to loopback once dns feature is installed
-Set-DnsClientServerAddress -InterfaceAlias Ethernet -ServerAddresses $IpConf.IPv4DefaultGateway.NextHop
-
-# above can cause network blip, so wait until metadata server is responsive
-$HaveMetadata = $False
-While( ! $HaveMetadata ) { Try {
-	Invoke-RestMethod -Headers @{"Metadata-Flavor" = "Google"} -Uri http://169.254.169.254/ 1>$Null 2>&1
-	$HaveMetadata = $True
-} Catch {
-	Write-Host "Waiting on metadata..."
-	Start-Sleep 5
-} }
-Write-Host "Contacted metadata server. Proceeding..."
-
-
 Write-Host "Fetching metadata parameters..."
 $Domain = Invoke-RestMethod -Headers @{"Metadata-Flavor" = "Google"} -Uri http://169.254.169.254/computeMetadata/v1/instance/attributes/domain-name
 $NetBiosName = Invoke-RestMethod -Headers @{"Metadata-Flavor" = "Google"} -Uri http://169.254.169.254/computeMetadata/v1/instance/attributes/netbios-name

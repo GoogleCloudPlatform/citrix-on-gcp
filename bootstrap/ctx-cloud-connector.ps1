@@ -179,11 +179,16 @@ Write-Host "Bootstrap script started..."
 
 
 Write-Host "Getting settings..."
-$CtxClientId = Get-Setting "citrix/client-id"
-$CtxClientSecretSS = Get-Setting "citrix/client-secret" -Secure $True
-$CtxCustomerId = Get-Setting "citrix/customer-id"
 $Prefix = Get-Setting "prefix"
 $Suffix = Get-Setting "suffix"
+
+Write-Host "Getting Citrix Creds..."
+$CitrixCredsUrl = Get-GoogleMetadata "instance/attributes/citrix-creds"
+$CitrixCreds = gsutil cat $CitrixCredsUrl | ConvertFrom-Json
+Write-Host "Using client [$Creds.SecureClientId]..."
+$CtxClientId = $Creds.SecureClientId
+$CtxClientSecret = $Creds.SecureClientSecret
+$CtxCustomerId = $Creds.CustomerId
 
 Write-Host "CtxClientId: [$CtxClientId]"
 Write-Host "CtxCustomerId: [$CtxCustomerId]"
@@ -205,7 +210,7 @@ $CtxResourceLocationId = Get-Setting "citrix/resource-locations/$Prefix-$Suffix/
 
 
 Write-Host "Running installer..."
-$CmdArgs = "/q /CustomerName:$CtxCustomerId /ClientId:$CtxClientID /ClientSecret:$(Unwrap-SecureString $CtxClientSecretSS) /Location:$CtxResourceLocationId /AcceptTermsOfService:true"
+$CmdArgs = "/q /CustomerName:$CtxCustomerId /ClientId:$CtxClientID /ClientSecret:$CtxClientSecret /Location:$CtxResourceLocationId /AcceptTermsOfService:true"
 Start-Process -FilePath $TempFile.FullName -ArgumentList $CmdArgs -Wait
 
 

@@ -68,8 +68,6 @@ resources:
 {% endif %}
     - key: vda-download-url
       value: {{ properties['vda-download-url'] }}
-    - key: domain-controller-addresses
-      value: {% for ip in properties['domain-controller-addresses'] %}{{ ip }}{{ "," if not loop.last }}{% endfor %}
     - key: ctx-machine-catalog
       value: {{ properties['ctx-machine-catalog'] }}
     - key: ctx-delivery-group

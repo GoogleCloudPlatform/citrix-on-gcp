@@ -15,6 +15,7 @@ resources:
     admin: user:$USER
     suffix: $SUFFIX
     bootstrap-from: gs://jeffallen-ext-citrix-4/bootstrap-v1
+    citrix-creds: gs://jeffallen-ext-citrix-4/citrix-creds.json
 EOF
 
 gcloud deployment-manager deployments create citrix-on-gcp-$SUFFIX --config=$TMP

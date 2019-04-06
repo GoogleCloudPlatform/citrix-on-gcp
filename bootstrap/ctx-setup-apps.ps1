@@ -290,15 +290,20 @@ Invoke-Command -ComputerName  (Get-ADDomain).PDCEmulator -Credential $DomainAdmi
 
 
 Write-Host "Getting settings..."
-$CtxClientId = Get-Setting "citrix/client-id"
-$CtxClientSecretSS = Get-Setting "citrix/client-secret" -Secure $True
-$CtxCustomerId = Get-Setting "citrix/customer-id"
 $Prefix = Get-Setting "prefix"
 $Suffix = Get-Setting "suffix"
 
+Write-Host "Getting Citrix Creds..."
+$CitrixCredsUrl = Get-GoogleMetadata "instance/attributes/citrix-creds"
+$CitrixCreds = gsutil cat $CitrixCredsUrl | ConvertFrom-Json
+Write-Host "Using client [$Creds.SecureClientId]..."
+$CtxClientId = $Creds.SecureClientId
+$CtxClientSecret = $Creds.SecureClientSecret
+$CtxCustomerId = $Creds.CustomerId
+
 
 Write-Host "Getting API bearer token..."
-$Token = GetBearerToken $CtxClientId (Unwrap-SecureString $CtxClientSecretSS)
+$Token = GetBearerToken $CtxClientId $CtxClientSecret
 
 
 Write-Host "Creating Resource Location..."
@@ -331,7 +336,7 @@ Add-PSSnapin Citrix*
 
 
 Write-Host "Initializing SDK..."
-Set-XDCredentials -CustomerId $CtxCustomerId -ProfileType CloudAPI -APIKey $CtxClientId -SecretKey (Unwrap-SecureString $CtxClientSecretSS)
+Set-XDCredentials -CustomerId $CtxCustomerId -ProfileType CloudAPI -APIKey $CtxClientId -SecretKey $CtxClientSecret
 
 
 Write-Host "Waiting on Citrix Connector..."

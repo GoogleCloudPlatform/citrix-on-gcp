@@ -74,4 +74,7 @@ properties:
     type: boolean
     default: False
     description: Whether or not to use SSD persistent disks
+  networkIP:
+    type: string
+    description: OPTIONAL ip address for instance
 

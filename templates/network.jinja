@@ -48,6 +48,8 @@ resources:
     priority: 1000
     sourceRanges:
     - 35.235.240.0/20
+    targetTags:
+    - rdp
 - name: citrix-allow-internal-{{ properties['suffix'] }}
   type: compute.v1.firewall
   properties:
@@ -76,4 +78,17 @@ resources:
     - name: citrix-on-gcp-nat-{{ properties['suffix'] }}
       sourceSubnetworkIpRangesToNat: ALL_SUBNETWORKS_ALL_IP_RANGES
       natIpAllocateOption: AUTO_ONLY
+- name: citrix-on-gcp-zone-{{ properties['suffix'] }}
+  type: gcp-types/dns-v1beta2:managedZones
+  properties:
+    description: Forwarding zone to integrate Google DNS with Active Directory
+    dnsName: {{ properties['domain-name'] }}.
+    visibility: private
+    privateVisibilityConfig:
+      networks:
+      - networkUrl: $(ref.citrix-{{ properties['suffix'] }}.selfLink)
+    forwardingConfig:
+      targetNameServers:
+      - ipv4Address: {{ properties['dc-1-address'] }}
+      - ipv4Address: {{ properties['dc-2-address'] }}
 

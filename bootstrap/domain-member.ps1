@@ -150,12 +150,6 @@ If ($Waiter) {
 }
 
 
-Write-Host "Configuring network..."
-$DomainControllerAddresses = Get-GoogleMetadata "instance/attributes/domain-controller-addresses"
-# set dns to domain controller
-Set-DnsClientServerAddress -InterfaceAlias Ethernet -ServerAddresses $DomainControllerAddresses
-
-
 Write-Host "Configuring local admin..."
 # startup script runs as local system which cannot join domain
 # so do the join as local administrator using random password

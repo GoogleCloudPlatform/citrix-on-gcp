@@ -1,0 +1,3 @@
+- enable service management (should be enabled on recently-created projects)
+- add project owner for deployment manager service account
+- upload creds json to gcs

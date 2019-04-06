@@ -78,8 +78,6 @@ resources:
       value: {{ properties['bootstrap-from'] }}/ctx-cloud-connector.ps1
 {% else %}
 {% endif %}
-    - key: domain-controller-addresses
-      value: {% for ip in properties['domain-controller-addresses'] %}{{ ip }}{{ "," if not loop.last }}{% endfor %}
     tags:
     - ctx-infra
     - internet-nat
