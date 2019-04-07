@@ -255,6 +255,10 @@ Function Disable-InternetExplorerESC {
 Write-Host "Bootstrap script started..."
 
 
+# turn off gcloud version checks
+gcloud config set component_manager/disable_update_check true
+
+
 Write-Output "Getting metadata..."
 $NetBiosName = Get-GoogleMetadata "instance/attributes/netbios-name"
 $KmsKey = Get-GoogleMetadata "instance/attributes/kms-key"
@@ -271,7 +275,7 @@ If ($BootstrapFrom.EndsWith("/")) {
 Write-Output "Fetching admin credentials..."
 # fetch and decrypt domain admin and dsrm passwords
 $TempFile = New-TemporaryFile
-gsutil cp $GcsPrefix/output/domain-admin-password.bin $TempFile.FullName
+gsutil -q cp $GcsPrefix/output/domain-admin-password.bin $TempFile.FullName
 $DomainAdminPassword = $(gcloud kms decrypt --key $KmsKey --ciphertext-file $TempFile.FullName --plaintext-file - | ConvertTo-SecureString -AsPlainText -Force)
 Remove-Item $TempFile.FullName
 $DomainAdminCredentials = New-Object `
@@ -285,10 +289,13 @@ Invoke-Command -ComputerName  (Get-ADDomain).PDCEmulator -Credential $DomainAdmi
 	Param (
 		$ScriptUrl
 	)
+	# turn off gcloud version checks
+	gcloud config set component_manager/disable_update_check true
+
 	$TempFile = New-TemporaryFile
 	$TempFile.MoveTo($TempFile.fullName + ".ps1")
 	if ($ScriptUrl.StartsWith("gs://")) {
-		gsutil cp $ScriptUrl $TempFile.FullName
+		gsutil -q cp $ScriptUrl $TempFile.FullName
 	}
 	else {
 		(New-Object System.Net.WebClient).DownloadFile($ScriptUrl, $TempFile.FullName)		
@@ -304,7 +311,7 @@ $Suffix = Get-Setting "suffix"
 
 Write-Host "Getting Citrix Creds..."
 $CitrixCredsUrl = Get-GoogleMetadata "instance/attributes/citrix-creds"
-$CitrixCreds = gsutil cat $CitrixCredsUrl | ConvertFrom-Json
+$CitrixCreds = gsutil -q cat $CitrixCredsUrl | ConvertFrom-Json
 Write-Host "Using client [$($CitrixCreds.SecureClientId)]..."
 $CtxClientId = $CitrixCreds.SecureClientId
 $CtxClientSecret = $CitrixCreds.SecureClientSecret

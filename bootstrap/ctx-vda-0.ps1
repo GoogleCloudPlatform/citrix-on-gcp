@@ -1,12 +1,12 @@
 #
 #  Copyright 2018 Google Inc.
-#
+# 
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
 #  You may obtain a copy of the License at
-#
+# 
 #    http://www.apache.org/licenses/LICENSE-2.0
-#
+# 
 #  Unless required by applicable law or agreed to in writing, software
 #  distributed under the License is distributed on an "AS IS" BASIS,
 #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -134,128 +134,21 @@ Function Get-GoogleMetadata() {
 	}
 }
 
-Function Get-Setting {
-	Param (
-	[Parameter(Mandatory=$True)][String][ValidateNotNullOrEmpty()]
-	$Path,
-	[Parameter()][Boolean]
-	$Secure = $False
-	)
-
-	$GcsPrefix = Get-GoogleMetadata -Path "instance/attributes/gcs-prefix"
-	If ($GcsPrefix.EndsWith("/")) {
-		$GcsPrefix = $GcsPrefix -Replace ".$"
-	}
-
-	If ($Secure) {
-		$KmsKey = Get-GoogleMetadata -Path "instance/attributes/kms-key"
-		$TempFile = New-TemporaryFile
-		gsutil -q cp "$GcsPrefix/settings/$Path.bin" "$TempFile.FullName"
-		$Value = gcloud kms decrypt --key "$KmsKey" --ciphertext-file "$TempFile.FullName" --plaintext-file - | ConvertTo-SecureString -AsPlainText -Force
-		Remove-Item $TempFile.FullName
-	}
-	Else {
-		$Value = gsutil -q cat "$GcsPrefix/settings/$Path"
-	}
-
-	Return $Value
-
-}
-
-
-Function Set-Setting {
-	Param (
-	[Parameter(Mandatory=$True)][String][ValidateNotNullOrEmpty()]
-	$Path,
-	[Parameter(Mandatory=$True)][String][ValidateNotNullOrEmpty()]
-	$Value,
-	[Parameter()][Boolean]
-	$Secure = $False
-	)
-
-	$GcsPrefix = Get-GoogleMetadata -Path "instance/attributes/gcs-prefix"
-	If ($GcsPrefix.EndsWith("/")) {
-		$GcsPrefix = $GcsPrefix -Replace ".$"
-	}
-
-	If ($Secure) {
-		$KmsKey = Get-GoogleMetadata -Path "instance/attributes/kms-key"
-		$TempFile = New-TemporaryFile
-		$TempFileEnc = New-TemporaryFile
-		$Value | Out-File -NoNewLine $TempFile.FullName
-		gcloud kms encrypt --key "$KmsKey" --ciphertext-file $TempFileEnc.FullName --plaintext-file $TempFile.FullName
-		gsutil -q cp $TempFileEnc.FullName "$GcsPrefix/settings/$Path.bin"
-		Remove-Item $TempFileEnc.FullName
-		Remove-Item $TempFile.FullName
-	}
-	Else {
-		$TempFile = New-TemporaryFile
-		$Value | Out-File -NoNewLine $TempFile.FullName
-		gsutil -q cp $TempFile.FullName "$GcsPrefix/settings/$Path"
-		Remove-Item $TempFile.FullName
-	}
-
-}
 
 Write-Host "Bootstrap script started..."
 
 
-# turn off gcloud version checks
-gcloud config set component_manager/disable_update_check true
-
-
-# get metadata
-$CtxCloudConnectors = Get-GoogleMetadata "instance/attributes/ctx-cloud-connectors"
-$VdaDownloadUrl = Get-GoogleMetadata "instance/attributes/vda-download-url"
-
-
-Write-Host "Downloading Citrix PoSH installer..."
-[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
-$TempFile = New-TemporaryFile
-$TempFile.MoveTo($TempFile.FullName + ".exe")
-$url = "http://download.apps.cloud.com/CitrixPoshSdk.exe"
-(New-Object System.Net.WebClient).DownloadFile($url, $TempFile.FullName)
-
-Write-Host "Running installer..."
-Start-Process $TempFile.FullName "/q" -Wait
-
-
-Write-Host "Cleaning up..."
-Remove-Item $TempFile.FullName
-
-
-# download & install vda
-Write-Host "Downloading VDA installer..."
-$TempFile = New-TemporaryFile
-$TempFile.MoveTo($TempFile.FullName + ".exe")
-(New-Object System.Net.WebClient).DownloadFile($VdaDownloadUrl, $TempFile.FullName)
-
-
-Write-Host "Running installer..."
-$Arguments = @(
-	"/components"
-	"vda,plugins"
-	"/enable_hdx_ports"
-	"/optimize"
-	"/masterimage"
-	"/enable_remote_assistance"
-	"/controllers"
-	"$CtxCloudConnectors"
-	"/quiet"
-	"/noreboot"
-)
-Start-Process $TempFile.FullName -ArgumentList $Arguments -Wait -NoNewWindow 
-
-
-Write-Host "Cleaning up..."
-Remove-Item $TempFile.FullName
+Write-Host "Installing required Windows features..."
+Add-WindowsFeature -Name RDS-RD-Server
+Add-WindowsFeature -Name Server-Media-Foundation
+Add-WindowsFeature -Name Remote-Assistance
 
 
 Write-Host "Configuring startup metadata..."
 $name = Get-GoogleMetadata "instance/name"
 $zone = Get-GoogleMetadata "instance/zone"
 $BootstrapFrom = Get-GoogleMetadata "instance/attributes/bootstrap-from"
-gcloud compute instances add-metadata "$name" --zone $zone --metadata "windows-startup-script-url=$BootstrapFrom/domain-member.ps1"
+gcloud compute instances add-metadata "$name" --zone $zone --metadata "windows-startup-script-url=$BootstrapFrom/ctx-vda-1.ps1"
 
 
 Write-Host "Restarting..."

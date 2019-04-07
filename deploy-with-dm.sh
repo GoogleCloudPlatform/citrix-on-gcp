@@ -16,8 +16,11 @@ resources:
     suffix: $SUFFIX
     bootstrap-from: gs://jeffallen-ext-citrix-4/bootstrap-v1
     citrix-creds: gs://jeffallen-ext-citrix-4/citrix-creds.json
+    minimal: True
 EOF
 
-gcloud deployment-manager deployments create citrix-on-gcp-$SUFFIX --config=$TMP
-rm $TMP
+echo "config: $TMP"
+echo "deployment: citrix-on-gcp-$SUFFIX"
+gcloud deployment-manager deployments create citrix-on-gcp-$SUFFIX --config=$TMP --async
+#rm $TMP
 

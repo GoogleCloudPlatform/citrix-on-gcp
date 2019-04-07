@@ -25,6 +25,19 @@ Param(
 	$Workers = 1
 )
 
+Function To-IntegerIfPossible {
+        Param(
+		[Parameter(Mandatory=$True)][String] $Value,
+		[Parameter()][Int] $Default = -1
+        )
+	$n = $Default
+	Try {
+		$n = [Int]$Value
+	}
+	Catch {}
+	$n
+}
+
 # check gcloud is installed
 Try {
 	gcloud --version 1>$Null 2>&1
@@ -62,7 +75,7 @@ If (-not $Suffix) {
 		Exit
 	} Else {
 		$Choice = $Null
-		While (-not $Choice -or -not $Choice -match "\d+" -or $Choice -lt 1 -or $Choice -gt $Options.Length) {
+		While ((-not $Choice) -or (-not $Choice -match "\d+") -or ((To-IntegerIfPossible $Choice) -lt 1) -or ((To-IntegerIfPossible $Choice) -gt $Options.Length)) {
 			$Options | % { $i = 1 } { Write-Host "$i) $_"; $i++ }
 			$Choice = Read-Host -Prompt "Please choose a deployment by number"
 		}

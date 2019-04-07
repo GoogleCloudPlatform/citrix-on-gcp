@@ -138,6 +138,27 @@ Function Get-GoogleMetadata() {
 Write-Host "Bootstrap script started..."
 
 
+# turn off gcloud version checks
+gcloud config set component_manager/disable_update_check true
+
+
+$PreJoinScriptUrl = Get-GoogleMetadata "instance/attributes/pre-join-script-url"
+If ($PreJoinScriptUrl) {
+	Write-Host "Running pre-join script..."
+
+        $TempFile = New-TemporaryFile
+        $TempFile.MoveTo($TempFile.fullName + ".ps1")
+        if ($PreJoinScriptUrl.StartsWith("gs://")) {
+                gsutil -q cp $PreJoinScriptUrl $TempFile.FullName
+        }
+        else {
+                (New-Object System.Net.WebClient).DownloadFile($PreJoinScriptUrl, $TempFile.FullName)          
+        }
+        Invoke-Expression $TempFile.FullName
+        Remove-Item $TempFile.FullName -Force
+}
+
+
 Write-Host "Adding AD powershell tools..."
 Add-WindowsFeature RSAT-AD-PowerShell
 
@@ -174,7 +195,7 @@ If ($GcsPrefix.EndsWith("/")) {
 }
 $TempFile = New-TemporaryFile
 # invoke-command sees gsutil output as an error so redirect stderr to stdout and stringify to suppress
-gsutil cp $GcsPrefix/output/domain-admin-password.bin $TempFile.FullName 2>&1 | %{ "$_" }
+gsutil -q cp $GcsPrefix/output/domain-admin-password.bin $TempFile.FullName 2>&1 | %{ "$_" }
 $DomainAdminPassword = $(gcloud kms decrypt --key $KmsKey --ciphertext-file $TempFile.FullName --plaintext-file - | ConvertTo-SecureString -AsPlainText -Force)
 Remove-Item $TempFile.FullName
 $DomainAdminCredentials = New-Object `

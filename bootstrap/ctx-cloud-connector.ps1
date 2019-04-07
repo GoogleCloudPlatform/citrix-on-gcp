@@ -178,13 +178,17 @@ Write-Host "Bootstrap script started..."
 #Disable-InternetExplorerESC
 
 
+# turn off gcloud version checks
+gcloud config set component_manager/disable_update_check true
+
+
 Write-Host "Getting settings..."
 $Prefix = Get-Setting "prefix"
 $Suffix = Get-Setting "suffix"
 
 Write-Host "Getting Citrix Creds..."
 $CitrixCredsUrl = Get-GoogleMetadata "instance/attributes/citrix-creds"
-$CitrixCreds = gsutil cat $CitrixCredsUrl | ConvertFrom-Json
+$CitrixCreds = gsutil -q cat $CitrixCredsUrl | ConvertFrom-Json
 Write-Host "Using client [$($CitrixCreds.SecureClientId)]..."
 $CtxClientId = $CitrixCreds.SecureClientId
 $CtxClientSecret = $CitrixCreds.SecureClientSecret

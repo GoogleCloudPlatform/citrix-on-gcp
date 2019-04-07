@@ -74,7 +74,9 @@ resources:
     - rdp
     dependencies:
     - dc-1-address-{{ properties['suffix'] }}
+{% if not properties['minimal'] %}
     - dc-2-address-{{ properties['suffix'] }}
+{% endif %}
 {% if properties['dependencies']|length > 0 %}
 {% for dependency in properties['dependencies'] %}
     - {{ dependency }}

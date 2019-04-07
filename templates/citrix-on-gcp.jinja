@@ -36,7 +36,7 @@ resources:
 - name: bucket
   type: gcp-types/storage-v1:buckets
   properties:
-    name: citrix-on-gcp-{{ properties['suffix'] }}-{{ env['project_number'] }}
+    name: citrix-on-gcp-{{ env['project_number'] }}-{{ properties['suffix'] }}
     location: {{ properties['region'] }}
 {% endif %}
 - name: keyRing
@@ -153,7 +153,9 @@ resources:
     zone: {{ properties['zone'] }}
     subnetwork: $(ref.citrix-{{ properties['region'] }}-{{ properties['suffix'] }}.selfLink)
     service-account: $(ref.admin-service-account.email)
+{% if properties['power-managed'] %}
     hosting-connection-service-account: $(ref.citrix-service-account.email)
+{% endif %}
     domain-name: {{ properties['domain-name'] }}
     netbios-name: {{ properties['netbios-name'] }}
     kms-key: $(ref.cryptoKey.name)
@@ -183,8 +185,8 @@ resources:
     ssd: {{ properties['ssd'] }}
     bootstrap-from: {{ properties['bootstrap-from'] }}
     citrix-creds: {{ properties['citrix-creds'] }}
-- name: ctx-xenapp
-  type: ctx-xenapp.jinja
+- name: ctx-vda
+  type: ctx-vda.jinja
   properties:
     suffix: {{ properties['suffix'] }}
     zones:
@@ -201,7 +203,7 @@ resources:
     vda-download-url: {{ properties['vda-download-url'] }}
     ctx-machine-catalog: Catalog-{{ properties['suffix'] }}
     ctx-delivery-group: Group-{{ properties['suffix'] }}
-{% if properties['hosting-connection-service-account'] %}
+{% if properties['power-managed'] %}
     ctx-hypervisor-connection: Google-Cloud-{{ properties['suffix'] }}
 {% endif %}
     ctx-cloud-connectors:

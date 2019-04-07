@@ -200,13 +200,17 @@ Function Set-Setting {
 Write-Host "Bootstrap script started..."
 
 
+# turn off gcloud version checks
+gcloud config set component_manager/disable_update_check true
+
+
 # get settings
 $Prefix = Get-Setting "prefix"
 $Suffix = Get-Setting "suffix"
 
 Write-Host "Getting Citrix Creds..."
 $CitrixCredsUrl = Get-GoogleMetadata "instance/attributes/citrix-creds"
-$CitrixCreds = gsutil cat $CitrixCredsUrl | ConvertFrom-Json
+$CitrixCreds = gsutil -q cat $CitrixCredsUrl | ConvertFrom-Json
 Write-Host "Using client [$($CitrixCreds.SecureClientId)]..."
 $CtxClientId = $CitrixCreds.SecureClientId
 $CtxClientSecret = $CitrixCreds.SecureClientSecret
@@ -221,19 +225,19 @@ $CtxCloudConnectors = Get-GoogleMetadata "instance/attributes/ctx-cloud-connecto
 $VdaDownloadUrl = Get-GoogleMetadata "instance/attributes/vda-download-url"
 
 
-Write-Host "Downloading Citrix PoSH installer..."
-[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
-$TempFile = New-TemporaryFile
-$TempFile.MoveTo($TempFile.FullName + ".exe")
-$url = "http://download.apps.cloud.com/CitrixPoshSdk.exe"
-(New-Object System.Net.WebClient).DownloadFile($url, $TempFile.FullName)
+#Write-Host "Downloading Citrix PoSH installer..."
+#[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+#$TempFile = New-TemporaryFile
+#$TempFile.MoveTo($TempFile.FullName + ".exe")
+#$url = "http://download.apps.cloud.com/CitrixPoshSdk.exe"
+#(New-Object System.Net.WebClient).DownloadFile($url, $TempFile.FullName)
 
-Write-Host "Running installer..."
-Start-Process $TempFile.FullName "/q" -Wait
+#Write-Host "Running installer..."
+#Start-Process $TempFile.FullName "/q" -Wait
 
 
-Write-Host "Cleaning up..."
-Remove-Item $TempFile.FullName
+#Write-Host "Cleaning up..."
+#Remove-Item $TempFile.FullName
 
 
 Write-Host "Initializing Citrix PoSH SDK..."
@@ -241,11 +245,11 @@ Add-PSSnapin Citrix*
 Set-XDCredentials -CustomerId $CtxCustomerId -ProfileType CloudAPI -APIKey $CtxClientId -SecretKey $CtxClientSecret
 
 
-# download & install vda
-Write-Host "Downloading VDA installer..."
-$TempFile = New-TemporaryFile
-$TempFile.MoveTo($TempFile.FullName + ".exe")
-(New-Object System.Net.WebClient).DownloadFile($VdaDownloadUrl, $TempFile.FullName)
+## download & install vda
+#Write-Host "Downloading VDA installer..."
+#$TempFile = New-TemporaryFile
+#$TempFile.MoveTo($TempFile.FullName + ".exe")
+#(New-Object System.Net.WebClient).DownloadFile($VdaDownloadUrl, $TempFile.FullName)
 
 
 Write-Host "Waiting on Citrix setup from mgmt instance..."
@@ -253,24 +257,24 @@ $RuntimeConfig = Get-GoogleMetadata "instance/attributes/runtime-config"
 Wait-RuntimeConfigWaiter -ConfigPath $RuntimeConfig -Waiter "waiter-ctx-mgmt-$Suffix"
 
 
-Write-Host "Running installer..."
-$Arguments = @(
-	"/components"
-	"vda,plugins"
-	"/enable_hdx_ports"
-	"/optimize"
-	"/masterimage"
-	"/enable_remote_assistance"
-	"/controllers"
-	"$CtxCloudConnectors"
-	"/quiet"
-	"/noreboot"
-)
-Start-Process $TempFile.FullName -ArgumentList $Arguments -Wait -NoNewWindow 
+#Write-Host "Running installer..."
+#$Arguments = @(
+#	"/components"
+#	"vda,plugins"
+#	"/enable_hdx_ports"
+#	"/optimize"
+#	"/masterimage"
+#	"/enable_remote_assistance"
+#	"/controllers"
+#	"$CtxCloudConnectors"
+#	"/quiet"
+#	"/noreboot"
+#)
+#Start-Process $TempFile.FullName -ArgumentList $Arguments -Wait -NoNewWindow 
 
 
-Write-Host "Cleaning up..."
-Remove-Item $TempFile.FullName
+#Write-Host "Cleaning up..."
+#Remove-Item $TempFile.FullName
 
 
 Write-Host "Adding machine to catalog and delivery group..."
@@ -324,6 +328,6 @@ $RuntimeConfig = Get-GoogleMetadata "instance/attributes/runtime-config"
 Set-RuntimeConfigVariable -ConfigPath $RuntimeConfig -Variable bootstrap/$name/success/time -Text (Get-Date -Format g)
 
 
-# vda install requires restart
-Restart-Computer
+## vda install requires restart
+#Restart-Computer
 

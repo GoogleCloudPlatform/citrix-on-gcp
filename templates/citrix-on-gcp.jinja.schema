@@ -24,7 +24,7 @@ imports:
 - path: domain-controllers.jinja
 - path: bastion.jinja
 - path: ctx-cloud-connector.jinja
-- path: ctx-xenapp.jinja
+- path: ctx-vda.jinja
 
 required:
 - admin
@@ -96,6 +96,10 @@ properties:
     type: integer
     default: 1
     description: Number of XenApp workers.
+  power-managed:
+    type: boolean
+    default: True
+    description: Whether or not to use power-managed Machine Catalogs in Citrix Cloud
   minimal:
     type: boolean
     default: False

@@ -109,6 +109,10 @@ Function Get-GoogleMetadata() {
 Write-Output "Bootstrap script started..."
 
 
+# turn off gcloud version checks
+gcloud config set component_manager/disable_update_check true
+
+
 Write-Output "Fetching metadata parameters..."
 $Domain = Invoke-RestMethod -Headers @{"Metadata-Flavor" = "Google"} -Uri http://169.254.169.254/computeMetadata/v1/instance/attributes/domain-name
 $NetBiosName = Invoke-RestMethod -Headers @{"Metadata-Flavor" = "Google"} -Uri http://169.254.169.254/computeMetadata/v1/instance/attributes/netbios-name
@@ -132,9 +136,9 @@ If ($GcsPrefix.EndsWith("/")) {
   $GcsPrefix = $GcsPrefix -Replace ".$"
 }
 $TempFile = New-TemporaryFile
-gsutil cp $GcsPrefix/output/domain-admin-password.bin $TempFile.FullName
+gsutil -q cp $GcsPrefix/output/domain-admin-password.bin $TempFile.FullName
 $DomainAdminPassword = $(gcloud kms decrypt --key $KmsKey --ciphertext-file $TempFile.FullName --plaintext-file - | ConvertTo-SecureString -AsPlainText -Force)
-gsutil cp $GcsPrefix/output/dsrm-admin-password.bin $TempFile.FullName
+gsutil -q cp $GcsPrefix/output/dsrm-admin-password.bin $TempFile.FullName
 $SafeModeAdminPassword = $(gcloud kms decrypt --key $KmsKey --ciphertext-file $TempFile.FullName --plaintext-file - | ConvertTo-SecureString -AsPlainText -Force)
 Remove-Item $TempFile.FullName
 $DomainAdminCredentials = New-Object `

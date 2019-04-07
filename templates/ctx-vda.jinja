@@ -61,9 +61,9 @@ resources:
     - key: bootstrap-from
       value: {{ properties['bootstrap-from'] }}
     - key: windows-startup-script-url
-      value: {{ properties['bootstrap-from'] }}/domain-member.ps1
+      value: {{ properties['bootstrap-from'] }}/ctx-vda-0.ps1
     - key: post-join-script-url
-      value: {{ properties['bootstrap-from'] }}/ctx-vda-1.ps1
+      value: {{ properties['bootstrap-from'] }}/ctx-vda-2.ps1
 {% else %}
 {% endif %}
     - key: citrix-creds
@@ -84,7 +84,9 @@ resources:
     - rdp
     dependencies:
     - dc-1-address-{{ properties['suffix'] }}
+{% if not properties['minimal'] %}
     - dc-2-address-{{ properties['suffix'] }}
+{% endif %}
 {% if properties['dependencies']|length > 0 %}
 {% for dependency in properties['dependencies'] %}
     - {{ dependency }}

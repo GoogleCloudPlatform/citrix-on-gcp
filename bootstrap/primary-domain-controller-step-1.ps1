@@ -118,6 +118,10 @@ Function Set-Setting {
 Write-Host "Bootstrap script started..."
 
 
+# turn off gcloud version checks
+gcloud config set component_manager/disable_update_check true
+
+
 Write-Host "Persisting metadata..."
 Set-Setting "prefix" (Get-GoogleMetadata "instance/attributes/prefix")
 Set-Setting "suffix" (Get-GoogleMetadata "instance/attributes/suffix")
@@ -151,10 +155,10 @@ If ($GcsPrefix.EndsWith("/")) {
 $TempFile = New-TemporaryFile
 
 Unwrap-SecureString $LocalAdminPassword | gcloud kms encrypt --key $KmsKey --plaintext-file - --ciphertext-file $TempFile.FullName
-gsutil cp $TempFile.FullName "$GcsPrefix/output/domain-admin-password.bin"
+gsutil -q cp $TempFile.FullName "$GcsPrefix/output/domain-admin-password.bin"
 
 Unwrap-SecureString $SafeModeAdminPassword | gcloud kms encrypt --key $KmsKey --plaintext-file - --ciphertext-file $TempFile.FullName
-gsutil cp $TempFile.FullName "$GcsPrefix/output/dsrm-admin-password.bin"
+gsutil -q cp $TempFile.FullName "$GcsPrefix/output/dsrm-admin-password.bin"
 
 Remove-Item $TempFile.FullName -Force
 

@@ -16,7 +16,7 @@
 
 info:
   title: Citrix Cloud Connector Template
-  description: Deploys domain-joined xenapp instances
+  description: Deploys domain-joined VDA instances
 
 imports:
 - path: windows.jinja
