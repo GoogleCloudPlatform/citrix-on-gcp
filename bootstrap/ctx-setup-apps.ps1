@@ -305,10 +305,10 @@ $Suffix = Get-Setting "suffix"
 Write-Host "Getting Citrix Creds..."
 $CitrixCredsUrl = Get-GoogleMetadata "instance/attributes/citrix-creds"
 $CitrixCreds = gsutil cat $CitrixCredsUrl | ConvertFrom-Json
-Write-Host "Using client [$Creds.SecureClientId]..."
-$CtxClientId = $Creds.SecureClientId
-$CtxClientSecret = $Creds.SecureClientSecret
-$CtxCustomerId = $Creds.CustomerId
+Write-Host "Using client [$($CitrixCreds.SecureClientId)]..."
+$CtxClientId = $CitrixCreds.SecureClientId
+$CtxClientSecret = $CitrixCreds.SecureClientSecret
+$CtxCustomerId = $CitrixCreds.CustomerId
 
 
 Write-Host "Getting API bearer token..."
@@ -445,4 +445,8 @@ Write-Host "Signaling completion..."
 $name = Get-GoogleMetadata "instance/name"
 $RuntimeConfig = Get-GoogleMetadata "instance/attributes/runtime-config"
 Set-RuntimeConfigVariable -ConfigPath $RuntimeConfig -Variable bootstrap/$name/success/time -Text (Get-Date -Format g)
+
+
+# mgmt (script host) server no longer needed, shut down
+Stop-Computer
 
