@@ -131,6 +131,7 @@ resources:
 - name: domain-controllers
   type: domain-controllers.jinja
   properties:
+    prefix: {{ properties['prefix'] }}
     suffix: {{ properties['suffix'] }}
     region: {{ properties['region'] }}
     primary-zone: {{ properties['zone'] }}

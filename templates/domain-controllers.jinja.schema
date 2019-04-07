@@ -22,6 +22,7 @@ imports:
 - path: windows.jinja
 
 required:
+- prefix
 - suffix
 - subnetwork
 - region
@@ -36,6 +37,9 @@ required:
 - bootstrap-from
 
 properties:
+  prefix:
+    type: string
+    description: Deployment prefix for resources.
   suffix:
     type: string
     description: Disambiguation suffix for resources.

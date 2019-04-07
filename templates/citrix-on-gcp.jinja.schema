@@ -28,6 +28,7 @@ imports:
 
 required:
 - admin
+- prefix
 - suffix
 - region
 - zone
@@ -42,9 +43,14 @@ properties:
   admin:
     type: string
     description: Admin principal in form of user:email, group:email, serviceAccount:email, etc.
+  prefix:
+    type: string
+    description: Deployment prefix for resources.
+    default: citrix-on-gcp
   suffix:
     type: string
     description: Disambiguation suffix for resources.
+    default: abc123
   region:
     type: string
     default: us-east4

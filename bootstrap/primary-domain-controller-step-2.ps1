@@ -102,14 +102,6 @@ Write-Host "Configuring NTP..."
 w32tm /config /manualpeerlist:"metadata.google.internal" /syncfromflags:manual /reliable:yes /update
 
 
-## download and run user creation script
-#$GcsPrefix = Invoke-RestMethod -Headers @{"Metadata-Flavor" = "Google"} -Uri http://169.254.169.254/computeMetadata/v1/instance/attributes/gcs-prefix
-#$TempFile = New-TemporaryFile
-#$TempFile.MoveTo($TempFile.fullName + ".ps1")
-#gsutil cp $GcsPrefix/bootstrap/create-domain-users.ps1 $TempFile.FullName#Invoke-Expression $TempFile.FullName
-#Remove-Item $TempFile.FullName -Force
-
-
 # poll domain controller until it appears ready
 Do {
   Try {

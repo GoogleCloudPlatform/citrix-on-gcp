@@ -66,6 +66,8 @@ resources:
       value: {{ properties['bootstrap-from'] }}/ctx-vda-1.ps1
 {% else %}
 {% endif %}
+    - key: citrix-creds
+      value: {{ properties['citrix-creds'] }}
     - key: vda-download-url
       value: {{ properties['vda-download-url'] }}
     - key: ctx-machine-catalog
@@ -79,10 +81,11 @@ resources:
     - key: ctx-cloud-connectors
       value: {% for host in properties['ctx-cloud-connectors'] %}{{ host }}{{ "," if not loop.last }}{% endfor %}
     tags:
-    - ctx-xa
-    - internet-nat
-{% if properties['dependencies']|length > 0 %}
+    - rdp
     dependencies:
+    - dc-1-address-{{ properties['suffix'] }}
+    - dc-2-address-{{ properties['suffix'] }}
+{% if properties['dependencies']|length > 0 %}
 {% for dependency in properties['dependencies'] %}
     - {{ dependency }}
 {% endfor %}

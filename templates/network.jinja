@@ -35,6 +35,24 @@ resources:
     region: {{ subnet['region'] }}
     privateIpGoogleAccess: true
 {% endfor %}
+- name: citrix-allow-dns-external-{{ properties['suffix'] }}
+  type: compute.v1.firewall
+  properties:
+    description: Allow forwarding from Google DNS
+    network: $(ref.citrix-{{ properties['suffix'] }}.selfLink)
+    allowed:
+    - IPProtocol: tcp
+      ports:
+      - '53'
+    - IPProtocol: udp
+      ports:
+      - '53'
+    direction: INGRESS
+    priority: 1000
+    sourceRanges:
+    - 35.199.192.0/19
+    targetTags:
+    - dns
 - name: citrix-allow-rdp-external-{{ properties['suffix'] }}
   type: compute.v1.firewall
   properties:

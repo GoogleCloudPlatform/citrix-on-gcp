@@ -262,6 +262,10 @@ $GcsPrefix = Get-GoogleMetadata "instance/attributes/gcs-prefix"
 If ($GcsPrefix.EndsWith("/")) {
   $GcsPrefix = $GcsPrefix -Replace ".$"
 }
+$BootstrapFrom = Get-GoogleMetadata "instance/attributes/bootstrap-from"
+If ($BootstrapFrom.EndsWith("/")) {
+  $BootstrapFrom = $BootstrapFrom -Replace ".$"
+}
 
 
 Write-Output "Fetching admin credentials..."
@@ -277,13 +281,18 @@ $DomainAdminCredentials = New-Object `
 
 Write-Host "Running script on PDC to populate domain..."
 # download and run (as domain admin) user creation script
-Invoke-Command -ComputerName  (Get-ADDomain).PDCEmulator -Credential $DomainAdminCredentials -ArgumentList "$GcsPrefix/bootstrap/create-domain-users.ps1" -ScriptBlock {
+Invoke-Command -ComputerName  (Get-ADDomain).PDCEmulator -Credential $DomainAdminCredentials -ArgumentList "$BootstrapFrom/create-domain-users.ps1" -ScriptBlock {
 	Param (
-		$ScriptUrlGcs
+		$ScriptUrl
 	)
 	$TempFile = New-TemporaryFile
 	$TempFile.MoveTo($TempFile.fullName + ".ps1")
-	gsutil cp $ScriptUrlGcs $TempFile.FullName
+	if ($ScriptUrl.StartsWith("gs://")) {
+		gsutil cp $ScriptUrl $TempFile.FullName
+	}
+	else {
+		(New-Object System.Net.WebClient).DownloadFile($ScriptUrl, $TempFile.FullName)		
+	}
 	Invoke-Expression $TempFile.FullName
 	Remove-Item $TempFile.FullName -Force
 }

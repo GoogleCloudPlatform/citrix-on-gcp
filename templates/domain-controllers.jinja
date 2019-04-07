@@ -45,6 +45,10 @@ resources:
     service-account: {{ properties['service-account'] }}
     ssd: {{ properties['ssd'] }}
     metadata:
+    - key: prefix
+      value: {{ properties['prefix'] }}
+    - key: suffix
+      value: {{ properties['suffix'] }}
     - key: domain-name
       value: {{ properties['domain-name'] }}
     - key: netbios-name
@@ -68,8 +72,10 @@ resources:
     - dc
     - dns
     - rdp
-{% if properties['dependencies']|length > 0 %}
     dependencies:
+    - dc-1-address-{{ properties['suffix'] }}
+    - dc-2-address-{{ properties['suffix'] }}
+{% if properties['dependencies']|length > 0 %}
 {% for dependency in properties['dependencies'] %}
     - {{ dependency }}
 {% endfor %}
@@ -128,8 +134,10 @@ resources:
     - dc
     - dns
     - rdp
-{% if properties['dependencies']|length > 0 %}
     dependencies:
+    - dc-1-address-{{ properties['suffix'] }}
+    - dc-2-address-{{ properties['suffix'] }}
+{% if properties['dependencies']|length > 0 %}
 {% for dependency in properties['dependencies'] %}
     - {{ dependency }}
 {% endfor %}

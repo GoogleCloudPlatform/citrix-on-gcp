@@ -78,11 +78,14 @@ resources:
       value: {{ properties['bootstrap-from'] }}/ctx-cloud-connector.ps1
 {% else %}
 {% endif %}
+    - key: citrix-creds
+      value: {{ properties['citrix-creds'] }}
     tags:
-    - ctx-infra
-    - internet-nat
-{% if properties['dependencies']|length > 0 %}
+    - rdp
     dependencies:
+    - dc-1-address-{{ properties['suffix'] }}
+    - dc-2-address-{{ properties['suffix'] }}
+{% if properties['dependencies']|length > 0 %}
 {% for dependency in properties['dependencies'] %}
     - {{ dependency }}
 {% endfor %}
