@@ -327,6 +327,7 @@ Set-RuntimeConfigVariable -ConfigPath $RuntimeConfig -Variable "setup/citrix/res
 
 
 Write-Host "Downloading installer..."
+[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 $TempFile = New-TemporaryFile
 $TempFile.MoveTo($TempFile.FullName + ".exe")
 $url = "http://download.apps.cloud.com/CitrixPoshSdk.exe"
