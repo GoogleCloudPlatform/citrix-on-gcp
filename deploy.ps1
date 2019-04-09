@@ -133,7 +133,7 @@ resources:
 "@
 If ($PowerManaged) {
   $ConfigYaml = $ConfigYaml + @"
-    power-managed: True
+    power-managed: $PowerManaged
 "@
 }
 [System.IO.File]::WriteAllText($Temp.FullName, $ConfigYaml, [System.Text.Encoding]::ASCII)
