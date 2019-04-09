@@ -268,6 +268,28 @@ If ($BootstrapFrom.EndsWith("/")) {
 }
 
 
+Write-Host "Getting settings..."
+$Prefix = Get-Setting "prefix"
+$Suffix = Get-Setting "suffix"
+
+Write-Host "Getting Citrix Creds..."
+$CitrixCredsUrl = Get-GoogleMetadata "instance/attributes/citrix-creds"
+$CitrixCreds = gsutil -q cat $CitrixCredsUrl | ConvertFrom-Json
+Write-Host "Using client [$($CitrixCreds.SecureClientId)]..."
+$CtxClientId = $CitrixCreds.SecureClientId
+$CtxClientSecret = $CitrixCreds.SecureClientSecret
+$CtxCustomerId = $CitrixCreds.CustomerId
+
+
+Write-Host "Getting API bearer token..."
+$Token = GetBearerToken $CtxClientId $CtxClientSecret
+
+
+Write-Host "Creating Resource Location..."
+$ResLoc = New-ResourceLocation "$Prefix-$Suffix" $CtxCustomerId $Token
+Set-Setting ("citrix/resource-locations/" + $ResLoc.name + "/id") $ResLoc.id
+
+
 Write-Output "Fetching admin credentials..."
 # fetch and decrypt domain admin and dsrm passwords
 $TempFile = New-TemporaryFile
@@ -294,33 +316,11 @@ Invoke-Command -ComputerName  (Get-ADDomain).PDCEmulator -Credential $DomainAdmi
 		gsutil -q cp $ScriptUrl $TempFile.FullName
 	}
 	else {
-		(New-Object System.Net.WebClient).DownloadFile($ScriptUrl, $TempFile.FullName)		
+		(New-Object System.Net.WebClient).DownloadFile($ScriptUrl, $TempFile.FullName)
 	}
 	Invoke-Expression $TempFile.FullName
 	Remove-Item $TempFile.FullName -Force
 }
-
-
-Write-Host "Getting settings..."
-$Prefix = Get-Setting "prefix"
-$Suffix = Get-Setting "suffix"
-
-Write-Host "Getting Citrix Creds..."
-$CitrixCredsUrl = Get-GoogleMetadata "instance/attributes/citrix-creds"
-$CitrixCreds = gsutil -q cat $CitrixCredsUrl | ConvertFrom-Json
-Write-Host "Using client [$($CitrixCreds.SecureClientId)]..."
-$CtxClientId = $CitrixCreds.SecureClientId
-$CtxClientSecret = $CitrixCreds.SecureClientSecret
-$CtxCustomerId = $CitrixCreds.CustomerId
-
-
-Write-Host "Getting API bearer token..."
-$Token = GetBearerToken $CtxClientId $CtxClientSecret
-
-
-Write-Host "Creating Resource Location..."
-$ResLoc = New-ResourceLocation "$Prefix-$Suffix" $CtxCustomerId $Token
-Set-Setting ("citrix/resource-locations/" + $ResLoc.name + "/id") $ResLoc.id
 
 
 Write-Host "Signalling Citrix Resource Location setup..."
