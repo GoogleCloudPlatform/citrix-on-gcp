@@ -123,7 +123,7 @@ resources:
     netbios-name: $NetbiosName
     subnets:
     - region: $Region
-      cidr: 10.128.0.0/20
+      cidr: 10.0.0.0/16
     vda-download-url: $VdaDownloadUrl
     workers: $Workers
     minimal: $UseMinimalResources
