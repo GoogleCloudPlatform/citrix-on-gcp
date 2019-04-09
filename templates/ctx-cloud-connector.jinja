@@ -68,8 +68,8 @@ resources:
       value: waiter-ctx-dc-2-{{ properties['suffix'] }}
 {% endif %}
 {% if properties['bootstrap-from'].startswith('gs://') or
-         properties['bootstrap-from'].startwith('https://') or
-         properties['bootstrap-from'].startwith('http://')  %}
+         properties['bootstrap-from'].startswith('https://') or
+         properties['bootstrap-from'].startswith('http://')  %}
     - key: bootstrap-from
       value: {{ properties['bootstrap-from'] }}
     - key: windows-startup-script-url
