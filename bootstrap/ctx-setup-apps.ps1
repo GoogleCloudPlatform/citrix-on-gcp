@@ -290,6 +290,12 @@ $ResLoc = New-ResourceLocation "$Prefix-$Suffix" $CtxCustomerId $Token
 Set-Setting ("citrix/resource-locations/" + $ResLoc.name + "/id") $ResLoc.id
 
 
+Write-Host "Signalling Citrix Resource Location setup..."
+$name = Get-GoogleMetadata "instance/name"
+$RuntimeConfig = Get-GoogleMetadata "instance/attributes/runtime-config"
+Set-RuntimeConfigVariable -ConfigPath $RuntimeConfig -Variable "setup/citrix/resloc/$name" -Text (Get-Date -Format g)
+
+
 Write-Output "Fetching admin credentials..."
 # fetch and decrypt domain admin and dsrm passwords
 $TempFile = New-TemporaryFile
@@ -321,12 +327,6 @@ Invoke-Command -ComputerName  (Get-ADDomain).PDCEmulator -Credential $DomainAdmi
 	Invoke-Expression $TempFile.FullName
 	Remove-Item $TempFile.FullName -Force
 }
-
-
-Write-Host "Signalling Citrix Resource Location setup..."
-$name = Get-GoogleMetadata "instance/name"
-$RuntimeConfig = Get-GoogleMetadata "instance/attributes/runtime-config"
-Set-RuntimeConfigVariable -ConfigPath $RuntimeConfig -Variable "setup/citrix/resloc/$name" -Text (Get-Date -Format g)
 
 
 Write-Host "Downloading installer..."
