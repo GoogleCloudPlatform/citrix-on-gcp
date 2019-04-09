@@ -128,7 +128,8 @@ resources:
     workers: $Workers
     minimal: $UseMinimalResources
     ssd: $UseSSD
-
+    citrix-creds: $CitrixCredsUrl
+    admin: user:$USER
 "@
 If ($PowerManaged) {
   $ConfigYaml = $ConfigYaml + @"
