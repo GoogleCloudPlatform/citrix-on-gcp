@@ -130,6 +130,7 @@ resources:
     ssd: $UseSSD
     citrix-creds: $CitrixCredsUrl
     admin: user:$User
+
 "@
 If ($PowerManaged) {
   $ConfigYaml = $ConfigYaml + @"
