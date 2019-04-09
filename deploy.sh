@@ -1,5 +1,11 @@
 #!/usr/bin/env bash
 
+CREDS=$1
+while [ -z "$CREDS" ]; do
+  echo "Citrix Creds URL? "
+  read CREDS
+done
+
 SUFFIX=$(cat /dev/urandom | tr -dc 'a-z0-9' | fold -w 6 | head -n 1)
 TMP=$(mktemp)
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
@@ -14,13 +20,10 @@ resources:
   properties:
     admin: user:$USER
     suffix: $SUFFIX
-    bootstrap-from: gs://jeffallen-ext-citrix-4/bootstrap-v1
-    citrix-creds: gs://jeffallen-ext-citrix-4/citrix-creds.json
-    minimal: True
+    citrix-creds: $CREDS
 EOF
 
 echo "config: $TMP"
 echo "deployment: citrix-on-gcp-$SUFFIX"
 gcloud deployment-manager deployments create citrix-on-gcp-$SUFFIX --config=$TMP --async
-#rm $TMP
 

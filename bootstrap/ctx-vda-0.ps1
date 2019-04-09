@@ -138,6 +138,10 @@ Function Get-GoogleMetadata() {
 Write-Host "Bootstrap script started..."
 
 
+# turn off gcloud version checks
+gcloud config set component_manager/disable_update_check true
+
+
 Write-Host "Installing required Windows features..."
 Add-WindowsFeature -Name RDS-RD-Server
 Add-WindowsFeature -Name Server-Media-Foundation

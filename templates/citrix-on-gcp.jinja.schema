@@ -102,7 +102,7 @@ properties:
     description: Whether or not to use power-managed Machine Catalogs in Citrix Cloud
   minimal:
     type: boolean
-    default: False
+    default: True
     description: Whether or not to minimize resources (e.g. for trial account) instead of deploying with redundancy
   ssd:
     type: boolean
@@ -111,6 +111,7 @@ properties:
   bootstrap-from:
     type: string
     description: Location of bootstrap artifacts. Can be a GCS prefix, e.g. gs://bucket/path. Or, an image path, e.g. TBD.
+    default: https://raw.githubusercontent.com/GoogleCloudPlatform/citrix-on-gcp/experimental/bootstrap
   keyring:
     type: string
     description: Name of keyring for secret management.

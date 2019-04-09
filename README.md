@@ -1,3 +1,16 @@
+## NOTES FOR EXPERIMENTAL BRANCH
+- Service Management API must be enabled.
+- Assign Project Owner to Deplloyment Manager service account, see https://cloud.google.com/deployment-manager/docs/best-practices/#permissions
+
+- Create a JSON file containing Citrix Cloud secure client credentials and upload it to Google Cloud Storage, such as:
+``` shell
+{
+        "SecureClientId": "[your secure client id]",
+        "SecureClientSecret": "[your secure client secret]",
+        "CustomerId": "[your customer id]"
+}
+```
+
 ## Overview
 This repository contains scripts and templates to simplify deployment of the resources described in Citrix's [Deploying Citrix Cloud XenApp and XenDesktop Service on the Google Cloud Platform](https://www.citrix.com/content/dam/citrix/en_us/documents/guide/deploying-citrix-cloud-xenapp-and-xendesktop-service-on-the-google-cloud-platform.pdf) published December 2017.
 

@@ -88,10 +88,6 @@ Function Set-Setting {
 }
 
 
-# turn off gcloud version checks
-gcloud config set component_manager/disable_update_check true
-
-
 $KmsKey = Get-GoogleMetadata "instance/attributes/kms-key"
 $GcsPrefix = Get-GoogleMetadata "instance/attributes/gcs-prefix"
 

@@ -255,10 +255,6 @@ Function Disable-InternetExplorerESC {
 Write-Host "Bootstrap script started..."
 
 
-# turn off gcloud version checks
-gcloud config set component_manager/disable_update_check true
-
-
 Write-Output "Getting metadata..."
 $NetBiosName = Get-GoogleMetadata "instance/attributes/netbios-name"
 $KmsKey = Get-GoogleMetadata "instance/attributes/kms-key"

@@ -200,10 +200,6 @@ Function Set-Setting {
 Write-Host "Bootstrap script started..."
 
 
-# turn off gcloud version checks
-gcloud config set component_manager/disable_update_check true
-
-
 # get settings
 $Prefix = Get-Setting "prefix"
 $Suffix = Get-Setting "suffix"
