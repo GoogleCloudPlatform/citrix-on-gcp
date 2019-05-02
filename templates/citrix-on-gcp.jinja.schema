@@ -15,16 +15,13 @@
 #
 
 info:
-  title: Citrix XenApp
-  description: Minimal Citrix XenApp deployment for Google Cloud Platform.
+  title: Citrix on GCP lab
+  description: Infrastructure for Citrix on GCP lab
 
 imports:
 - path: apis.jinja
 - path: network.jinja
 - path: domain-controllers.jinja
-- path: bastion.jinja
-- path: ctx-cloud-connector.jinja
-- path: ctx-vda.jinja
 
 required:
 - admin
@@ -38,6 +35,7 @@ required:
 - vda-download-url
 - bootstrap-from
 - citrix-creds
+- admin-service-account
 
 properties:
   admin:
@@ -132,4 +130,7 @@ properties:
   citrix-creds:
     type: string
     description: GCS location of yaml citrix credentials
+  admin-service-account:
+    type: string
+    description: Service account for bootstrapping, etc.
 
