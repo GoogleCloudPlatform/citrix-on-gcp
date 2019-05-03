@@ -211,7 +211,7 @@ Function Get-Setting {
 		$GcsPrefix = $GcsPrefix -Replace ".$"
 	}
 
-	If ($Secure) {
+	If ($False -And $Secure) {
 		$KmsKey = Get-GoogleMetadata -Path "instance/attributes/kms-key"
 		$TempFile = New-TemporaryFile
 		gsutil -q cp "$GcsPrefix/settings/$Path.bin" "$TempFile.FullName"
