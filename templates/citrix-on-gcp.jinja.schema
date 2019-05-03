@@ -34,7 +34,7 @@ required:
 - netbios-name
 - vda-download-url
 - bootstrap-from
-- citrix-creds
+#- citrix-creds
 - admin-service-account
 
 properties:
@@ -109,7 +109,7 @@ properties:
   bootstrap-from:
     type: string
     description: Location of bootstrap artifacts. Can be a GCS prefix, e.g. gs://bucket/path. Or, an image path, e.g. TBD.
-    default: https://raw.githubusercontent.com/GoogleCloudPlatform/citrix-on-gcp/experimental/bootstrap
+    default: https://raw.githubusercontent.com/GoogleCloudPlatform/citrix-on-gcp/lab-612/bootstrap
   keyring:
     type: string
     description: Name of keyring for secret management.

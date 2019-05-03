@@ -98,5 +98,60 @@ resources:
     minimal: {{ properties['minimal'] }}
     ssd: {{ properties['ssd'] }}
     bootstrap-from: {{ properties['bootstrap-from'] }}
+{% if properties['resource-location-id'] and properties['citrix-creds'] %}
+- name: ctx-cc
+  type: ctx-cloud-connector.jinja
+  properties:
+    suffix: {{ properties['suffix'] }}
+    zones:
+    - {{ properties['zone'] }}
+{% if not properties['minimal'] %}
+    - {{ properties['secondary-zone'] }}
+{% endif %}
+    subnetwork: $(ref.citrix-{{ properties['region'] }}-{{ properties['suffix'] }}.selfLink)
+    service-account: $(ref.admin-service-account.email)
+    domain-name: {{ properties['domain-name'] }}
+    netbios-name: {{ properties['netbios-name'] }}
+    kms-key: $(ref.cryptoKey.name)
+    gcs-prefix: gs://$(ref.bucket.name)/
+    runtime-config: $(ref.config.name)
+    minimal: {{ properties['minimal'] }}
+    ssd: {{ properties['ssd'] }}
+    bootstrap-from: {{ properties['bootstrap-from'] }}
+    citrix-creds: {{ properties['citrix-creds'] }}
+    resource-location-id: {{ properties['resource-location-id'] }}
+{% if properties['workers'] > 0 %}
+- name: ctx-vda
+  type: ctx-vda.jinja
+  properties:
+    suffix: {{ properties['suffix'] }}
+    zones:
+    {% for i in range(properties['workers']) %}
+    - {{ loop.cycle(properties['zone'], properties['secondary-zone']) }}
+    {% endfor %}
+    subnetwork: $(ref.citrix-{{ properties['region'] }}-{{ properties['suffix'] }}.selfLink)
+    service-account: $(ref.admin-service-account.email)
+    domain-name: {{ properties['domain-name'] }}
+    netbios-name: {{ properties['netbios-name'] }}
+    kms-key: $(ref.cryptoKey.name)
+    gcs-prefix: gs://$(ref.bucket.name)/
+    runtime-config: $(ref.config.name)
+    vda-download-url: {{ properties['vda-download-url'] }}
+    ctx-machine-catalog: Catalog-{{ properties['suffix'] }}
+    ctx-delivery-group: Group-{{ properties['suffix'] }}
+{% if properties['power-managed'] %}
+    ctx-hypervisor-connection: Google-Cloud-{{ properties['suffix'] }}
+{% endif %}
+    ctx-cloud-connectors:
+    - ctx-cc-1-{{ properties['suffix'] }}.{{ properties['domain-name'] }}
+{% if not properties['minimal'] %}
+    - ctx-cc-2-{{ properties['suffix'] }}.{{ properties['domain-name'] }}
+{% endif %}
+    minimal: {{ properties['minimal'] }}
+    ssd: {{ properties['ssd'] }}
+    bootstrap-from: {{ properties['bootstrap-from'] }}
+    citrix-creds: {{ properties['citrix-creds'] }}
+{% endif %}
+{% endif %}
 {% endif %}
 

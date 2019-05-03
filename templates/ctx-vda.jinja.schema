@@ -36,7 +36,6 @@ required:
 - ctx-delivery-group
 - ctx-cloud-controllers
 - bootstrap-from
-- citrix-creds
 
 properties:
   suffix:
@@ -110,7 +109,4 @@ properties:
   bootstrap-from:
     type: string
     description: Location of bootstrap artifacts. Can be a GCS prefix, e.g. gs://bucket/path. Or, an image path, e.g. TBD.
-  citrix-creds:
-    type: string
-    description: GCS location of yaml citrix credentials
 
