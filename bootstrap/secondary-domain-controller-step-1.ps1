@@ -136,10 +136,14 @@ If ($GcsPrefix.EndsWith("/")) {
   $GcsPrefix = $GcsPrefix -Replace ".$"
 }
 $TempFile = New-TemporaryFile
-gsutil -q cp $GcsPrefix/output/domain-admin-password.bin $TempFile.FullName
-$DomainAdminPassword = $(gcloud kms decrypt --key $KmsKey --ciphertext-file $TempFile.FullName --plaintext-file - | ConvertTo-SecureString -AsPlainText -Force)
-gsutil -q cp $GcsPrefix/output/dsrm-admin-password.bin $TempFile.FullName
-$SafeModeAdminPassword = $(gcloud kms decrypt --key $KmsKey --ciphertext-file $TempFile.FullName --plaintext-file - | ConvertTo-SecureString -AsPlainText -Force)
+
+$DomainAdminPassword = $(gsutil -q cat $GcsPrefix/output/domain-admin-password | ConvertTo-SecureString -AsPlainText -Force)
+$SafeModeAdminPassword = $(gsutil -q cat $GcsPrefix/output/dsrm-admin-password | ConvertTo-SecureString -AsPlainText -Force)
+#gsutil -q cp $GcsPrefix/output/domain-admin-password.bin $TempFile.FullName
+#$DomainAdminPassword = $(gcloud kms decrypt --key $KmsKey --ciphertext-file $TempFile.FullName --plaintext-file - | ConvertTo-SecureString -AsPlainText -Force)
+#gsutil -q cp $GcsPrefix/output/dsrm-admin-password.bin $TempFile.FullName
+#$SafeModeAdminPassword = $(gcloud kms decrypt --key $KmsKey --ciphertext-file $TempFile.FullName --plaintext-file - | ConvertTo-SecureString -AsPlainText -Force)
+
 Remove-Item $TempFile.FullName
 $DomainAdminCredentials = New-Object `
         -TypeName System.Management.Automation.PSCredential `

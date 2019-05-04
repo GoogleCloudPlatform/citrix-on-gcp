@@ -154,11 +154,17 @@ If ($GcsPrefix.EndsWith("/")) {
 }
 $TempFile = New-TemporaryFile
 
-Unwrap-SecureString $LocalAdminPassword | gcloud kms encrypt --key $KmsKey --plaintext-file - --ciphertext-file $TempFile.FullName
-gsutil -q cp $TempFile.FullName "$GcsPrefix/output/domain-admin-password.bin"
+Unwrap-SecureString $LocalAdminPassword | Out-File -NoNewLine -Encoding "ASCII" $TempFile.FullName
+gsutil -q cp $TempFile.FullName "$GcsPrefix/output/domain-admin-password"
 
-Unwrap-SecureString $SafeModeAdminPassword | gcloud kms encrypt --key $KmsKey --plaintext-file - --ciphertext-file $TempFile.FullName
-gsutil -q cp $TempFile.FullName "$GcsPrefix/output/dsrm-admin-password.bin"
+Unwrap-SecureString $SafeModeAdminPassword | Out-File -NoNewLine -Encoding "ASCII" $TempFile.FullName
+gsutil -q cp $TempFile.FullName "$GcsPrefix/output/dsrm-admin-password"
+
+#Unwrap-SecureString $LocalAdminPassword | gcloud kms encrypt --key $KmsKey --plaintext-file - --ciphertext-file $TempFile.FullName
+#gsutil -q cp $TempFile.FullName "$GcsPrefix/output/domain-admin-password.bin"
+#
+#Unwrap-SecureString $SafeModeAdminPassword | gcloud kms encrypt --key $KmsKey --plaintext-file - --ciphertext-file $TempFile.FullName
+#gsutil -q cp $TempFile.FullName "$GcsPrefix/output/dsrm-admin-password.bin"
 
 Remove-Item $TempFile.FullName -Force
 
