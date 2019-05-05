@@ -15,7 +15,8 @@
 #
 
 outputs:
-  suffix: {{ properties['suffix'] }}
+- name: suffix
+  value: {{ properties['suffix'] }}
 
 resources:
 {% if properties['lifecycle'] == "DEPLOY" %}
