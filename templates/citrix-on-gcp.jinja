@@ -14,6 +14,9 @@
 #  limitations under the License.
 #
 
+outputs:
+  suffix: {{ properties['suffix'] }}
+
 resources:
 {% if properties['lifecycle'] == "DEPLOY" %}
 - name: apis
@@ -38,7 +41,6 @@ resources:
   properties:
     name: citrix-on-gcp-{{ env['project_number'] }}-{{ properties['suffix'] }}
     location: {{ properties['region'] }}
-    suffix: {{ properties['suffix'] }}
 {% endif %}
 - name: keyRing
   type: gcp-types/cloudkms-v1:projects.locations.keyRings
