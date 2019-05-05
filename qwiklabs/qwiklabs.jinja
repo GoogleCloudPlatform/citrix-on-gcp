@@ -25,10 +25,14 @@ resources:
   type: citrix-on-gcp.jinja
   properties:
     admin: user:{{ properties['userName'] }}@qwiklabs.net
-    suffix: {{ random_alphanum(6) }}
     ssd: True
     minimal: False
     admin-service-account: {{ env['project_number'] }}-compute@developer.gserviceaccount.com
+{% if properties['suffix'] %}
+    suffix: {{ properties['suffix'] }}
+{% else %}
+    suffix: {{ random_alphanum(6) }}
+{% endif %}
 {% if properties['vdas'] %}
     workers: {{ properties['vdas'] }}
 {% else %}
