@@ -38,6 +38,7 @@ resources:
   properties:
     name: citrix-on-gcp-{{ env['project_number'] }}-{{ properties['suffix'] }}
     location: {{ properties['region'] }}
+    suffix: {{ properties['suffix'] }}
 {% endif %}
 - name: keyRing
   type: gcp-types/cloudkms-v1:projects.locations.keyRings

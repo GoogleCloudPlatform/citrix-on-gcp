@@ -19,6 +19,8 @@
 outputs:
 - name: GCS Bucket
   value: $(ref.bucket.name)
+- name: Suffix
+  value: $(ref.bucket.suffix)
 
 resources:
 - name: citrix-on-gcp-lab
