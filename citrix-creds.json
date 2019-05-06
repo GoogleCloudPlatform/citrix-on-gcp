@@ -1,0 +1,6 @@
+{
+        "SecureClientId": "[your secure client id]",
+        "SecureClientSecret": "[your secure client secret]",
+        "CustomerId": "[your customer id]"
+}
+
