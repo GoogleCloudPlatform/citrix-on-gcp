@@ -19,5 +19,5 @@ info:
   description: top-level lab template
 
 imports:
-- path: https://raw.githubusercontent.com/GoogleCloudPlatform/citrix-on-gcp/lab-612/templates/citrix-on-gcp.jinja
+- path: citrix-on-gcp.jinja
   name: citrix-on-gcp.jinja
