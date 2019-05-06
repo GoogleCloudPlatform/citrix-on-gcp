@@ -21,6 +21,10 @@ outputs:
   value: $(ref.bucket.name)
 - name: Suffix
   value: $(ref.citrix-on-gcp-lab.suffix)
+- name: Deployment
+  value: $(ref.citrix-on-gcp-lab.deployment)
+- name: Domain
+  value: $(ref.citrix-on-gcp-lab.domain)
 
 resources:
 - name: citrix-on-gcp-lab
