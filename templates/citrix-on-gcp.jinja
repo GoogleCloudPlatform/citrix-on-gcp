@@ -17,6 +17,10 @@
 outputs:
 - name: suffix
   value: {{ properties['suffix'] }}
+- name: deployment
+  value: {{ env['deployment'] }}
+- name: domain
+  value: {{ properties['domain-name'] }}
 
 resources:
 {% if properties['lifecycle'] == "DEPLOY" %}
@@ -113,7 +117,7 @@ resources:
     - {{ properties['secondary-zone'] }}
 {% endif %}
     subnetwork: $(ref.citrix-{{ properties['region'] }}-{{ properties['suffix'] }}.selfLink)
-    service-account: $(ref.admin-service-account.email)
+    service-account: {{ properties['admin-service-account'] }}
     domain-name: {{ properties['domain-name'] }}
     netbios-name: {{ properties['netbios-name'] }}
     kms-key: $(ref.cryptoKey.name)
@@ -134,7 +138,7 @@ resources:
     - {{ loop.cycle(properties['zone'], properties['secondary-zone']) }}
     {% endfor %}
     subnetwork: $(ref.citrix-{{ properties['region'] }}-{{ properties['suffix'] }}.selfLink)
-    service-account: $(ref.admin-service-account.email)
+    service-account: {{ properties['admin-service-account'] }}
     domain-name: {{ properties['domain-name'] }}
     netbios-name: {{ properties['netbios-name'] }}
     kms-key: $(ref.cryptoKey.name)

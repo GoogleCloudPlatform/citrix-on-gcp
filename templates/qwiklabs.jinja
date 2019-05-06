@@ -30,10 +30,14 @@ resources:
     ssd: True
     minimal: False
     admin-service-account: {{ env['project_number'] }}-compute@developer.gserviceaccount.com
+    netbios-name: SYNERGY
 {% if properties['suffix'] %}
+    domain-name: synergy-{{ properties['suffix'] }}.com
     suffix: {{ properties['suffix'] }}
 {% else %}
-    suffix: {{ random_alphanum(6) }}
+{% set suffix = random_alphanum(3) %}
+    domain-name: synergy-{{ suffix }}.com
+    suffix: {{ suffix }}
 {% endif %}
 {% if properties['vdas'] %}
     workers: {{ properties['vdas'] }}

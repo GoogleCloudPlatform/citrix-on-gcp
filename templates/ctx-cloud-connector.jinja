@@ -50,6 +50,8 @@ resources:
     service-account: {{ properties['service-account'] }}
     ssd: {{ properties['ssd'] }}
     metadata:
+    - key: resource-location-id
+      value: {{ properties['resource-location-id'] }}
     - key: domain-name
       value: {{ properties['domain-name'] }}
     - key: netbios-name

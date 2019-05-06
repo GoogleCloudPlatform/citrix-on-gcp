@@ -32,6 +32,7 @@ required:
 - gcs-prefix
 - runtime-config
 - bootstrap-from
+- resource-location-id
 
 properties:
   suffix:
