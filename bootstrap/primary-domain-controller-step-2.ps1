@@ -94,7 +94,19 @@ Function Wait-RuntimeConfigWaiter {
 }
 
 
-Write-Host "Bootstrap script started..."
+Function Get-GoogleMetadata() {
+        Param (
+        [Parameter(Mandatory=$True)][String] $Path
+        )
+        Try {
+                Return Invoke-RestMethod -Headers @{"Metadata-Flavor" = "Google"} -Uri http://169.254.169.254/computeMetadata/v1/$Path
+        }
+        Catch {
+                Return $Null
+        }
+}
+
+										Write-Host "Bootstrap script started..."
 
 
 Write-Host "Configuring NTP..."
@@ -127,4 +139,24 @@ Write-Host "Signaling completion..."
 $name = Invoke-RestMethod -Headers @{"Metadata-Flavor" = "Google"} -Uri http://169.254.169.254/computeMetadata/v1/instance/name
 $RuntimeConfig = Invoke-RestMethod -Headers @{"Metadata-Flavor" = "Google"} -Uri http://169.254.169.254/computeMetadata/v1/instance/attributes/runtime-config
 Set-RuntimeConfigVariable -ConfigPath $RuntimeConfig -Variable bootstrap/$name/success/time -Text (Get-Date -Format g)
+
+
+Write-Host "Populating domain..."
+$TempFile = New-TemporaryFile
+
+$BootstrapFrom = Get-GoogleMetadata "instance/attributes/bootstrap-from"
+If ($BootstrapFrom.EndsWith("/")) {
+  $BootstrapFrom = $BootstrapFrom -Replace ".$"
+}
+
+$ScriptUrl = "$BootstrapFrom/create-domain-users.ps1"
+if ($ScriptUrl.StartsWith("gs://")) {
+  gsutil -q cp $ScriptUrl $TempFile.FullName
+}
+else {
+  (New-Object System.Net.WebClient).DownloadFile($ScriptUrl, $TempFile.FullName)
+}
+Invoke-Expression $TempFile.FullName
+
+Remove-Item $TempFile.FullName
 

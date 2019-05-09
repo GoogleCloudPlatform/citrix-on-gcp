@@ -21,6 +21,10 @@ outputs:
   value: {{ env['deployment'] }}
 - name: domain
   value: {{ properties['domain-name'] }}
+- name: netbios-name
+  value: {{ properties['netbios-name'] }}
+- name: administrator
+  value: {{ properties['netbios-name'] }}\Administrator
 
 resources:
 {% if properties['lifecycle'] == "DEPLOY" %}
@@ -159,6 +163,66 @@ resources:
     ssd: {{ properties['ssd'] }}
     bootstrap-from: {{ properties['bootstrap-from'] }}
     citrix-creds: {{ properties['citrix-creds'] }}
+{% endif %}
+
+- name: waiter-ctx-admin-{{ properties['suffix'] }}
+  type: runtimeconfig.v1beta1.waiter
+  properties:
+    waiter: waiter-ctx-admin-{{ properties['suffix'] }}
+    parent: {{ properties['runtime-config'] }}
+    timeout: 2400s
+    success:
+      cardinality:
+        path: bootstrap/ctx-admin-{{ properties['suffix'] }}/success
+  metadata:
+    dependsOn:
+    - ctx-admin-{{ properties['suffix'] }}
+- name: ctx-admin-{{ properties['suffix'] }}
+  type: windows.jinja
+  properties:
+    name: ctx-admin-{{ properties['suffix'] }}
+    zone: {{ properties['zone'] }}
+    machine-type: n1-standard-2
+    subnetwork: {{ properties['subnetwork'] }}
+    service-account: {{ properties['admin-service-account'] }}
+    ssd: {{ properties['ssd'] }}
+    metadata:
+    - key: domain-name
+      value: {{ properties['domain-name'] }}
+    - key: netbios-name
+      value: {{ properties['netbios-name'] }}
+    - key: kms-key
+      value: {{ properties['kms-key'] }}
+    - key: gcs-prefix
+      value: {{ properties['gcs-prefix'] }}
+    - key: runtime-config
+      value: {{ properties['runtime-config'] }}
+{% if properties['minimal'] %}
+    - key: wait-on
+      value: waiter-ctx-dc-1-{{ properties['suffix'] }}
+{% else %}
+    - key: wait-on
+      value: waiter-ctx-dc-2-{{ properties['suffix'] }}
+{% endif %}
+{% if properties['bootstrap-from'].startswith('gs://') or
+         properties['bootstrap-from'].startswith('https://') or 
+         properties['bootstrap-from'].startswith('http://')  %}
+    - key: bootstrap-from
+      value: {{ properties['bootstrap-from'] }}
+    - key: windows-startup-script-url
+      value: {{ properties['bootstrap-from'] }}/domain-member.ps1
+    - key: post-join-script-url
+      value: {{ properties['bootstrap-from'] }}/ctx-admin.ps1
+{% else %}
+{% endif %}
+    - key: citrix-creds
+      value: {{ properties['citrix-creds'] }}
+    tags:
+    - rdp
+    dependencies:
+    - dc-1-address-{{ properties['suffix'] }}
+{% if not properties['minimal'] %}
+    - dc-2-address-{{ properties['suffix'] }}
 {% endif %}
 {% endif %}
 {% endif %}

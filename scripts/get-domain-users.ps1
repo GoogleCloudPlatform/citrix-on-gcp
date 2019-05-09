@@ -67,7 +67,7 @@ Write-Host "Project Number: [$ProjectNumber]"
 
 # see if user specified suffix, if not prompt for choice
 If (-not $Suffix) {
-	$Options = @(gsutil ls | ? { $_ -match "^$Prefix-" })
+	$Options = @(gsutil ls | ? { $_ -match "^gs://$Prefix-" } | % { $_.Split('/')[2] })
 	If ($Options.Length -eq 0) {
 		Write-Error "Please specify a suffix and try again."
 		Exit
@@ -82,10 +82,11 @@ If (-not $Suffix) {
 }
 Write-Host "Suffix: [$Suffix]"
 
-Write-Host "Getting domain users for: $Prefix-$Suffix"
+Write-Host "Getting domain users for: $Prefix / $Suffix"
 gsutil cat "gs://$Prefix-$ProjectNumber-$Suffix/output/domain-users"
 #$Temp = New-TemporaryFile
 #gsutil cp "gs://$Prefix-$ProjectNumber-$Suffix/output/domain-users.bin" $Temp.FullName
 #gcloud kms decrypt --key "projects/$Project/locations/global/keyRings/$Prefix/cryptoKeys/domain-secrets-$Suffix" --ciphertext-file $Temp.FullName --plaintext-file -
 #Remove-Item $Temp.FullName
+
 

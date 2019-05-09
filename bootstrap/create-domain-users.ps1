@@ -117,8 +117,10 @@ If ($GcsPrefix.EndsWith("/")) {
 }
 $TempFile = New-TemporaryFile
 
-$DomainUsers | gcloud kms encrypt --key $KmsKey --plaintext-file - --ciphertext-file $TempFile.FullName
-gsutil -q cp $TempFile.FullName "$GcsPrefix/output/domain-users.bin"
+#$DomainUsers | gcloud kms encrypt --key $KmsKey --plaintext-file - --ciphertext-file $TempFile.FullName
+#gsutil -q cp $TempFile.FullName "$GcsPrefix/output/domain-users.bin"
+$DomainUsers | Out-File -Encoding "ASCII" $TempFile.FullName
+gsutil -q cp $TempFile.FullName "$GcsPrefix/output/domain-users"
 
 Remove-Item $TempFile.FullName -Force
 

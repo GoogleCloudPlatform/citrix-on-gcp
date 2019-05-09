@@ -67,7 +67,7 @@ Write-Host "Project Number: [$ProjectNumber]"
 
 # see if user specified suffix, if not prompt for choice
 If (-not $Suffix) {
-	$Options = @(gsutil ls | ? { $_ -match "^$Prefix-" })
+	$Options = @(gsutil ls | ? { $_ -match "^gs://$Prefix-" } | % { $_.Split('/')[2] })
 	If ($Options.Length -eq 0) {
 		Write-Error "Please specify a suffix and try again."
 		Exit
@@ -82,7 +82,7 @@ If (-not $Suffix) {
 }
 Write-Host "Suffix: [$Suffix]"
 
-Write-Host "Getting domain admin password for: $Prefix-$Suffix"
+Write-Host "Getting domain admin password for: $Prefix / $Suffix"
 gsutil cat "gs://$Prefix-$ProjectNumber-$Suffix/output/domain-admin-password"
 #$Temp = New-TemporaryFile
 #gsutil cp "gs://$Prefix-$ProjectNumber-$Suffix/output/domain-admin-password.bin" $Temp.FullName
@@ -90,4 +90,5 @@ gsutil cat "gs://$Prefix-$ProjectNumber-$Suffix/output/domain-admin-password"
 #Remove-Item $Temp.FullName
 
 #Write-Host $ClearPass
+
 
