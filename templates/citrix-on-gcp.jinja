@@ -169,7 +169,7 @@ resources:
   type: runtimeconfig.v1beta1.waiter
   properties:
     waiter: waiter-ctx-admin-{{ properties['suffix'] }}
-    parent: {{ properties['runtime-config'] }}
+    parent: $(ref.config.name)
     timeout: 2400s
     success:
       cardinality:
@@ -183,7 +183,7 @@ resources:
     name: ctx-admin-{{ properties['suffix'] }}
     zone: {{ properties['zone'] }}
     machine-type: n1-standard-2
-    subnetwork: {{ properties['subnetwork'] }}
+    subnetwork: $(ref.citrix-{{ properties['region'] }}-{{ properties['suffix'] }}.selfLink)
     service-account: {{ properties['admin-service-account'] }}
     ssd: {{ properties['ssd'] }}
     metadata:
@@ -192,11 +192,11 @@ resources:
     - key: netbios-name
       value: {{ properties['netbios-name'] }}
     - key: kms-key
-      value: {{ properties['kms-key'] }}
+      value: $(ref.cryptoKey.name)
     - key: gcs-prefix
-      value: {{ properties['gcs-prefix'] }}
+      value: gs://$(ref.bucket.name)/
     - key: runtime-config
-      value: {{ properties['runtime-config'] }}
+      value: $(ref.config.name)
 {% if properties['minimal'] %}
     - key: wait-on
       value: waiter-ctx-dc-1-{{ properties['suffix'] }}
