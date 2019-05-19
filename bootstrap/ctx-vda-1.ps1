@@ -200,6 +200,30 @@ Function Set-Setting {
 Write-Host "Bootstrap script started..."
 
 
+# install apps
+Write-Host "Installing chrome..."
+$TempFile = New-TemporaryFile
+$TempFile.MoveTo($TempFile.FullName + ".ps1")
+
+$BootstrapFrom = Get-GoogleMetadata "instance/attributes/bootstrap-from"
+If ($BootstrapFrom.EndsWith("/")) {
+  $BootstrapFrom = $BootstrapFrom -Replace ".$"
+}
+
+Write-Host "Downloading install script..."
+$ScriptUrl = "$BootstrapFrom/install-chrome.ps1"
+if ($ScriptUrl.StartsWith("gs://")) {
+  gsutil -q cp $ScriptUrl $TempFile.FullName
+}
+else {
+  (New-Object System.Net.WebClient).DownloadFile($ScriptUrl, $TempFile.FullName)
+}
+Write-Host "Running install script..."
+Invoke-Expression $TempFile.FullName
+
+Remove-Item $TempFile.FullName
+
+
 # get metadata
 $CtxCloudConnectors = Get-GoogleMetadata "instance/attributes/ctx-cloud-connectors"
 $VdaDownloadUrl = Get-GoogleMetadata "instance/attributes/vda-download-url"

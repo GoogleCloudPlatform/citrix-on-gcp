@@ -16,7 +16,7 @@
 
 # Install Chrome
 Write-Host "downloading chrome..."
-$url = "https://storage.googleapis.com/citrix-on-gcp-demo/chrome/googlechromestandaloneenterprise64.msi"
+$url = "https://dl.google.com/tag/s/dl/chrome/install/googlechromestandaloneenterprise64.msi"
 $filetype = "msi"
 $TempFile = New-TemporaryFile
 $TempFile.MoveTo($TempFile.FullName + "." + $filetype)
@@ -28,7 +28,7 @@ $MSIArguments = @(
     "/i"
     $TempFile.FullName
 )
-Start-Process "msiexec.exe" -ArgumentList $MSIArguments -Wait -NoNewWindow 
+Start-Process "msiexec.exe" -ArgumentList $MSIArguments -Wait -NoNewWindow
 
 Remove-Item $TempFile.FullName -Force
 
