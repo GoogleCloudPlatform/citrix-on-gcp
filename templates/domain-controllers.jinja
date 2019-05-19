@@ -25,7 +25,7 @@ resources:
       cardinality:
         path: bootstrap/ctx-dc-1-{{ properties['suffix'] }}/success
 - name: ctx-dc-1-{{ properties['suffix'] }}
-  type: windows-2016.jinja
+  type: windows.jinja
   properties:
     name: ctx-dc-1-{{ properties['suffix'] }}
     zone: {{ properties['primary-zone'] }}
@@ -72,7 +72,7 @@ resources:
       cardinality:
         path: bootstrap/ctx-dc-2-{{ properties['suffix'] }}/success
 - name: ctx-dc-2-{{ properties['suffix'] }}
-  type: windows-2016.jinja
+  type: windows.jinja
   properties:
     name: ctx-dc-2-{{ properties['suffix'] }}
     zone: {{ properties['secondary-zone'] }}
