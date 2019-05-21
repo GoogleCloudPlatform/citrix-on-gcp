@@ -90,7 +90,7 @@ properties:
       cidr: 10.0.0.0/16
   vda-download-url:
     type: string
-    default: https://storage.googleapis.com/citrix-on-gcp-demo/vda/VDAServerSetup_7.17.exe  
+    default: https://storage.googleapis.com/citrix-on-gcp-demo/vda/VDAServerSetup_1903.exe
     description: URL from which to doanload VDA installer
   workers:
     type: integer

@@ -34,7 +34,7 @@ Param(
 	[Parameter()][String][ValidateNotNullOrEmpty()]
 	$CitrixCredsUrl = $(Read-Host "Citrix Creds URL"),
 	[Parameter()][String][ValidateNotNullOrEmpty()]
-	$VdaDownloadUrl = "https://storage.googleapis.com/citrix-on-gcp-demo/vda/VDAServerSetup_7.17.exe",
+	$VdaDownloadUrl = "https://storage.googleapis.com/citrix-on-gcp-demo/vda/VDAServerSetup_1903.exe",
 	[Parameter()][Boolean]
 	$PowerManaged = $True,
 	[Parameter()][Boolean]
