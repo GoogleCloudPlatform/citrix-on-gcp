@@ -35,7 +35,7 @@ resources:
       cardinality:
         path: bootstrap/ctx-cc-{{ loop.index }}-{{ properties['suffix'] }}/success
 - name: ctx-cc-{{ loop.index }}-{{ properties['suffix'] }}
-  type: windows-2016.jinja
+  type: windows.jinja
   properties:
     name: ctx-cc-{{ loop.index }}-{{ properties['suffix'] }}
     zone: {{ zone }}

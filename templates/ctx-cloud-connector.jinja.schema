@@ -19,7 +19,7 @@ info:
   description: Deploys domain-joined ctx-cc instances
 
 imports:
-- path: windows-2016.jinja
+- path: windows.jinja
 
 required:
 - suffix

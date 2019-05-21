@@ -192,6 +192,7 @@ Write-Host "Suffix: [$Suffix]"
 
 
 Write-Host "Downloading installer..."
+[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 $TempFile = New-TemporaryFile
 $TempFile.MoveTo($TempFile.FullName + ".exe")
 $url = "https://downloads.cloud.com/$CtxCustomerId/connector/cwcconnector.exe"

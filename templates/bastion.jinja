@@ -34,7 +34,7 @@ resources:
       cardinality:
         path: setup/citrix/resloc
 - name: ctx-mgmt-{{ properties['suffix'] }}
-  type: windows-2016.jinja
+  type: windows.jinja
   properties:
     name: ctx-mgmt-{{ properties['suffix'] }}
     zone: {{ properties['zone'] }}

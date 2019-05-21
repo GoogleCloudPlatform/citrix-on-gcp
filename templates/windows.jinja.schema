@@ -15,8 +15,8 @@
 #
 
 info:
-  title: Windows Server 2016 Helper
-  description: Helper template for deploying a simple Windows Server 2016 instance.
+  title: Windows Server 2019 Helper
+  description: Helper template for deploying a simple Windows Server 2019 instance.
 
 required:
 - name
@@ -74,4 +74,7 @@ properties:
     type: boolean
     default: False
     description: Whether or not to use SSD persistent disks
+  networkIP:
+    type: string
+    description: OPTIONAL ip address for instance
 
