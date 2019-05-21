@@ -102,6 +102,24 @@ Start-Process C:\Progra~1\7-Zip\7z.exe -ArgumentList $Arguments -Wait -NoNewWind
 Remove-Item $TempFile.FullName -Force
 
 
+# Install Chrome
+Write-Host "downloading chrome..."
+$url = "https://dl.google.com/tag/s/dl/chrome/install/googlechromestandaloneenterprise64.msi"
+$filetype = "msi"
+$TempFile = New-TemporaryFile
+$TempFile.MoveTo($TempFile.FullName + "." + $filetype)
+(New-Object System.Net.WebClient).DownloadFile($url, $TempFile.FullName)
+
+Write-Host "installing chrome..."
+$MSIArguments = @(
+    "/q"
+    "/i"
+    $TempFile.FullName
+)
+Start-Process "msiexec.exe" -ArgumentList $MSIArguments -Wait -NoNewWindow
+
+Remove-Item $TempFile.FullName -Force
+
 
 Write-Host "Configuring startup metadata for post-join script..."
 # set post join url as startup script then restart

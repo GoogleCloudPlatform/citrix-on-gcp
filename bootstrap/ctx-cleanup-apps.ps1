@@ -275,6 +275,10 @@ path="C:\Program Files\LibreOffice\program\scalc.exe"
 @{
 name="Draw" # LibreOffice Draw
 path="C:\Program Files\LibreOffice\program\sdraw.exe"
+},
+@{
+name="Chrome" # Google Chrome Browser
+path="C:\Program Files (x86)\Google\Chrome\Application\chrome.exe"
 }
 ) | %{
 
