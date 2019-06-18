@@ -2,7 +2,15 @@
 This repository contains scripts and templates to simplify deployment of the resources described in Citrix's [Deploying Citrix Cloud XenApp and XenDesktop Service on the Google Cloud Platform](https://www.citrix.com/content/dam/citrix/en_us/documents/guide/deploying-citrix-cloud-xenapp-and-xendesktop-service-on-the-google-cloud-platform.pdf) published December 2017.
 
 ## Before you begin
-You'll need a PowerShell environment with the [Google Cloud SDK](https://cloud.google.com/sdk/) installed.
+1. You'll need a PowerShell environment with the [Google Cloud SDK](https://cloud.google.com/sdk/) installed.
+2. Make sure you set the default region with gcloud in powershell. Otherwise the script will continue failing
+```
+gcloud config set compute/region us-central1
+```
+3. The script uses your compute engine service account by default. In order for the script to work,you might need to provide broader permissions to your compute engine service account. The script creates new service accounts which inherit the default service account privileges.
+If you do not want to use the compute engine service account,please create a new service account and [use those credentials](https://cloud.google.com/docs/authentication/production).
+
+
 
 ## Deploying Citrix
 Clone the repository and run deploy.ps1.
