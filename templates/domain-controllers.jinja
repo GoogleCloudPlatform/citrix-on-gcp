@@ -125,7 +125,9 @@ resources:
       value: {{ properties['runtime-config'] }}
     - key: wait-on
       value: waiter-ctx-dc-1-{{ properties['suffix'] }}
-{% if properties['bootstrap-from'].startswith('gs://') %}
+{% if properties['bootstrap-from'].startswith('gs://') or
+         properties['bootstrap-from'].startswith('https://') or
+         properties['bootstrap-from'].startswith('http://')  %}
     - key: bootstrap-from
       value: {{ properties['bootstrap-from'] }}
     - key: windows-startup-script-url

@@ -34,7 +34,7 @@ Param(
 	[Parameter()][String][ValidateNotNullOrEmpty()]
 	$CitrixCredsUrl = $(Read-Host "Citrix Creds URL"),
 	[Parameter()][String][ValidateNotNullOrEmpty()]
-	$VdaDownloadUrl = "https://storage.googleapis.com/citrix-on-gcp-demo/vda/VDAServerSetup_1903.exe",
+	$VdaDownloadUrl = "https://storage.googleapis.com/citrix-on-gcp-demo/vda/VDAServerSetup_1906.exe",
 	[Parameter()][Boolean]
 	$PowerManaged = $True,
 	[Parameter()][Boolean]
@@ -69,6 +69,32 @@ If (-not $Project) {
 	Exit 1
 }
 Write-Host "Project: [$Project]"
+
+# enable required api's
+$RequiredAPIs = "compute","cloudkms","deploymentmanager","runtimeconfig","cloudresourcemanager","iam"
+$EnabledAPIs = @(gcloud services list --project $Project | Select-Object -Skip 1 | Select-String -Pattern "^[^.]+" | % { $_.Matches } | % { $_.Value })
+$DisabledAPIs = @($RequiredAPIs | ?{$EnabledAPIs -notcontains $_} | Sort-Object)
+If ($DisabledAPIs.Length -Gt 0) {
+	"Enabling APIs: [$($DisabledAPIs -Join " ")]"
+	$Jobs = $DisabledAPIs | ForEach-Object {
+		Start-Job -ArgumentList $_, $Project -ScriptBlock {
+			$API = $args[0]
+			$Project = $args[1]
+			$Success = $False
+			While (-not $Success) {
+				Write-Host "Enabling API $API..."
+				gcloud services enable "$API.googleapis.com" --project $Project
+				$Success = ($LastExitCode -eq 0)
+				If (-not $Success) {
+					Write-Host "Waiting to retry enabling API: $API..."
+					Start-Sleep -s 5
+				}
+			}
+		}
+	}
+	# wait on jobs in sequence to avoid comingling output
+	$Jobs | ForEach-Object { Receive-Job -Job $_ -Wait }
+}
 
 If (-not $Region) {
 	$Region = $(gcloud config get-value compute/region 2>$Null)
