@@ -34,13 +34,6 @@ resources:
     service-account: {{ properties['service-account'] }}
     ssd: {{ properties['ssd'] }}
     metadata:
-{% if properties['minimal'] %}
-    - key: remove-address
-      value: "false"
-{% else %}
-    - key: remove-address
-      value: "true"
-{% endif %}
     - key: domain-name
       value: {{ properties['domain-name'] }}
     - key: netbios-name
@@ -81,13 +74,6 @@ resources:
     service-account: {{ properties['service-account'] }}
     ssd: {{ properties['ssd'] }}
     metadata:
-{% if properties['minimal'] %}
-    - key: remove-address
-      value: "false"
-{% else %}
-    - key: remove-address
-      value: "true"
-{% endif %}
     - key: domain-name
       value: {{ properties['domain-name'] }}
     - key: netbios-name

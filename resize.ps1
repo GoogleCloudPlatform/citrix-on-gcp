@@ -132,7 +132,6 @@ $Jobs = $instances | % {
 		$Url = $(gcloud deployment-manager resources describe $Instance --deployment $Deployment --project $Project --format "value(url)")
 		gcloud compute instances stop $Url
 		gcloud compute instances set-service-account $Url --no-service-account --no-scopes
-		gcloud compute instances remove-tags $Url --tags=internet-nat
 		gcloud compute instances start $Url
 	}
 }

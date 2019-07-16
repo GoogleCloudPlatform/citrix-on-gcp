@@ -306,7 +306,6 @@ $Jobs = gcloud compute instances list --project $Project --format "value(name)" 
 		gcloud compute instances stop $Url
 		If ($Instance -Match "^ctx-xa-.*-$Suffix$") {
 			gcloud compute instances set-service-account $Url --no-service-account --no-scopes
-			gcloud compute instances remove-tags $Url --tags=internet-nat
 		}
 		Else {
 			gcloud compute instances set-service-account $Url --service-account $DefaultServiceAccount --scopes default

@@ -19,7 +19,6 @@ info:
   description: Minimal Citrix XenApp deployment for Google Cloud Platform.
 
 imports:
-- path: health-checked-nat-instance-group.jinja
 - path: domain-controllers.jinja
 - path: bastion.jinja
 - path: ctx-cloud-connector.jinja

@@ -55,13 +55,9 @@ resources:
     - key: runtime-config
       value: {{ properties['runtime-config'] }}
 {% if properties['minimal'] %}
-    - key: remove-address
-      value: "false"
     - key: wait-on
       value: waiter-ctx-dc-1-{{ properties['suffix'] }}
 {% else %}
-    - key: remove-address
-      value: "true"
     - key: wait-on
       value: waiter-ctx-dc-2-{{ properties['suffix'] }}
 {% endif %}
@@ -77,7 +73,6 @@ resources:
       value: {% for ip in properties['domain-controller-addresses'] %}{{ ip }}{{ "," if not loop.last }}{% endfor %}
     tags:
     - ctx-infra
-    - internet-nat
 {% if properties['dependencies']|length > 0 %}
     dependencies:
 {% for dependency in properties['dependencies'] %}
