@@ -206,10 +206,9 @@ $VdaDownloadUrl = Get-GoogleMetadata "instance/attributes/vda-download-url"
 
 
 Write-Host "Downloading Citrix PoSH installer..."
-[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 $TempFile = New-TemporaryFile
 $TempFile.MoveTo($TempFile.FullName + ".exe")
-$url = "http://download.apps.cloud.com/CitrixPoshSdk.exe"
+$url = "https://download.apps.cloud.com/CitrixPoshSdk.exe"
 (New-Object System.Net.WebClient).DownloadFile($url, $TempFile.FullName)
 
 Write-Host "Running installer..."
