@@ -269,8 +269,10 @@ If ($BootstrapFrom.EndsWith("/")) {
 
 
 Write-Host "Getting settings..."
-$Prefix = Get-Setting "prefix"
-$Suffix = Get-Setting "suffix"
+$ResLoc = Get-GoogleMetadata "instance/attributes/resource-location"
+$MacCat = Get-GoogleMetadata "instance/attributes/machine-catalog"
+$DelGro = Get-GoogleMetadata "instance/attributes/delivery-group"
+$HosCon = Get-GoogleMetadata "instance/attributes/hosting-connection"
 
 Write-Host "Getting Citrix Creds..."
 $CitrixCredsUrl = Get-GoogleMetadata "instance/attributes/citrix-creds"
@@ -286,8 +288,8 @@ $Token = GetBearerToken $CtxClientId $CtxClientSecret
 
 
 Write-Host "Creating Resource Location..."
-$ResLoc = New-ResourceLocation "$Prefix-$Suffix" $CtxCustomerId $Token
-Set-Setting ("citrix/resource-locations/" + $ResLoc.name + "/id") $ResLoc.id
+$NewResLoc = New-ResourceLocation "$ResLoc" $CtxCustomerId $Token
+Set-Setting "citrix/resource-location/id" $NewResLoc.id
 
 
 Write-Host "Signalling Citrix Resource Location setup..."
@@ -357,7 +359,7 @@ Wait-RuntimeConfigWaiter -ConfigPath $RuntimeConfig -Waiter "waiter-ctx-connecto
 
 
 Write-Host "Getting zone..."
-While (-Not ($Zone = Get-ConfigZone -Name $Prefix-$Suffix)) {
+While (-Not ($Zone = Get-ConfigZone -Name $ResLoc)) {
   Write-host "Waiting for zone..."
   Sleep 5
 }
@@ -366,8 +368,8 @@ While (-Not ($Zone = Get-ConfigZone -Name $Prefix-$Suffix)) {
 Write-Host "Creating catalog, desktop group, etc..."
 $NetbiosName = Get-GoogleMetadata "instance/attributes/netbios-name"
 $users = "$NetbiosName\Citrix Users"
-$MachineCatalogName = "Catalog-$Suffix"
-$DeliveryGroupName = "Group-$Suffix"
+$MachineCatalogName = $MacCat
+$DeliveryGroupName = $DelGro
 
 
 $HostingServiceAccount = Get-GoogleMetadata "instance/attributes/hosting-connection-service-account"
@@ -429,7 +431,7 @@ gcloud iam service-accounts keys create $TempFile.FullName --iam-account "$Hosti
 $pk = (Get-Content -Path $TempFile.FullName | ConvertFrom-Json).private_key
 $pw = $pk -Replace "\n",""
 
-$HostingConnection = New-Item -ConnectionType "Custom" -CustomProperties "" -HypervisorAddress @("https://cloud.google.com/") -Path @("XDHyp:\Connections\Google-Cloud-$Suffix") -PluginId "GcpPluginFactory" -Scope @() -Password $pw -UserName $HostingServiceAccount -ZoneUid $Zone.Uid -Persist
+$HostingConnection = New-Item -ConnectionType "Custom" -CustomProperties "" -HypervisorAddress @("https://cloud.google.com/") -Path @("XDHyp:\Connections\$HosCon") -PluginId "GcpPluginFactory" -Scope @() -Password $pw -UserName $HostingServiceAccount -ZoneUid $Zone.Uid -Persist
 
 New-BrokerHypervisorConnection -HypHypervisorConnectionUid $HostingConnection.HypervisorConnectionUid
 

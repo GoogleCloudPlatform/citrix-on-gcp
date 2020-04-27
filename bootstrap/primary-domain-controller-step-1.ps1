@@ -122,10 +122,6 @@ Write-Host "Bootstrap script started..."
 gcloud config set component_manager/disable_update_check true
 
 
-Write-Host "Persisting metadata..."
-Set-Setting "prefix" (Get-GoogleMetadata "instance/attributes/prefix")
-Set-Setting "suffix" (Get-GoogleMetadata "instance/attributes/suffix")
-
 
 #Write-Host "Installing AD features in background..."
 #Start-Job -ScriptBlock { Install-WindowsFeature -name AD-Domain-Services -IncludeManagementTools }

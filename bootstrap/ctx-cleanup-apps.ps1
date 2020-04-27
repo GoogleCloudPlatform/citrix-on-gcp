@@ -232,8 +232,10 @@ gcloud config set component_manager/disable_update_check true
 
 
 Write-Host "Getting settings..."
-$Prefix = Get-Setting "prefix"
-$Suffix = Get-Setting "suffix"
+$ResLoc = Get-GoogleMetadata "instance/attributes/resource-location"
+$MacCat = Get-GoogleMetadata "instance/attributes/machine-catalog"
+$DelGro = Get-GoogleMetadata "instance/attributes/delivery-group"
+$HosCon = Get-GoogleMetadata "instance/attributes/hosting-connection"
 
 Write-Host "Getting Citrix Creds..."
 $CitrixCredsUrl = Get-GoogleMetadata "instance/attributes/citrix-creds"
@@ -254,8 +256,8 @@ Set-XDCredentials -CustomerId $CtxCustomerId -ProfileType CloudAPI -APIKey $CtxC
 Write-Host "Removing catalog, desktop group, etc..."
 
 $users = "CTX\Citrix Users"
-$TSVDACatalogName = "Catalog-$Suffix"
-$TSVDADGName = "Group-$Suffix"
+$TSVDACatalogName = $MacCat
+$TSVDADGName = $DelGro
 
 # delete policy rules
 Remove-BrokerAccessPolicyRule "$TSVDADGName-AG"
@@ -300,7 +302,7 @@ Remove-BrokerCatalog @Params
 Write-Host "Getting resource location id..."
 # remove resource location by id
 $Token = GetBearerToken $CtxClientId $CtxClientSecret
-$id = Get-Setting "citrix/resource-locations/$Prefix-$Suffix/id"
+$id = Get-Setting "citrix/resource-location/id"
 
 
 Write-Host "Removing cloud connectors..."
@@ -318,8 +320,8 @@ If ($HostingServiceAccount) {
 
 	Write-Host "Removing hosting connection..."
 
-	Remove-Item -Path @("XDHyp:\Connections\Google-Cloud-$Suffix")
-	Remove-BrokerHypervisorConnection -Name "Google-Cloud-$Suffix"
+	Remove-Item -Path @("XDHyp:\Connections\$HosCon")
+	Remove-BrokerHypervisorConnection -Name "$HosCon"
 
 }
 

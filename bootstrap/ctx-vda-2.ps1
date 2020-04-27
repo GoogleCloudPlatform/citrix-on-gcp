@@ -200,9 +200,6 @@ Function Set-Setting {
 Write-Host "Bootstrap script started..."
 
 
-# get settings
-$Prefix = Get-Setting "prefix"
-$Suffix = Get-Setting "suffix"
 
 Write-Host "Getting Citrix Creds..."
 $CitrixCredsUrl = Get-GoogleMetadata "instance/attributes/citrix-creds"
