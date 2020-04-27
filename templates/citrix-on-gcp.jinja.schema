@@ -15,8 +15,8 @@
 #
 
 info:
-  title: Citrix XenApp
-  description: Minimal Citrix XenApp deployment for Google Cloud Platform.
+  title: Citrix on GCP
+  description: Citrix deployment for Google Cloud Platform.
 
 imports:
 - path: apis.jinja
@@ -27,9 +27,6 @@ imports:
 - path: ctx-vda.jinja
 
 required:
-- admin
-- prefix
-- suffix
 - region
 - zone
 - secondary-zone
@@ -40,17 +37,6 @@ required:
 - citrix-creds
 
 properties:
-  admin:
-    type: string
-    description: Admin principal in form of user:email, group:email, serviceAccount:email, etc.
-  prefix:
-    type: string
-    description: Deployment prefix for resources.
-    default: citrix-on-gcp
-  suffix:
-    type: string
-    description: Disambiguation suffix for resources.
-    default: abc123
   region:
     type: string
     default: us-east4
@@ -90,7 +76,7 @@ properties:
       cidr: 10.0.0.0/16
   vda-download-url:
     type: string
-    default: https://storage.googleapis.com/citrix-on-gcp-demo/vda/VDAServerSetup_1906.exe
+    default: https://storage.googleapis.com/citrix-on-gcp-demo/vda/VDAServerSetup_1912.exe
     description: URL from which to doanload VDA installer
   workers:
     type: integer
@@ -112,15 +98,6 @@ properties:
     type: string
     description: Location of bootstrap artifacts. Can be a GCS prefix, e.g. gs://bucket/path. Or, an image path, e.g. TBD.
     default: https://raw.githubusercontent.com/GoogleCloudPlatform/citrix-on-gcp/experimental/bootstrap
-  keyring:
-    type: string
-    description: Name of keyring for secret management.
-    default: citrix-on-gcp
-  lifecycle:
-    type: string
-    description: Lifecycle phase of deployment allowing for conditional rendering of template to facilitate two-stage delete (DELETE then ABANDON)
-    default: DEPLOY
-    enum: ["DEPLOY", "DELETE", "ABANDON"]
   dc-1-address:
     type: string
     description: IP address for primary domain controller

@@ -16,22 +16,22 @@
 
 resources:
 {% for zone in properties['zones'] %}
-- name: waiter-ctx-xa-{{ loop.index }}-{{ properties['suffix'] }}
+- name: waiter-ctx-vda-{{ loop.index }}-{{ properties['suffix'] }}
   type: runtimeconfig.v1beta1.waiter
   properties:
-    waiter: waiter-ctx-xa-{{ loop.index }}-{{ properties['suffix'] }}
+    waiter: waiter-ctx-vda-{{ loop.index }}-{{ properties['suffix'] }}
     parent: {{ properties['runtime-config'] }}
     timeout: 2400s
     success:
       cardinality:
-        path: bootstrap/ctx-xa-{{ loop.index }}-{{ properties['suffix'] }}/success
+        path: bootstrap/ctx-vda-{{ loop.index }}-{{ properties['suffix'] }}/success
   metadata:
     dependsOn:
-    - ctx-xa-{{ loop.index }}-{{ properties['suffix'] }}
-- name: ctx-xa-{{ loop.index }}-{{ properties['suffix'] }}
+    - ctx-vda-{{ loop.index }}-{{ properties['suffix'] }}
+- name: ctx-vda-{{ loop.index }}-{{ properties['suffix'] }}
   type: windows.jinja
   properties:
-    name: ctx-xa-{{ loop.index }}-{{ properties['suffix'] }}
+    name: ctx-vda-{{ loop.index }}-{{ properties['suffix'] }}
     zone: {{ zone }}
     machine-type: n1-standard-2
     subnetwork: {{ properties['subnetwork'] }}

@@ -15,64 +15,79 @@
 #
 
 resources:
-{% if properties['lifecycle'] == "DEPLOY" %}
 - name: apis
   type: apis.jinja
   properties:
     enabled:
-    - compute
+    - cloudbuild
     - cloudkms
-    - runtimeconfig
     - cloudresourcemanager
-    - iam
+    - compute
     - dns
+    - iam
+    - runtimeconfig
 - name: config
   type: gcp-types/runtimeconfig-v1beta1:projects.configs
   properties:
-    config: config-{{ properties['suffix'] }}
+    config: {{ env['deployment'] }}
   metadata:
     dependsOn:
     - api-runtimeconfig
 - name: bucket
   type: gcp-types/storage-v1:buckets
   properties:
-    name: citrix-on-gcp-{{ env['project_number'] }}-{{ properties['suffix'] }}
+    name: citrix-on-gcp-{{ env['project_number'] }}-{{ env['deployment'] }}
     location: {{ properties['region'] }}
-{% endif %}
+- name: bucket-cleanup
+  action: gcp-types/cloudbuild-v1:cloudbuild.projects.builds.create
+  metadata:
+    runtimePolicy:
+    - DELETE
+  properties:
+    steps:
+    - name: gcr.io/cloud-builders/gsutil
+      args: ['rm', '-r', 'gs://$(ref.bucket.name)/' ]
+    timeout: 120s
 - name: keyRing
-  type: gcp-types/cloudkms-v1:projects.locations.keyRings
+  action: gcp-types/cloudkms-v1:projects.locations.keyRings
   properties:
     parent: projects/{{ env["project"] }}/locations/global
-    keyRingId: {{ properties['keyring'] }}
+    keyRingId: citrix-{{ env['deployment'] }}
   metadata:
     dependsOn:
     - api-cloudkms
+    runtimePolicy:
+    - CREATE
 - name: cryptoKey
-  type: gcp-types/cloudkms-v1:projects.locations.keyRings.cryptoKeys
+  action: gcp-types/cloudkms-v1:projects.locations.keyRings.cryptoKeys
   properties:
     parent: $(ref.keyRing.name)
-    cryptoKeyId: domain-secrets-{{ properties['suffix'] }}
+    cryptoKeyId: domain-secrets-{{ env['deployment'] }}
     purpose: ENCRYPT_DECRYPT
-  accessControl:
-    gcpIamPolicy:
+  metadata:
+    runtimePolicy:
+    - CREATE
+- name: cryptoKeyPolicy
+  action: gcp-types/cloudkms-v1:cloudkms.projects.locations.keyRings.cryptoKeys.setIamPolicy
+  properties:
+    resource: $(ref.cryptoKey.name)
+    policy:
       bindings:
       - role: roles/cloudkms.cryptoKeyDecrypter
         members:
-{% if properties['lifecycle'] == "DEPLOY" %}
-        - "{{ properties["admin"] }}"
+        - "user:{{ env['username'] }}"
         - "serviceAccount:$(ref.admin-service-account.email)"
-{% endif %}
       - role: roles/cloudkms.cryptoKeyEncrypter
         members:
-{% if properties['lifecycle'] == "DEPLOY" %}
-        - "{{ properties["admin"] }}"
+        - "user:{{ env['username'] }}"
         - "serviceAccount:$(ref.admin-service-account.email)"
-{% endif %}
-{% if properties['lifecycle'] == "DEPLOY" %}
+  metadata:
+    runtimePolicy:
+    - CREATE
 - name: admin-service-account
   type: gcp-types/iam-v1:projects.serviceAccounts
   properties:
-    accountId: admin-{{ properties['suffix'] }}
+    accountId: admin-{{ env['deployment'] }}
     displayName: 'Admin service account for bootstrapping domain-joined servers with elevated permissions'
   metadata:
     dependsOn:
@@ -80,7 +95,7 @@ resources:
 - name: citrix-service-account
   type: gcp-types/iam-v1:projects.serviceAccounts
   properties:
-    accountId: citrix-{{ properties['suffix'] }}
+    accountId: citrix-{{ env['deployment'] }}
     displayName: 'Service account for Citrix machine catalog for GCP'
   accessControl:
     gcpIamPolicy:
@@ -114,29 +129,36 @@ resources:
       - role: roles/compute.instanceAdmin
         members:
         - "serviceAccount:$(ref.citrix-service-account.email)"
+      - role: roles/storage.admin
+        members:
+        - "serviceAccount:{{ env['project_number'] }}@cloudbuild.gserviceaccount.com"
   metadata:
     dependsOn:
+    - api-cloudbuild
     - api-cloudresourcemanager
 - name: network
   type: network.jinja
   properties:
-    suffix: {{ properties['suffix'] }}
+    suffix: {{ env['deployment'] }}
     region: {{ properties['region'] }}
     zone: {{ properties['zone'] }}
     secondary-zone: {{ properties['secondary-zone'] }}
     subnets: {{ properties['subnets'] }}
     domain-name: {{ properties['domain-name'] }}
-    dc-1-address: {{ properties['dc-1-address'] }}
-    dc-2-address: {{ properties['dc-2-address'] }}
+    dc-addresses:
+    - {{ properties['dc-1-address'] }}
+{% if not properties['minimal'] %}
+    - {{ properties['dc-2-address'] }}
+{% endif %}
 - name: domain-controllers
   type: domain-controllers.jinja
   properties:
-    prefix: {{ properties['prefix'] }}
-    suffix: {{ properties['suffix'] }}
+    prefix: GCP
+    suffix: {{ env['deployment'] }}
     region: {{ properties['region'] }}
     primary-zone: {{ properties['zone'] }}
     secondary-zone: {{ properties['secondary-zone'] }}
-    subnetwork: $(ref.citrix-{{ properties['region'] }}-{{ properties['suffix'] }}.selfLink)
+    subnetwork: $(ref.citrix-{{ properties['region'] }}-{{ env['deployment'] }}.selfLink)
     service-account: $(ref.admin-service-account.email)
     domain-name: {{ properties['domain-name'] }}
     netbios-name: {{ properties['netbios-name'] }}
@@ -149,9 +171,9 @@ resources:
 - name: bastion
   type: bastion.jinja
   properties:
-    suffix: {{ properties['suffix'] }}
+    suffix: {{ env['deployment'] }}
     zone: {{ properties['zone'] }}
-    subnetwork: $(ref.citrix-{{ properties['region'] }}-{{ properties['suffix'] }}.selfLink)
+    subnetwork: $(ref.citrix-{{ properties['region'] }}-{{ env['deployment'] }}.selfLink)
     service-account: $(ref.admin-service-account.email)
 {% if properties['power-managed'] %}
     hosting-connection-service-account: $(ref.citrix-service-account.email)
@@ -168,13 +190,13 @@ resources:
 - name: ctx-cc
   type: ctx-cloud-connector.jinja
   properties:
-    suffix: {{ properties['suffix'] }}
+    suffix: {{ env['deployment'] }}
     zones:
     - {{ properties['zone'] }}
 {% if not properties['minimal'] %}
     - {{ properties['secondary-zone'] }}
 {% endif %}
-    subnetwork: $(ref.citrix-{{ properties['region'] }}-{{ properties['suffix'] }}.selfLink)
+    subnetwork: $(ref.citrix-{{ properties['region'] }}-{{ env['deployment'] }}.selfLink)
     service-account: $(ref.admin-service-account.email)
     domain-name: {{ properties['domain-name'] }}
     netbios-name: {{ properties['netbios-name'] }}
@@ -188,12 +210,12 @@ resources:
 - name: ctx-vda
   type: ctx-vda.jinja
   properties:
-    suffix: {{ properties['suffix'] }}
+    suffix: {{ env['deployment'] }}
     zones:
     {% for i in range(properties['workers']) %}
     - {{ loop.cycle(properties['zone'], properties['secondary-zone']) }}
     {% endfor %}
-    subnetwork: $(ref.citrix-{{ properties['region'] }}-{{ properties['suffix'] }}.selfLink)
+    subnetwork: $(ref.citrix-{{ properties['region'] }}-{{ env['deployment'] }}.selfLink)
     service-account: $(ref.admin-service-account.email)
     domain-name: {{ properties['domain-name'] }}
     netbios-name: {{ properties['netbios-name'] }}
@@ -201,19 +223,18 @@ resources:
     gcs-prefix: gs://$(ref.bucket.name)/
     runtime-config: $(ref.config.name)
     vda-download-url: {{ properties['vda-download-url'] }}
-    ctx-machine-catalog: Catalog-{{ properties['suffix'] }}
-    ctx-delivery-group: Group-{{ properties['suffix'] }}
+    ctx-machine-catalog: Catalog-{{ env['deployment'] }}
+    ctx-delivery-group: Group-{{ env['deployment'] }}
 {% if properties['power-managed'] %}
-    ctx-hypervisor-connection: Google-Cloud-{{ properties['suffix'] }}
+    ctx-hypervisor-connection: Google-Cloud-{{ env['deployment'] }}
 {% endif %}
     ctx-cloud-connectors:
-    - ctx-cc-1-{{ properties['suffix'] }}.{{ properties['domain-name'] }}
+    - ctx-cc-1-{{ env['deployment'] }}.{{ properties['domain-name'] }}
 {% if not properties['minimal'] %}
-    - ctx-cc-2-{{ properties['suffix'] }}.{{ properties['domain-name'] }}
+    - ctx-cc-2-{{ env['deployment'] }}.{{ properties['domain-name'] }}
 {% endif %}
     minimal: {{ properties['minimal'] }}
     ssd: {{ properties['ssd'] }}
     bootstrap-from: {{ properties['bootstrap-from'] }}
     citrix-creds: {{ properties['citrix-creds'] }}
-{% endif %}
 
