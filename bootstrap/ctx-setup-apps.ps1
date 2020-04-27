@@ -413,7 +413,7 @@ Write-Host "App Path: [$path]"
 $ctxIcon = Get-BrokerIcon -FileName "$path" -index 0
 $brokerIcon = New-BrokerIcon -EncodedIconData $ctxIcon.EncodedIconData
 
-New-BrokerApplication -ApplicationType "HostedOnDesktop" -CommandLineArguments "" -CommandLineExecutable "$path" -CpuPriorityLevel "Normal" -DesktopGroup $DG.Uid -Enabled $True -IgnoreUserHomeZone $False -MaxPerUserInstances 0 -MaxTotalInstances 0 -Name "$name-$Suffix" -Priority 0 -PublishedName "$name-$Suffix" -SecureCmdLineArgumentsEnabled $True -ShortcutAddedToDesktop $False -ShortcutAddedToStartMenu $False -UserFilterEnabled $False -Visible $True -WaitForPrinterCreation $False -IconUid $brokerIcon.Uid
+New-BrokerApplication -ApplicationType "HostedOnDesktop" -CommandLineArguments "" -CommandLineExecutable "$path" -CpuPriorityLevel "Normal" -DesktopGroup $DG.Uid -Enabled $True -IgnoreUserHomeZone $False -MaxPerUserInstances 0 -MaxTotalInstances 0 -Name "$name-$DelGro" -Priority 0 -PublishedName "$name" -SecureCmdLineArgumentsEnabled $True -ShortcutAddedToDesktop $False -ShortcutAddedToStartMenu $False -UserFilterEnabled $False -Visible $True -WaitForPrinterCreation $False -IconUid $brokerIcon.Uid
 
 }
 
