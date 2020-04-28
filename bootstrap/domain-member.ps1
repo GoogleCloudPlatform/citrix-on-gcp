@@ -203,7 +203,17 @@ $DomainAdminCredentials = New-Object `
         -ArgumentList "$NetBiosName\Administrator",$DomainAdminPassword
 
 Write-Host "Joining domain..."
-Add-Computer -DomainName $Domain -Credential $DomainAdminCredentials
+$Joined = $False
+while (-Not $Joined) {
+  Try {
+    Add-Computer -DomainName $Domain -Credential $DomainAdminCredentials
+    $Joined = $True
+  }
+  Catch {
+    Write-Host "Failed to join domain. Waiting to retry..."
+    Start-Sleep 10
+  }
+}
 
 }
 
