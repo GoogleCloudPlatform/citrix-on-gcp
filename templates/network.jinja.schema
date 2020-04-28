@@ -25,7 +25,8 @@ required:
 - secondary-zone
 - subnets
 - domain-name
-- dc-addresses
+- dc-1-address
+- dc-2-address
 
 properties:
   suffix:
@@ -54,13 +55,12 @@ properties:
           type: string
         cidr:
           type: string
-  dc-addresses:
-    type: array
-    minItems: 1
-    uniqueItems: true
-    description: IP address(es) for domain controller(s)
-    items:
-      type: string
+  dc-1-address:
+    type: string
+    description: IP address for primary domain controller
+  dc-2-address:
+    type: string
+    description: IP address for secondary domain controller
   domain-name:
     type: string
     description: Fully-qualified name of domain.

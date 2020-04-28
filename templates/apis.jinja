@@ -21,8 +21,5 @@ resources:
   properties:
     consumerId: "project:{{ env['project'] }}"
     serviceName: {{ api }}.googleapis.com
-  metadata:
-    runtimePolicy:
-    - CREATE
 {% endfor %}
 

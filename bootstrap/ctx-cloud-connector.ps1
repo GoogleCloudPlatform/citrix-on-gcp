@@ -182,6 +182,9 @@ Write-Host "Bootstrap script started..."
 gcloud config set component_manager/disable_update_check true
 
 
+Write-Host "Getting settings..."
+$Prefix = Get-Setting "prefix"
+$Suffix = Get-Setting "suffix"
 
 Write-Host "Getting Citrix Creds..."
 $CitrixCredsUrl = Get-GoogleMetadata "instance/attributes/citrix-creds"
@@ -193,6 +196,8 @@ $CtxCustomerId = $CitrixCreds.CustomerId
 
 Write-Host "CtxClientId: [$CtxClientId]"
 Write-Host "CtxCustomerId: [$CtxCustomerId]"
+Write-Host "Prefix: [$Prefix]"
+Write-Host "Suffix: [$Suffix]"
 
 
 Write-Host "Downloading installer..."
@@ -205,7 +210,7 @@ $url = "https://downloads.cloud.com/$CtxCustomerId/connector/cwcconnector.exe"
 Write-Host "Waiting on Citrix Resource Location..."
 $RuntimeConfig = Get-GoogleMetadata "instance/attributes/runtime-config"
 Wait-RuntimeConfigWaiter -ConfigPath $RuntimeConfig -Waiter "waiter-ctx-resloc"
-$CtxResourceLocationId = Get-Setting "citrix/resource-location/id"
+$CtxResourceLocationId = Get-Setting "citrix/resource-locations/$Prefix-$Suffix/id"
 
 
 Write-Host "Running installer..."

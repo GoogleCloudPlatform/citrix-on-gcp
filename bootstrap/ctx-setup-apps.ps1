@@ -269,10 +269,8 @@ If ($BootstrapFrom.EndsWith("/")) {
 
 
 Write-Host "Getting settings..."
-$ResLoc = Get-GoogleMetadata "instance/attributes/resource-location"
-$MacCat = Get-GoogleMetadata "instance/attributes/machine-catalog"
-$DelGro = Get-GoogleMetadata "instance/attributes/delivery-group"
-$HosCon = Get-GoogleMetadata "instance/attributes/hosting-connection"
+$Prefix = Get-Setting "prefix"
+$Suffix = Get-Setting "suffix"
 
 Write-Host "Getting Citrix Creds..."
 $CitrixCredsUrl = Get-GoogleMetadata "instance/attributes/citrix-creds"
@@ -288,8 +286,8 @@ $Token = GetBearerToken $CtxClientId $CtxClientSecret
 
 
 Write-Host "Creating Resource Location..."
-$NewResLoc = New-ResourceLocation "$ResLoc" $CtxCustomerId $Token
-Set-Setting "citrix/resource-location/id" $NewResLoc.id
+$ResLoc = New-ResourceLocation "$Prefix-$Suffix" $CtxCustomerId $Token
+Set-Setting ("citrix/resource-locations/" + $ResLoc.name + "/id") $ResLoc.id
 
 
 Write-Host "Signalling Citrix Resource Location setup..."
@@ -332,9 +330,10 @@ Invoke-Command -ComputerName  (Get-ADDomain).PDCEmulator -Credential $DomainAdmi
 
 
 Write-Host "Downloading installer..."
+[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 $TempFile = New-TemporaryFile
 $TempFile.MoveTo($TempFile.FullName + ".exe")
-$url = "https://download.apps.cloud.com/CitrixPoshSdk.exe"
+$url = "http://download.apps.cloud.com/CitrixPoshSdk.exe"
 (New-Object System.Net.WebClient).DownloadFile($url, $TempFile.FullName)
 
 Write-Host "Running installer..."
@@ -359,7 +358,7 @@ Wait-RuntimeConfigWaiter -ConfigPath $RuntimeConfig -Waiter "waiter-ctx-connecto
 
 
 Write-Host "Getting zone..."
-While (-Not ($Zone = Get-ConfigZone -Name $ResLoc)) {
+While (-Not ($Zone = Get-ConfigZone -Name $Prefix-$Suffix)) {
   Write-host "Waiting for zone..."
   Sleep 5
 }
@@ -368,8 +367,8 @@ While (-Not ($Zone = Get-ConfigZone -Name $ResLoc)) {
 Write-Host "Creating catalog, desktop group, etc..."
 $NetbiosName = Get-GoogleMetadata "instance/attributes/netbios-name"
 $users = "$NetbiosName\Citrix Users"
-$MachineCatalogName = $MacCat
-$DeliveryGroupName = $DelGro
+$MachineCatalogName = "Catalog-$Suffix"
+$DeliveryGroupName = "Group-$Suffix"
 
 
 $HostingServiceAccount = Get-GoogleMetadata "instance/attributes/hosting-connection-service-account"
@@ -413,7 +412,7 @@ Write-Host "App Path: [$path]"
 $ctxIcon = Get-BrokerIcon -FileName "$path" -index 0
 $brokerIcon = New-BrokerIcon -EncodedIconData $ctxIcon.EncodedIconData
 
-New-BrokerApplication -ApplicationType "HostedOnDesktop" -CommandLineArguments "" -CommandLineExecutable "$path" -CpuPriorityLevel "Normal" -DesktopGroup $DG.Uid -Enabled $True -IgnoreUserHomeZone $False -MaxPerUserInstances 0 -MaxTotalInstances 0 -Name "$name-$DelGro" -Priority 0 -PublishedName "$name" -SecureCmdLineArgumentsEnabled $True -ShortcutAddedToDesktop $False -ShortcutAddedToStartMenu $False -UserFilterEnabled $False -Visible $True -WaitForPrinterCreation $False -IconUid $brokerIcon.Uid
+New-BrokerApplication -ApplicationType "HostedOnDesktop" -CommandLineArguments "" -CommandLineExecutable "$path" -CpuPriorityLevel "Normal" -DesktopGroup $DG.Uid -Enabled $True -IgnoreUserHomeZone $False -MaxPerUserInstances 0 -MaxTotalInstances 0 -Name "$name-$Suffix" -Priority 0 -PublishedName "$name-$Suffix" -SecureCmdLineArgumentsEnabled $True -ShortcutAddedToDesktop $False -ShortcutAddedToStartMenu $False -UserFilterEnabled $False -Visible $True -WaitForPrinterCreation $False -IconUid $brokerIcon.Uid
 
 }
 
@@ -431,7 +430,7 @@ gcloud iam service-accounts keys create $TempFile.FullName --iam-account "$Hosti
 $pk = (Get-Content -Path $TempFile.FullName | ConvertFrom-Json).private_key
 $pw = $pk -Replace "\n",""
 
-$HostingConnection = New-Item -ConnectionType "Custom" -CustomProperties "" -HypervisorAddress @("https://cloud.google.com/") -Path @("XDHyp:\Connections\$HosCon") -PluginId "GcpPluginFactory" -Scope @() -Password $pw -UserName $HostingServiceAccount -ZoneUid $Zone.Uid -Persist
+$HostingConnection = New-Item -ConnectionType "Custom" -CustomProperties "" -HypervisorAddress @("https://cloud.google.com/") -Path @("XDHyp:\Connections\Google-Cloud-$Suffix") -PluginId "GcpPluginFactory" -Scope @() -Password $pw -UserName $HostingServiceAccount -ZoneUid $Zone.Uid -Persist
 
 New-BrokerHypervisorConnection -HypHypervisorConnectionUid $HostingConnection.HypervisorConnectionUid
 
@@ -453,5 +452,5 @@ Set-RuntimeConfigVariable -ConfigPath $RuntimeConfig -Variable bootstrap/$name/s
 
 
 # mgmt (script host) server no longer needed, shut down
-#Stop-Computer
+Stop-Computer
 

@@ -107,6 +107,6 @@ resources:
       - networkUrl: $(ref.citrix-{{ properties['suffix'] }}.selfLink)
     forwardingConfig:
       targetNameServers:
-{% for address in properties['dc-addresses'] %}
-      - ipv4Address: {{ address }}
-{% endfor %}
+      - ipv4Address: {{ properties['dc-1-address'] }}
+      - ipv4Address: {{ properties['dc-2-address'] }}
+
