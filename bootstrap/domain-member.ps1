@@ -205,11 +205,9 @@ $DomainAdminCredentials = New-Object `
 Write-Host "Joining domain..."
 $Joined = $False
 while (-Not $Joined) {
-  Try {
-    Add-Computer -DomainName $Domain -Credential $DomainAdminCredentials
-    $Joined = $True
-  }
-  Catch {
+  $CompChange = Add-Computer -DomainName $Domain -Credential $DomainAdminCredentials -PassThru -Verbose
+  $Joined = $CompChange.HasSucceeded
+  If (-Not $Joined) {
     Write-Host "Failed to join domain. Waiting to retry..."
     Start-Sleep 10
   }
