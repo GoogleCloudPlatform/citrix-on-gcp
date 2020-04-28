@@ -218,57 +218,19 @@ $CtxCloudConnectors = Get-GoogleMetadata "instance/attributes/ctx-cloud-connecto
 $VdaDownloadUrl = Get-GoogleMetadata "instance/attributes/vda-download-url"
 
 
-#Write-Host "Downloading Citrix PoSH installer..."
-#[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
-#$TempFile = New-TemporaryFile
-#$TempFile.MoveTo($TempFile.FullName + ".exe")
-#$url = "http://download.apps.cloud.com/CitrixPoshSdk.exe"
-#(New-Object System.Net.WebClient).DownloadFile($url, $TempFile.FullName)
-
-#Write-Host "Running installer..."
-#Start-Process $TempFile.FullName "/q" -Wait
-
-
-#Write-Host "Cleaning up..."
-#Remove-Item $TempFile.FullName
-
 
 Write-Host "Initializing Citrix PoSH SDK..."
 Add-PSSnapin Citrix*
 Set-XDCredentials -CustomerId $CtxCustomerId -ProfileType CloudAPI -APIKey $CtxClientId -SecretKey $CtxClientSecret
 
 
-## download & install vda
-#Write-Host "Downloading VDA installer..."
-#$TempFile = New-TemporaryFile
-#$TempFile.MoveTo($TempFile.FullName + ".exe")
-#(New-Object System.Net.WebClient).DownloadFile($VdaDownloadUrl, $TempFile.FullName)
-
 
 Write-Host "Waiting on Citrix setup from mgmt instance..."
 $RuntimeConfig = Get-GoogleMetadata "instance/attributes/runtime-config"
-Wait-RuntimeConfigWaiter -ConfigPath $RuntimeConfig -Waiter "waiter-ctx-mgmt-$Suffix"
-
-
-#Write-Host "Running installer..."
-#$Arguments = @(
-#	"/components"
-#	"vda,plugins"
-#	"/enable_hdx_ports"
-#	"/optimize"
-#	"/masterimage"
-#	"/enable_remote_assistance"
-#	"/controllers"
-#	"$CtxCloudConnectors"
-#	"/quiet"
-#	"/noreboot"
-#)
-#Start-Process $TempFile.FullName -ArgumentList $Arguments -Wait -NoNewWindow 
-
-
-#Write-Host "Cleaning up..."
-#Remove-Item $TempFile.FullName
-
+$MgmtWaiter = Get-GoogleMetadata "instance/attributes/mgmt-waiter"
+If ($RuntimeConfig -And $MgmtWaiter) { 
+  Wait-RuntimeConfigWaiter -ConfigPath $RuntimeConfig -Waiter $MgmtWaiter
+}
 
 Write-Host "Adding machine to catalog and delivery group..."
 If ($CtxHypervisorConnection) {

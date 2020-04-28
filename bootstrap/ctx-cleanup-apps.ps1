@@ -279,7 +279,7 @@ Write-Host "Removing app..."
 Write-Host "App Name: [$name]"
 
 $Params = @{
-Name = "$name-$Suffix"
+Name = "$name-$DelGro"
 }
 Remove-BrokerApplication @Params
 
