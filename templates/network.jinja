@@ -35,7 +35,7 @@ resources:
     region: {{ subnet['region'] }}
     privateIpGoogleAccess: true
 {% endfor %}
-- name: citrix-allow-dns-external-{{ properties['suffix'] }}
+- name: citrix-allow-external-dns-{{ properties['suffix'] }}
   type: compute.v1.firewall
   properties:
     description: Allow forwarding from Google DNS
@@ -53,7 +53,7 @@ resources:
     - 35.199.192.0/19
     targetTags:
     - dns
-- name: citrix-allow-rdp-external-{{ properties['suffix'] }}
+- name: citrix-allow-external-rdp-{{ properties['suffix'] }}
   type: compute.v1.firewall
   properties:
     description: External RDP remote management for bastion virtual machines
@@ -68,7 +68,7 @@ resources:
     - 35.235.240.0/20
     targetTags:
     - rdp
-- name: citrix-allow-internal-{{ properties['suffix'] }}
+- name: citrix-allow-internal-dc-{{ properties['suffix'] }}
   type: compute.v1.firewall
   properties:
     description: Allow internal traffic between instances
@@ -77,16 +77,97 @@ resources:
     - IPProtocol: icmp
     - IPProtocol: tcp
       ports:
-      - '0-65535'
+      - '88'
+      - '135'
+      - '389'
+      - '445'
+      - '464'
+      - '636'
+      - '3268'
+      - '3269'
+      - '49152-65535'
     - IPProtocol: udp
       ports:
-      - '0-65535'
+      - '88'
+      - '123'
+      - '389'
+      - '464'
     direction: INGRESS
     priority: 1000
     sourceRanges:
     - 10.0.0.0/8
     - 172.16.0.0/12
     - 192.168.0.0/16
+    targetTags:
+    - dc
+- name: citrix-allow-internal-cc-vda-{{ properties['suffix'] }}
+  type: compute.v1.firewall
+  properties:
+    description: Allow internal traffic between instances
+    network: $(ref.citrix-{{ properties['suffix'] }}.selfLink)
+    allowed:
+    - IPProtocol: tcp
+      ports:
+      - '80'
+      - '443'
+      - '1494'
+      - '2598'
+      - '8008'
+    - IPProtocol: udp
+      ports:
+      - '1494'
+      - '2598'
+      - '16500-16509'
+    direction: INGRESS
+    priority: 1000
+    sourceTags:
+    - cc
+    targetTags:
+    - vda
+- name: citrix-allow-internal-vda-cc-{{ properties['suffix'] }}
+  type: compute.v1.firewall
+  properties:
+    description: Allow internal traffic between instances
+    network: $(ref.citrix-{{ properties['suffix'] }}.selfLink)
+    allowed:
+    - IPProtocol: tcp
+      ports:
+      - '80'
+    direction: INGRESS
+    priority: 1000
+    sourceTags:
+    - vda
+    targetTags:
+    - cc
+- name: citrix-allow-internal-smb-{{ properties['suffix'] }}
+  type: compute.v1.firewall
+  properties:
+    description: Allow internal traffic between instances
+    network: $(ref.citrix-{{ properties['suffix'] }}.selfLink)
+    allowed:
+    - IPProtocol: tcp
+      ports:
+      - '445'
+    direction: INGRESS
+    priority: 1000
+    sourceRanges:
+    - 10.0.0.0/8
+    - 172.16.0.0/12
+    - 192.168.0.0/16
+    targetTags:
+    - smb
+- name: citrix-deny-all-sink-{{ properties['suffix'] }}
+  type: compute.v1.firewall
+  properties:
+    description: Low-priority deny all with logging to catch firewall issues
+    network: $(ref.citrix-{{ properties['suffix'] }}.selfLink)
+    denied:
+    - IPProtocol: all
+    enableLogging: true
+    direction: INGRESS
+    priority: 65534
+    sourceRanges:
+    - 0.0.0.0/0
 - name: citrix-on-gcp-router-{{ properties['suffix'] }}
   type: compute.v1.router
   properties:

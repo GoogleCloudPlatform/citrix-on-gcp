@@ -33,6 +33,10 @@ required:
 - runtime-config
 - bootstrap-from
 - citrix-creds
+- machine-catalog
+- delivery-group
+- resource-location
+- hosting-connection
 
 properties:
   suffix:
@@ -89,4 +93,17 @@ properties:
   citrix-creds:
     type: string
     description: GCS location of yaml citrix credentials
+  machine-catalog:
+    type: string
+    description: Name of Citrix machine catalog
+  delivery-group:
+    type: string
+    description: Name of Citrix delivery group
+  resource-location:
+    type: string
+    description: Name of Citrix resource locations
+  hosting-connection:
+    type: string
+    description: Name of Citrix hosting connection
+
 

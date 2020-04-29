@@ -26,8 +26,6 @@ required:
 - suffix
 - subnetwork
 - region
-- primary-zone
-- secondary-zone
 - service-account
 - domain-name
 - netbios-name
@@ -49,12 +47,6 @@ properties:
   region:
     type: string
     description: Region in which to deploy regional resources, e.g. us-central1.
-  primary-zone:
-    type: string
-    description: Zone in which to deploy primary zonal resources, e.g. us-central1-a.
-  secondary-zone:
-    type: string
-    description: Zone in which to deploy secondary zonal resources, e.g. us-central1-b.
   service-account:
     type: string
     description: Email of service account for tutorial instance(s).
@@ -91,12 +83,18 @@ properties:
   bootstrap-from:
     type: string
     description: Location of bootstrap artifacts. Can be a GCS prefix, e.g. gs://bucket/path. Or, an image path, e.g. TBD.
-  dc-1-address:
-    type: string
-    description: IP address for primary domain controller
-    default: 10.0.0.2
-  dc-2-address:
-    type: string
-    description: IP address for secondary domain controller
-    default: 10.0.0.3
+  domain-controllers:
+    type: array
+    description: Domain controller details. Only first will be utilized in minimal deployment.
+    minItems: 1
+    uniqueItems: true
+    items:
+      required:
+      - zone
+      - address
+      properties:
+        zone:
+          type: string
+        address:
+          type: string          
 

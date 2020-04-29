@@ -82,6 +82,7 @@ resources:
       value: {{ properties['citrix-creds'] }}
     tags:
     - rdp
+    - cc
     dependencies:
     - dc-1-address-{{ properties['suffix'] }}
 {% if not properties['minimal'] %}

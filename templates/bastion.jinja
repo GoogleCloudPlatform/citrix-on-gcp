@@ -79,6 +79,14 @@ resources:
 {% endif %}
     - key: citrix-creds
       value: {{ properties['citrix-creds'] }}
+    - key: machine-catalog
+      value: {{ properties['machine-catalog'] }}
+    - key: delivery-group
+      value: {{ properties['delivery-group'] }}
+    - key: resource-location
+      value: {{ properties['resource-location'] }}
+    - key: hosting-connection
+      value: {{ properties['hosting-connection'] }}
 {% if properties['hosting-connection-service-account'] %}
     - key: hosting-connection-service-account
       value: {{ properties['hosting-connection-service-account'] }}

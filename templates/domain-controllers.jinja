@@ -30,7 +30,7 @@ resources:
 - name: dc-1-address-{{ properties['suffix'] }}
   type: compute.v1.address
   properties:
-    address: {{ properties['dc-1-address'] }}
+    address: {{ properties['domain-controllers'][0]['address'] }}
     addressType: INTERNAL
     region: {{ properties['region'] }}
     subnetwork: {{ properties['subnetwork'] }}
@@ -38,17 +38,13 @@ resources:
   type: windows.jinja
   properties:
     name: ctx-dc-1-{{ properties['suffix'] }}
-    zone: {{ properties['primary-zone'] }}
+    zone: {{ properties['domain-controllers'][0]['zone'] }}
     machine-type: n1-standard-2
     subnetwork: {{ properties['subnetwork'] }}
-    networkIP: {{ properties['dc-1-address'] }}
+    networkIP: {{ properties['domain-controllers'][0]['address'] }}
     service-account: {{ properties['service-account'] }}
     ssd: {{ properties['ssd'] }}
     metadata:
-    - key: prefix
-      value: {{ properties['prefix'] }}
-    - key: suffix
-      value: {{ properties['suffix'] }}
     - key: domain-name
       value: {{ properties['domain-name'] }}
     - key: netbios-name
@@ -72,6 +68,7 @@ resources:
     - dc
     - dns
     - rdp
+    - smb
     dependencies:
     - dc-1-address-{{ properties['suffix'] }}
 {% if not properties['minimal'] %}
@@ -98,7 +95,7 @@ resources:
 - name: dc-2-address-{{ properties['suffix'] }}
   type: compute.v1.address
   properties:
-    address: {{ properties['dc-2-address'] }}
+    address: {{ properties['domain-controllers'][1]['address'] }}
     addressType: INTERNAL
     region: {{ properties['region'] }}
     subnetwork: {{ properties['subnetwork'] }}
@@ -106,10 +103,10 @@ resources:
   type: windows.jinja
   properties:
     name: ctx-dc-2-{{ properties['suffix'] }}
-    zone: {{ properties['secondary-zone'] }}
+    zone: {{ properties['domain-controllers'][1]['zone'] }}
     machine-type: n1-standard-2
     subnetwork: {{ properties['subnetwork'] }}
-    networkIP: {{ properties['dc-2-address'] }}
+    networkIP: {{ properties['domain-controllers'][1]['address'] }}
     service-account: {{ properties['service-account'] }}
     ssd: {{ properties['ssd'] }}
     metadata:
@@ -138,6 +135,7 @@ resources:
     - dc
     - dns
     - rdp
+    - smb
     dependencies:
     - dc-1-address-{{ properties['suffix'] }}
     - dc-2-address-{{ properties['suffix'] }}

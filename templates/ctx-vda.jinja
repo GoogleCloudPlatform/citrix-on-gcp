@@ -80,8 +80,11 @@ resources:
 {% endif %}
     - key: ctx-cloud-connectors
       value: {% for host in properties['ctx-cloud-connectors'] %}{{ host }}{{ "," if not loop.last }}{% endfor %}
+    - key: mgmt-waiter
+      value: waiter-ctx-mgmt-{{ properties['suffix'] }}
     tags:
     - rdp
+    - vda
     dependencies:
     - dc-1-address-{{ properties['suffix'] }}
 {% if not properties['minimal'] %}
