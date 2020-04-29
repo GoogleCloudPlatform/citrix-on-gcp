@@ -83,7 +83,7 @@ Write-Host "Deployment: [$Deployment]"
 Write-Host "Getting domain admin password for: $Deployment"
 $Temp = New-TemporaryFile
 gsutil cp "gs://citrix-on-gcp-$ProjectNumber-$Deployment/output/domain-admin-password.bin" $Temp.FullName
-$ClearPass = $(gcloud kms decrypt --key "projects/$Project/locations/global/keyRings/$Prefix/cryptoKeys/domain-secrets-$Suffix" --ciphertext-file $Temp.FullName --plaintext-file -)
+$ClearPass = $(gcloud kms decrypt --key "projects/$Project/locations/global/keyRings/citrix-$Deployment/cryptoKeys/domain-secrets" --ciphertext-file $Temp.FullName --plaintext-file -)
 Remove-Item $Temp.FullName
 
 Write-Host $ClearPass

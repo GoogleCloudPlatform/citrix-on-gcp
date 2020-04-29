@@ -83,6 +83,6 @@ Write-Host "Deployment: [$Deployment]"
 Write-Host "Getting domain users for: $Deployment"
 $Temp = New-TemporaryFile
 gsutil cp "gs://citrix-on-gcp-$ProjectNumber-$Deployment/output/domain-users.bin" $Temp.FullName
-gcloud kms decrypt --key "projects/$Project/locations/global/keyRings/$Prefix/cryptoKeys/domain-secrets-$Suffix" --ciphertext-file $Temp.FullName --plaintext-file -
+gcloud kms decrypt --key "projects/$Project/locations/global/keyRings/citrix-$Deployment/cryptoKeys/domain-secrets" --ciphertext-file $Temp.FullName --plaintext-file -
 Remove-Item $Temp.FullName
 
