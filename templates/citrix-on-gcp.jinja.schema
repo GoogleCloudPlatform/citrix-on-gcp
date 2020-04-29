@@ -98,7 +98,7 @@ properties:
   bootstrap-from:
     type: string
     description: Location of bootstrap artifacts. Can be a GCS prefix, e.g. gs://bucket/path. Or, an image path, e.g. TBD.
-    default: https://raw.githubusercontent.com/GoogleCloudPlatform/citrix-on-gcp/experimental/bootstrap
+    default: https://raw.githubusercontent.com/GoogleCloudPlatform/citrix-on-gcp/exp2/bootstrap
   domain-controllers:
     type: array
     description: Domain controller details. Only first will be utilized in minimal deployment.
