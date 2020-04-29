@@ -15,12 +15,10 @@
 #
 
 Param(
-	[Parameter()][String][ValidateNotNullOrEmpty()]
-	$Prefix = "citrix-on-gcp",
 	[Parameter()][String]
-	$Project,
+	$Deployment,
 	[Parameter()][String]
-	$Suffix
+	$Project
 )
 
 Function To-IntegerIfPossible {
@@ -65,11 +63,11 @@ Write-Host "Project: [$Project]"
 $ProjectNumber = $(gcloud projects describe "$Project" --format "value(projectNumber)")
 Write-Host "Project Number: [$ProjectNumber]"
 
-# see if user specified suffix, if not prompt for choice
-If (-not $Suffix) {
-	$Options = @(gcloud deployment-manager deployments list --format "value(name)" --project $Project | ? { $_ -match "^$Prefix-" })
+# see if user specified deployment, if not prompt for choice
+If (-not $Deployment) {
+	$Options = @(gcloud deployment-manager deployments list --format "value(name)" --project $Project)
 	If ($Options.Length -eq 0) {
-		Write-Error "Please specify a suffix and try again."
+		Write-Error "Please specify a deployment and try again."
 		Exit
 	} Else {
 		$Choice = $Null
@@ -77,14 +75,14 @@ If (-not $Suffix) {
 			$Options | % { $i = 1 } { Write-Host "$i) $_"; $i++ }
 			$Choice = Read-Host -Prompt "Please choose a deployment by number"
 		}
-		$Suffix = $Options[$Choice - 1] | Select-String -Pattern "[^-]+$" | % { $_.Matches } | % { $_.Value }
+		$Deployment = $Options[$Choice - 1]
 	}
 }
-Write-Host "Suffix: [$Suffix]"
+Write-Host "Deployment: [$Deployment]"
 
-Write-Host "Getting domain users for: $Prefix-$Suffix"
+Write-Host "Getting domain users for: $Deployment"
 $Temp = New-TemporaryFile
-gsutil cp "gs://$Prefix-$ProjectNumber-$Suffix/output/domain-users.bin" $Temp.FullName
+gsutil cp "gs://citrix-on-gcp-$ProjectNumber-$Deployment/output/domain-users.bin" $Temp.FullName
 gcloud kms decrypt --key "projects/$Project/locations/global/keyRings/$Prefix/cryptoKeys/domain-secrets-$Suffix" --ciphertext-file $Temp.FullName --plaintext-file -
 Remove-Item $Temp.FullName
 
