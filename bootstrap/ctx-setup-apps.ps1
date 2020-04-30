@@ -418,29 +418,31 @@ New-BrokerApplication -ApplicationType "HostedOnDesktop" -CommandLineArguments "
 }
 
 
-### DEBUG ###
-Write-Host "Debug Exit"
-exit
-
-
 $HostingServiceAccount = Get-GoogleMetadata "instance/attributes/hosting-connection-service-account"
 If ($HostingServiceAccount) {
 
-Write-Host "Creating hosting connection..."
+  Write-Host "Creating hosting connection..."
 
-$Project = Get-GoogleMetadata "project/project-id"
+  $Project = Get-GoogleMetadata "project/project-id"
 
-$TempFile = New-TemporaryFile
-gcloud iam service-accounts keys create $TempFile.FullName --iam-account "$HostingServiceAccount"
+  $TempFile = New-TemporaryFile
+  gcloud iam service-accounts keys create $TempFile.FullName --iam-account "$HostingServiceAccount"
 
-$pk = (Get-Content -Path $TempFile.FullName | ConvertFrom-Json).private_key
-$pw = $pk -Replace "\n",""
+  $pk = (Get-Content -Path $TempFile.FullName | ConvertFrom-Json).private_key
+  $pw = $pk -Replace "\n",""
+  Remove-Item $TempFile.FullName -Force
 
-$HostingConnection = New-Item -ConnectionType "Custom" -CustomProperties "" -HypervisorAddress @("https://cloud.google.com/") -Path @("XDHyp:\Connections\$HosCon") -PluginId "GcpPluginFactory" -Scope @() -Password $pw -UserName $HostingServiceAccount -ZoneUid $Zone.Uid -Persist
+  While (-Not $HostingConnection) {
 
-New-BrokerHypervisorConnection -HypHypervisorConnectionUid $HostingConnection.HypervisorConnectionUid
+    $HostingConnection = New-Item -ConnectionType "Custom" -CustomProperties "" -HypervisorAddress @("https://cloud.google.com/") -Path @("XDHyp:\Connections\$HosCon") -PluginId "GcpPluginFactory" -Scope @() -Password $pw -UserName $HostingServiceAccount -ZoneUid $Zone.Uid -Persist
 
-Remove-Item $TempFile.FullName -Force
+    If (-Not $HostingConnection) {
+      Write-Host "Failed to create hosting connection. Waiting to retry..."
+      Sleep 5
+    }
+  }
+
+  New-BrokerHypervisorConnection -HypHypervisorConnectionUid $HostingConnection.HypervisorConnectionUid
 
 }
 
