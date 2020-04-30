@@ -418,6 +418,11 @@ New-BrokerApplication -ApplicationType "HostedOnDesktop" -CommandLineArguments "
 }
 
 
+### DEBUG ###
+Write-Host "Debug Exit"
+exit
+
+
 $HostingServiceAccount = Get-GoogleMetadata "instance/attributes/hosting-connection-service-account"
 If ($HostingServiceAccount) {
 
