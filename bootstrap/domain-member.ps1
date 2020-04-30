@@ -174,6 +174,10 @@ If ($Waiter) {
 $Joined = $False
 While (-Not $Joined) {
 
+  # superstition
+  Write-Host "Flushing DNS..."
+  ipconfig /flushdns
+
   Write-Host "Configuring local admin..."
   # startup script runs as local system which cannot join domain
   # so do the join as local administrator using random password
@@ -185,32 +189,33 @@ While (-Not $Joined) {
         -ArgumentList "\Administrator",$LocalAdminPassword
   Invoke-Command -Credential $LocalAdminCredentials -ComputerName . -ScriptBlock {
 
-  Write-Host "Getting job metadata..."
-  $Domain = Invoke-RestMethod -Headers @{"Metadata-Flavor" = "Google"} -Uri http://169.254.169.254/computeMetadata/v1/instance/attributes/domain-name
-  $NetBiosName = Invoke-RestMethod -Headers @{"Metadata-Flavor" = "Google"} -Uri http://169.254.169.254/computeMetadata/v1/instance/attributes/netbios-name
-  $KmsKey = Invoke-RestMethod -Headers @{"Metadata-Flavor" = "Google"} -Uri http://169.254.169.254/computeMetadata/v1/instance/attributes/kms-key
-  $GcsPrefix = Invoke-RestMethod -Headers @{"Metadata-Flavor" = "Google"} -Uri http://169.254.169.254/computeMetadata/v1/instance/attributes/gcs-prefix
+    Write-Host "Getting job metadata..."
+    $Domain = Invoke-RestMethod -Headers @{"Metadata-Flavor" = "Google"} -Uri http://169.254.169.254/computeMetadata/v1/instance/attributes/domain-name
+    $NetBiosName = Invoke-RestMethod -Headers @{"Metadata-Flavor" = "Google"} -Uri http://169.254.169.254/computeMetadata/v1/instance/attributes/netbios-name
+    $KmsKey = Invoke-RestMethod -Headers @{"Metadata-Flavor" = "Google"} -Uri http://169.254.169.254/computeMetadata/v1/instance/attributes/kms-key
+    $GcsPrefix = Invoke-RestMethod -Headers @{"Metadata-Flavor" = "Google"} -Uri http://169.254.169.254/computeMetadata/v1/instance/attributes/gcs-prefix
 
-  Write-Host "Fetching admin credentials..."
-  # fetch domain admin credentials
-  If ($GcsPrefix.EndsWith("/")) {
-    $GcsPrefix = $GcsPrefix -Replace ".$"
-  }
-  $TempFile = New-TemporaryFile
-  # invoke-command sees gsutil output as an error so redirect stderr to stdout and stringify to suppress
-  gsutil -q cp $GcsPrefix/output/domain-admin-password.bin $TempFile.FullName 2>&1 | %{ "$_" }
-  $DomainAdminPassword = $(gcloud kms decrypt --key $KmsKey --ciphertext-file $TempFile.FullName --plaintext-file - | ConvertTo-SecureString -AsPlainText -Force)
-  Remove-Item $TempFile.FullName
-  $DomainAdminCredentials = New-Object `
+    Write-Host "Fetching admin credentials..."
+    # fetch domain admin credentials
+    If ($GcsPrefix.EndsWith("/")) {
+      $GcsPrefix = $GcsPrefix -Replace ".$"
+    }
+    $TempFile = New-TemporaryFile
+    # invoke-command sees gsutil output as an error so redirect stderr to stdout and stringify to suppress
+    gsutil -q cp $GcsPrefix/output/domain-admin-password.bin $TempFile.FullName 2>&1 | %{ "$_" }
+    $DomainAdminPassword = $(gcloud kms decrypt --key $KmsKey --ciphertext-file $TempFile.FullName --plaintext-file - | ConvertTo-SecureString -AsPlainText -Force)
+    Remove-Item $TempFile.FullName
+    $DomainAdminCredentials = New-Object `
         -TypeName System.Management.Automation.PSCredential `
         -ArgumentList "$NetBiosName\Administrator",$DomainAdminPassword
 
-  Write-Host "Joining domain..."
-  $CompChange = Add-Computer -DomainName $Domain -Credential $DomainAdminCredentials -PassThru -Verbose
-  $Joined = $CompChange.HasSucceeded
-  If (-Not $Joined) {
-    Write-Host "Failed to join domain. Waiting to retry..."
-    Start-Sleep 10
+    Write-Host "Joining domain..."
+    $CompChange = Add-Computer -DomainName $Domain -Credential $DomainAdminCredentials -PassThru -Verbose
+    $Joined = $CompChange.HasSucceeded
+    If (-Not $Joined) {
+      Write-Host "Failed to join domain. Waiting to retry..."
+      Start-Sleep 10
+    }
   }
 }
 
