@@ -439,6 +439,13 @@ If ($HostingServiceAccount) {
     If (-Not $HostingConnection) {
       Write-Host "Failed to create hosting connection. Waiting to retry..."
       Sleep 5
+
+      Write-Host "Adding PS snapins..."
+      Add-PSSnapin Citrix*
+
+      Write-Host "Initializing SDK..."
+      Set-XDCredentials -CustomerId $CtxCustomerId -ProfileType CloudAPI -APIKey $CtxClientId -SecretKey $CtxClientSecret
+
     }
   }
 
