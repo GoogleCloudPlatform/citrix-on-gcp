@@ -171,7 +171,6 @@ If ($Waiter) {
 }
 
 
-$Joined = $False
 While (-Not $Joined) {
 
   # superstition
@@ -187,7 +186,9 @@ While (-Not $Joined) {
   $LocalAdminCredentials = New-Object `
         -TypeName System.Management.Automation.PSCredential `
         -ArgumentList "\Administrator",$LocalAdminPassword
-  Invoke-Command -Credential $LocalAdminCredentials -ComputerName . -ScriptBlock {
+  $Results = Invoke-Command -Credential $LocalAdminCredentials -ComputerName . -ScriptBlock {
+
+    $Results = @{Joined=$False}
 
     Write-Host "Getting job metadata..."
     $Domain = Invoke-RestMethod -Headers @{"Metadata-Flavor" = "Google"} -Uri http://169.254.169.254/computeMetadata/v1/instance/attributes/domain-name
@@ -211,12 +212,18 @@ While (-Not $Joined) {
 
     Write-Host "Joining domain..."
     $CompChange = Add-Computer -DomainName $Domain -Credential $DomainAdminCredentials -PassThru -Verbose
-    $Joined = $CompChange.HasSucceeded
-    If (-Not $Joined) {
+    $Results.Joined = $CompChange.HasSucceeded
+    If (-Not $Results.Joined) {
       Write-Host "Failed to join domain. Waiting to retry..."
       Start-Sleep 10
     }
+
+    New-Object -TypeName PSObject -Property $Results
+
   }
+
+  $Joined = $Results.Joined
+
 }
 
 
