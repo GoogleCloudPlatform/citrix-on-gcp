@@ -15,18 +15,18 @@
 #
 
 resources:
-- name: waiter-mgmt-{{ properties['suffix'] }}
+- name: waiter-mgmt{{ properties['suffix'] }}
   type: runtimeconfig.v1beta1.waiter
   properties:
-    waiter: waiter-mgmt-{{ properties['suffix'] }}
+    waiter: waiter-mgmt{{ properties['suffix'] }}
     parent: {{ properties['runtime-config'] }}
     timeout: 2400s
     success:
       cardinality:
-        path: bootstrap/mgmt-{{ properties['suffix'] }}/success
+        path: bootstrap/mgmt{{ properties['suffix'] }}/success
   metadata:
     dependsOn:
-    - mgmt-{{ properties['suffix'] }}
+    - mgmt{{ properties['suffix'] }}
 - name: waiter-resloc
   type: runtimeconfig.v1beta1.waiter
   properties:
@@ -38,11 +38,11 @@ resources:
         path: setup/citrix/resloc
   metadata:
     dependsOn:
-    - mgmt-{{ properties['suffix'] }}
-- name: mgmt-{{ properties['suffix'] }}
+    - mgmt{{ properties['suffix'] }}
+- name: mgmt{{ properties['suffix'] }}
   type: windows.jinja
   properties:
-    name: mgmt-{{ properties['suffix'] }}
+    name: mgmt{{ properties['suffix'] }}
     zone: {{ properties['zone'] }}
     machine-type: n1-standard-2
     subnetwork: {{ properties['subnetwork'] }}
@@ -61,10 +61,10 @@ resources:
       value: {{ properties['runtime-config'] }}
 {% if properties['minimal'] %}
     - key: wait-on
-      value: waiter-dc-1-{{ properties['suffix'] }}
+      value: waiter-dc-1{{ properties['suffix'] }}
 {% else %}
     - key: wait-on
-      value: waiter-dc-2-{{ properties['suffix'] }}
+      value: waiter-dc-2{{ properties['suffix'] }}
 {% endif %}
 {% if properties['bootstrap-from'].startswith('gs://') or
          properties['bootstrap-from'].startswith('https://') or 
@@ -94,9 +94,9 @@ resources:
     tags:
     - rdp
     dependencies:
-    - dc-1-address-{{ properties['suffix'] }}
+    - dc-1-address{{ properties['suffix'] }}
 {% if not properties['minimal'] %}
-    - dc-2-address-{{ properties['suffix'] }}
+    - dc-2-address{{ properties['suffix'] }}
 {% endif %}
 {% if properties['dependencies']|length > 0 %}
 {% for dependency in properties['dependencies'] %}

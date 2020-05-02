@@ -15,29 +15,29 @@
 #
 
 resources:
-- name: waiter-dc-1-{{ properties['suffix'] }}
+- name: waiter-dc-1{{ properties['suffix'] }}
   type: runtimeconfig.v1beta1.waiter
   properties:
-    waiter: waiter-dc-1-{{ properties['suffix'] }}
+    waiter: waiter-dc-1{{ properties['suffix'] }}
     parent: {{ properties['runtime-config'] }}
     timeout: 2400s
     success:
       cardinality:
-        path: bootstrap/dc-1-{{ properties['suffix'] }}/success
+        path: bootstrap/dc-1{{ properties['suffix'] }}/success
   metadata:
     dependsOn:
-    - dc-1-{{ properties['suffix'] }}
-- name: dc-1-address-{{ properties['suffix'] }}
+    - dc-1{{ properties['suffix'] }}
+- name: dc-1-address{{ properties['suffix'] }}
   type: compute.v1.address
   properties:
     address: {{ properties['domain-controllers'][0]['address'] }}
     addressType: INTERNAL
     region: {{ properties['region'] }}
     subnetwork: {{ properties['subnetwork'] }}
-- name: dc-1-{{ properties['suffix'] }}
+- name: dc-1{{ properties['suffix'] }}
   type: windows.jinja
   properties:
-    name: dc-1-{{ properties['suffix'] }}
+    name: dc-1{{ properties['suffix'] }}
     zone: {{ properties['domain-controllers'][0]['zone'] }}
     machine-type: n1-standard-2
     subnetwork: {{ properties['subnetwork'] }}
@@ -70,9 +70,9 @@ resources:
     - rdp
     - smb
     dependencies:
-    - dc-1-address-{{ properties['suffix'] }}
+    - dc-1-address{{ properties['suffix'] }}
 {% if not properties['minimal'] %}
-    - dc-2-address-{{ properties['suffix'] }}
+    - dc-2-address{{ properties['suffix'] }}
 {% endif %}
 {% if properties['dependencies']|length > 0 %}
 {% for dependency in properties['dependencies'] %}
@@ -80,29 +80,29 @@ resources:
 {% endfor %}
 {% endif %}
 {% if not properties['minimal'] %}
-- name: waiter-dc-2-{{ properties['suffix'] }}
+- name: waiter-dc-2{{ properties['suffix'] }}
   type: runtimeconfig.v1beta1.waiter
   properties:
-    waiter: waiter-dc-2-{{ properties['suffix'] }}
+    waiter: waiter-dc-2{{ properties['suffix'] }}
     parent: {{ properties['runtime-config'] }}
     timeout: 2400s
     success:
       cardinality:
-        path: bootstrap/dc-2-{{ properties['suffix'] }}/success
+        path: bootstrap/dc-2{{ properties['suffix'] }}/success
   metadata:
     dependsOn:
-    - dc-2-{{ properties['suffix'] }}
-- name: dc-2-address-{{ properties['suffix'] }}
+    - dc-2{{ properties['suffix'] }}
+- name: dc-2-address{{ properties['suffix'] }}
   type: compute.v1.address
   properties:
     address: {{ properties['domain-controllers'][1]['address'] }}
     addressType: INTERNAL
     region: {{ properties['region'] }}
     subnetwork: {{ properties['subnetwork'] }}
-- name: dc-2-{{ properties['suffix'] }}
+- name: dc-2{{ properties['suffix'] }}
   type: windows.jinja
   properties:
-    name: dc-2-{{ properties['suffix'] }}
+    name: dc-2{{ properties['suffix'] }}
     zone: {{ properties['domain-controllers'][1]['zone'] }}
     machine-type: n1-standard-2
     subnetwork: {{ properties['subnetwork'] }}
@@ -121,7 +121,7 @@ resources:
     - key: runtime-config
       value: {{ properties['runtime-config'] }}
     - key: wait-on
-      value: waiter-dc-1-{{ properties['suffix'] }}
+      value: waiter-dc-1{{ properties['suffix'] }}
 {% if properties['bootstrap-from'].startswith('gs://') or
          properties['bootstrap-from'].startswith('https://') or
          properties['bootstrap-from'].startswith('http://')  %}
@@ -137,8 +137,8 @@ resources:
     - rdp
     - smb
     dependencies:
-    - dc-1-address-{{ properties['suffix'] }}
-    - dc-2-address-{{ properties['suffix'] }}
+    - dc-1-address{{ properties['suffix'] }}
+    - dc-2-address{{ properties['suffix'] }}
 {% if properties['dependencies']|length > 0 %}
 {% for dependency in properties['dependencies'] %}
     - {{ dependency }}

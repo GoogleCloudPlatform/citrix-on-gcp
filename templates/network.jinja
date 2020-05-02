@@ -15,7 +15,7 @@
 #
 
 resources:
-- name: citrix-{{ properties['suffix'] }}
+- name: citrix{{ properties['suffix'] }}
   type: compute.v1.network
   properties:
     autoCreateSubnetworks: false
@@ -27,19 +27,19 @@ resources:
     - api-runtimeconfig
     - config
 {% for subnet in properties['subnets'] %}
-- name: citrix-{{ subnet['region'] }}-{{ properties['suffix'] }}
+- name: citrix-{{ subnet['region'] }}{{ properties['suffix'] }}
   type: compute.v1.subnetwork
   properties:
-    network: $(ref.citrix-{{ properties['suffix'] }}.selfLink)
+    network: $(ref.citrix{{ properties['suffix'] }}.selfLink)
     ipCidrRange: {{ subnet['cidr'] }}
     region: {{ subnet['region'] }}
     privateIpGoogleAccess: true
 {% endfor %}
-- name: citrix-allow-external-dns-{{ properties['suffix'] }}
+- name: citrix-allow-external-dns{{ properties['suffix'] }}
   type: compute.v1.firewall
   properties:
     description: Allow forwarding from Google DNS
-    network: $(ref.citrix-{{ properties['suffix'] }}.selfLink)
+    network: $(ref.citrix{{ properties['suffix'] }}.selfLink)
     allowed:
     - IPProtocol: tcp
       ports:
@@ -56,11 +56,11 @@ resources:
     - 192.168.0.0/16
     targetTags:
     - dns
-- name: citrix-allow-external-rdp-{{ properties['suffix'] }}
+- name: citrix-allow-external-rdp{{ properties['suffix'] }}
   type: compute.v1.firewall
   properties:
     description: External RDP remote management for bastion virtual machines
-    network: $(ref.citrix-{{ properties['suffix'] }}.selfLink)
+    network: $(ref.citrix{{ properties['suffix'] }}.selfLink)
     allowed:
     - IPProtocol: tcp
       ports:
@@ -71,11 +71,11 @@ resources:
     - 35.235.240.0/20
     targetTags:
     - rdp
-- name: citrix-allow-internal-dc-{{ properties['suffix'] }}
+- name: citrix-allow-internal-dc{{ properties['suffix'] }}
   type: compute.v1.firewall
   properties:
     description: Allow internal traffic between instances
-    network: $(ref.citrix-{{ properties['suffix'] }}.selfLink)
+    network: $(ref.citrix{{ properties['suffix'] }}.selfLink)
     allowed:
     - IPProtocol: icmp
     - IPProtocol: tcp
@@ -105,11 +105,11 @@ resources:
     - 192.168.0.0/16
     targetTags:
     - dc
-- name: citrix-allow-internal-cc-vda-{{ properties['suffix'] }}
+- name: citrix-allow-internal-cc-vda{{ properties['suffix'] }}
   type: compute.v1.firewall
   properties:
     description: Allow internal traffic between instances
-    network: $(ref.citrix-{{ properties['suffix'] }}.selfLink)
+    network: $(ref.citrix{{ properties['suffix'] }}.selfLink)
     allowed:
     - IPProtocol: tcp
       ports:
@@ -129,11 +129,11 @@ resources:
     - cc
     targetTags:
     - vda
-- name: citrix-allow-internal-vda-cc-{{ properties['suffix'] }}
+- name: citrix-allow-internal-vda-cc{{ properties['suffix'] }}
   type: compute.v1.firewall
   properties:
     description: Allow internal traffic between instances
-    network: $(ref.citrix-{{ properties['suffix'] }}.selfLink)
+    network: $(ref.citrix{{ properties['suffix'] }}.selfLink)
     allowed:
     - IPProtocol: tcp
       ports:
@@ -145,11 +145,11 @@ resources:
     - cc
     targetTags:
     - cc
-- name: citrix-allow-internal-smb-{{ properties['suffix'] }}
+- name: citrix-allow-internal-smb{{ properties['suffix'] }}
   type: compute.v1.firewall
   properties:
     description: Allow internal traffic between instances
-    network: $(ref.citrix-{{ properties['suffix'] }}.selfLink)
+    network: $(ref.citrix{{ properties['suffix'] }}.selfLink)
     allowed:
     - IPProtocol: tcp
       ports:
@@ -162,11 +162,11 @@ resources:
     - 192.168.0.0/16
     targetTags:
     - smb
-- name: citrix-deny-all-sink-{{ properties['suffix'] }}
+- name: citrix-deny-all-sink{{ properties['suffix'] }}
   type: compute.v1.firewall
   properties:
     description: Low-priority deny all with logging to catch firewall issues
-    network: $(ref.citrix-{{ properties['suffix'] }}.selfLink)
+    network: $(ref.citrix{{ properties['suffix'] }}.selfLink)
     denied:
     - IPProtocol: all
     logConfig:
@@ -175,16 +175,16 @@ resources:
     priority: 65534
     sourceRanges:
     - 0.0.0.0/0
-- name: citrix-on-gcp-router-{{ properties['suffix'] }}
+- name: citrix-on-gcp-router{{ properties['suffix'] }}
   type: compute.v1.router
   properties:
-    network: $(ref.citrix-{{ properties['suffix'] }}.selfLink)
+    network: $(ref.citrix{{ properties['suffix'] }}.selfLink)
     region: {{ properties['region'] }}
     nats:
-    - name: citrix-on-gcp-nat-{{ properties['suffix'] }}
+    - name: citrix-on-gcp-nat{{ properties['suffix'] }}
       sourceSubnetworkIpRangesToNat: ALL_SUBNETWORKS_ALL_IP_RANGES
       natIpAllocateOption: AUTO_ONLY
-- name: citrix-on-gcp-zone-{{ properties['suffix'] }}
+- name: citrix-on-gcp-zone{{ properties['suffix'] }}
   type: gcp-types/dns-v1beta2:managedZones
   properties:
     description: Forwarding zone to integrate Google DNS with Active Directory
@@ -192,7 +192,7 @@ resources:
     visibility: private
     privateVisibilityConfig:
       networks:
-      - networkUrl: $(ref.citrix-{{ properties['suffix'] }}.selfLink)
+      - networkUrl: $(ref.citrix{{ properties['suffix'] }}.selfLink)
     forwardingConfig:
       targetNameServers:
 {% for address in properties['dc-addresses'] %}
