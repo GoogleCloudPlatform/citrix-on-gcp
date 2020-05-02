@@ -201,7 +201,7 @@ Write-Host "Bootstrap script started..."
 
 
 # get metadata
-$CtxCloudConnectors = Get-GoogleMetadata "instance/attributes/ctx-cloud-connectors"
+$CtxCloudConnectors = Get-GoogleMetadata "instance/attributes/cloud-connectors"
 $VdaDownloadUrl = Get-GoogleMetadata "instance/attributes/vda-download-url"
 
 

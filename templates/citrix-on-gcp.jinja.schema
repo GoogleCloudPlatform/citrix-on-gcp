@@ -23,8 +23,8 @@ imports:
 - path: network.jinja
 - path: domain-controllers.jinja
 - path: bastion.jinja
-- path: ctx-cloud-connector.jinja
-- path: ctx-vda.jinja
+- path: cloud-connector.jinja
+- path: vda.jinja
 
 required:
 - region

@@ -15,18 +15,18 @@
 #
 
 resources:
-- name: waiter-ctx-dc-1-{{ properties['suffix'] }}
+- name: waiter-dc-1-{{ properties['suffix'] }}
   type: runtimeconfig.v1beta1.waiter
   properties:
-    waiter: waiter-ctx-dc-1-{{ properties['suffix'] }}
+    waiter: waiter-dc-1-{{ properties['suffix'] }}
     parent: {{ properties['runtime-config'] }}
     timeout: 2400s
     success:
       cardinality:
-        path: bootstrap/ctx-dc-1-{{ properties['suffix'] }}/success
+        path: bootstrap/dc-1-{{ properties['suffix'] }}/success
   metadata:
     dependsOn:
-    - ctx-dc-1-{{ properties['suffix'] }}
+    - dc-1-{{ properties['suffix'] }}
 - name: dc-1-address-{{ properties['suffix'] }}
   type: compute.v1.address
   properties:
@@ -34,10 +34,10 @@ resources:
     addressType: INTERNAL
     region: {{ properties['region'] }}
     subnetwork: {{ properties['subnetwork'] }}
-- name: ctx-dc-1-{{ properties['suffix'] }}
+- name: dc-1-{{ properties['suffix'] }}
   type: windows.jinja
   properties:
-    name: ctx-dc-1-{{ properties['suffix'] }}
+    name: dc-1-{{ properties['suffix'] }}
     zone: {{ properties['domain-controllers'][0]['zone'] }}
     machine-type: n1-standard-2
     subnetwork: {{ properties['subnetwork'] }}
@@ -80,18 +80,18 @@ resources:
 {% endfor %}
 {% endif %}
 {% if not properties['minimal'] %}
-- name: waiter-ctx-dc-2-{{ properties['suffix'] }}
+- name: waiter-dc-2-{{ properties['suffix'] }}
   type: runtimeconfig.v1beta1.waiter
   properties:
-    waiter: waiter-ctx-dc-2-{{ properties['suffix'] }}
+    waiter: waiter-dc-2-{{ properties['suffix'] }}
     parent: {{ properties['runtime-config'] }}
     timeout: 2400s
     success:
       cardinality:
-        path: bootstrap/ctx-dc-2-{{ properties['suffix'] }}/success
+        path: bootstrap/dc-2-{{ properties['suffix'] }}/success
   metadata:
     dependsOn:
-    - ctx-dc-2-{{ properties['suffix'] }}
+    - dc-2-{{ properties['suffix'] }}
 - name: dc-2-address-{{ properties['suffix'] }}
   type: compute.v1.address
   properties:
@@ -99,10 +99,10 @@ resources:
     addressType: INTERNAL
     region: {{ properties['region'] }}
     subnetwork: {{ properties['subnetwork'] }}
-- name: ctx-dc-2-{{ properties['suffix'] }}
+- name: dc-2-{{ properties['suffix'] }}
   type: windows.jinja
   properties:
-    name: ctx-dc-2-{{ properties['suffix'] }}
+    name: dc-2-{{ properties['suffix'] }}
     zone: {{ properties['domain-controllers'][1]['zone'] }}
     machine-type: n1-standard-2
     subnetwork: {{ properties['subnetwork'] }}
@@ -121,7 +121,7 @@ resources:
     - key: runtime-config
       value: {{ properties['runtime-config'] }}
     - key: wait-on
-      value: waiter-ctx-dc-1-{{ properties['suffix'] }}
+      value: waiter-dc-1-{{ properties['suffix'] }}
 {% if properties['bootstrap-from'].startswith('gs://') or
          properties['bootstrap-from'].startswith('https://') or
          properties['bootstrap-from'].startswith('http://')  %}

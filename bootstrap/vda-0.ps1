@@ -152,7 +152,7 @@ Write-Host "Configuring startup metadata..."
 $name = Get-GoogleMetadata "instance/name"
 $zone = Get-GoogleMetadata "instance/zone"
 $BootstrapFrom = Get-GoogleMetadata "instance/attributes/bootstrap-from"
-gcloud compute instances add-metadata "$name" --zone $zone --metadata "windows-startup-script-url=$BootstrapFrom/ctx-vda-1.ps1"
+gcloud compute instances add-metadata "$name" --zone $zone --metadata "windows-startup-script-url=$BootstrapFrom/vda-1.ps1"
 
 
 Write-Host "Restarting..."

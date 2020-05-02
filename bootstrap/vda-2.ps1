@@ -1,12 +1,12 @@
 #
 #  Copyright 2018 Google Inc.
-# 
+#
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
 #  You may obtain a copy of the License at
-# 
+#
 #    http://www.apache.org/licenses/LICENSE-2.0
-# 
+#
 #  Unless required by applicable law or agreed to in writing, software
 #  distributed under the License is distributed on an "AS IS" BASIS,
 #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -162,24 +162,42 @@ Function Get-Setting {
 
 }
 
-Function Disable-InternetExplorerESC {
-    $AdminKey = "HKLM:\SOFTWARE\Microsoft\Active Setup\Installed Components\{A509B1A7-37EF-4b3f-8CFC-4F3A74704073}"
-    $UserKey = "HKLM:\SOFTWARE\Microsoft\Active Setup\Installed Components\{A509B1A8-37EF-4b3f-8CFC-4F3A74704073}"
-    Set-ItemProperty -Path $AdminKey -Name "IsInstalled" -Value 0
-    Set-ItemProperty -Path $UserKey -Name "IsInstalled" -Value 0
-    Stop-Process -Name Explorer -Force
+
+Function Set-Setting {
+	Param (
+	[Parameter(Mandatory=$True)][String][ValidateNotNullOrEmpty()]
+	$Path,
+	[Parameter(Mandatory=$True)][String][ValidateNotNullOrEmpty()]
+	$Value,
+	[Parameter()][Boolean]
+	$Secure = $False
+	)
+
+	$GcsPrefix = Get-GoogleMetadata -Path "instance/attributes/gcs-prefix"
+	If ($GcsPrefix.EndsWith("/")) {
+		$GcsPrefix = $GcsPrefix -Replace ".$"
+	}
+
+	If ($Secure) {
+		$KmsKey = Get-GoogleMetadata -Path "instance/attributes/kms-key"
+		$TempFile = New-TemporaryFile
+		$TempFileEnc = New-TemporaryFile
+		$Value | Out-File -NoNewLine $TempFile.FullName
+		gcloud kms encrypt --key "$KmsKey" --ciphertext-file $TempFileEnc.FullName --plaintext-file $TempFile.FullName
+		gsutil -q cp $TempFileEnc.FullName "$GcsPrefix/settings/$Path.bin"
+		Remove-Item $TempFileEnc.FullName
+		Remove-Item $TempFile.FullName
+	}
+	Else {
+		$TempFile = New-TemporaryFile
+		$Value | Out-File -NoNewLine $TempFile.FullName
+		gsutil -q cp $TempFile.FullName "$GcsPrefix/settings/$Path"
+		Remove-Item $TempFile.FullName
+	}
+
 }
 
-
 Write-Host "Bootstrap script started..."
-
-
-#Write-Host "Disabling IE enhanced security..."
-#Disable-InternetExplorerESC
-
-
-# turn off gcloud version checks
-gcloud config set component_manager/disable_update_check true
 
 
 
@@ -191,36 +209,65 @@ $CtxClientId = $CitrixCreds.SecureClientId
 $CtxClientSecret = $CitrixCreds.SecureClientSecret
 $CtxCustomerId = $CitrixCreds.CustomerId
 
-Write-Host "CtxClientId: [$CtxClientId]"
-Write-Host "CtxCustomerId: [$CtxCustomerId]"
+# get metadata
+$Domain = Get-GoogleMetadata "instance/attributes/domain-name"
+$CtxMachineCatalog = Get-GoogleMetadata "instance/attributes/machine-catalog"
+$CtxDeliveryGroup = Get-GoogleMetadata "instance/attributes/delivery-group"
+$CtxHypervisorConnection = Get-GoogleMetadata "instance/attributes/hypervisor-connection"
+$CtxCloudConnectors = Get-GoogleMetadata "instance/attributes/cloud-connectors"
+$VdaDownloadUrl = Get-GoogleMetadata "instance/attributes/vda-download-url"
 
 
-Write-Host "Downloading installer..."
-$TempFile = New-TemporaryFile
-$TempFile.MoveTo($TempFile.FullName + ".exe")
-$url = "https://downloads.cloud.com/$CtxCustomerId/connector/cwcconnector.exe"
-(New-Object System.Net.WebClient).DownloadFile($url, $TempFile.FullName)
+
+Write-Host "Initializing Citrix PoSH SDK..."
+Add-PSSnapin Citrix*
+Set-XDCredentials -CustomerId $CtxCustomerId -ProfileType CloudAPI -APIKey $CtxClientId -SecretKey $CtxClientSecret
 
 
-Write-Host "Waiting on Citrix Resource Location..."
+
+Write-Host "Waiting on Citrix setup from mgmt instance..."
 $RuntimeConfig = Get-GoogleMetadata "instance/attributes/runtime-config"
-Wait-RuntimeConfigWaiter -ConfigPath $RuntimeConfig -Waiter "waiter-ctx-resloc"
-$CtxResourceLocationId = Get-Setting "citrix/resource-location/id"
+$MgmtWaiter = Get-GoogleMetadata "instance/attributes/mgmt-waiter"
+If ($RuntimeConfig -And $MgmtWaiter) { 
+  Wait-RuntimeConfigWaiter -ConfigPath $RuntimeConfig -Waiter $MgmtWaiter
+}
 
+Write-Host "Adding machine to catalog and delivery group..."
+If ($CtxHypervisorConnection) {
 
-Write-Host "Running installer..."
-$CmdArgs = "/q /CustomerName:$CtxCustomerId /ClientId:$CtxClientID /ClientSecret:$CtxClientSecret /Location:$CtxResourceLocationId /AcceptTermsOfService:true"
-Start-Process -FilePath $TempFile.FullName -ArgumentList $CmdArgs -Wait
+Write-Host "Getting machine catalog..."
+$BrokerCatalog = Get-BrokerCatalog $CtxMachineCatalog
 
+$HypervisorConnection = Get-BrokerHypervisorConnection $CtxHypervisorConnection
 
-Write-Host "Cleaning up..."
-Remove-Item $TempFile.FullName
-
-
-Write-Host "Signaling Citrix Connector setup..."
+$project = Get-GoogleMetadata "project/project-id"
+$region = (Get-GoogleMetadata "instance/zone").Split("/")[-1] -Replace "-[^-]+$","" 
 $name = Get-GoogleMetadata "instance/name"
-$RuntimeConfig = Get-GoogleMetadata "instance/attributes/runtime-config"
-Set-RuntimeConfigVariable -ConfigPath $RuntimeConfig -Variable "setup/citrix/connector/$name" -Text (Get-Date -Format g)
+
+$BrokerMachine = New-BrokerMachine -CatalogUid $BrokerCatalog.Uid -MachineName (Get-ADComputer "$Env:COMPUTERNAME").SID.Value -HostedMachineId "$project`:$region`:$name" -HypervisorConnectionUid $HypervisorConnection.Uid
+
+}
+Else {
+
+  Do {
+    Try {
+#      $BrokerMachine = New-BrokerMachine -CatalogUid $BrokerCatalog.Uid -MachineName "$Domain\$Env:ComputerName"
+
+      Write-Host "Getting machine catalog..."
+      $BrokerCatalog = Get-BrokerCatalog $CtxMachineCatalog
+      $BrokerMachine = New-BrokerMachine -CatalogUid $BrokerCatalog.Uid -MachineName (Get-ADComputer "$Env:COMPUTERNAME").SID.Value
+      Break
+
+    }
+    Catch {
+      Write-Host $_.ToString() + $_.InvocationInfo.PositionMessage
+      Write-Host "Waiting to try again..."
+      Sleep 15
+    }
+  } While ($True)
+
+}
+Add-BrokerMachine -DesktopGroup $CtxDeliveryGroup -InputObject @($BrokerMachine)
 
 
 Write-Host "Configuring startup metadata..."
@@ -229,11 +276,13 @@ $name = Get-GoogleMetadata "instance/name"
 $zone = Get-GoogleMetadata "instance/zone"
 gcloud compute instances remove-metadata "$name" --zone $zone --keys windows-startup-script-url
 
-
 Write-Host "Signaling completion..."
 # flag completion of bootstrap requires beta gcloud component
 $name = Get-GoogleMetadata "instance/name"
 $RuntimeConfig = Get-GoogleMetadata "instance/attributes/runtime-config"
-Set-RuntimeConfigVariable -ConfigPath $RuntimeConfig -Variable "bootstrap/$name/success/time" -Text (Get-Date -Format g)
+Set-RuntimeConfigVariable -ConfigPath $RuntimeConfig -Variable bootstrap/$name/success/time -Text (Get-Date -Format g)
 
+
+## vda install requires restart
+#Restart-Computer
 

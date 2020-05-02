@@ -208,8 +208,8 @@ resources:
     ssd: {{ properties['ssd'] }}
     bootstrap-from: {{ properties['bootstrap-from'] }}
     citrix-creds: {{ properties['citrix-creds'] }}
-- name: ctx-cc
-  type: ctx-cloud-connector.jinja
+- name: cc
+  type: cloud-connector.jinja
   properties:
     suffix: {{ suffix }}
     zones:
@@ -228,8 +228,8 @@ resources:
     ssd: {{ properties['ssd'] }}
     bootstrap-from: {{ properties['bootstrap-from'] }}
     citrix-creds: {{ properties['citrix-creds'] }}
-- name: ctx-vda
-  type: ctx-vda.jinja
+- name: vda
+  type: vda.jinja
   properties:
     suffix: {{ suffix }}
     zones:
@@ -244,15 +244,15 @@ resources:
     gcs-prefix: gs://$(ref.bucket.name)/
     runtime-config: $(ref.config.name)
     vda-download-url: {{ properties['vda-download-url'] }}
-    ctx-machine-catalog: {{ machine_catalog }}
-    ctx-delivery-group: {{ delivery_group }}
+    machine-catalog: {{ machine_catalog }}
+    delivery-group: {{ delivery_group }}
 {% if properties['power-managed'] %}
-    ctx-hypervisor-connection: {{ hosting_connection }}
+    hypervisor-connection: {{ hosting_connection }}
 {% endif %}
-    ctx-cloud-connectors:
-    - ctx-cc-1-{{ suffix }}.{{ properties['domain-name'] }}
+    cloud-connectors:
+    - cc-1-{{ suffix }}.{{ properties['domain-name'] }}
 {% if not properties['minimal'] %}
-    - ctx-cc-2-{{ suffix }}.{{ properties['domain-name'] }}
+    - cc-2-{{ suffix }}.{{ properties['domain-name'] }}
 {% endif %}
     minimal: {{ properties['minimal'] }}
     ssd: {{ properties['ssd'] }}

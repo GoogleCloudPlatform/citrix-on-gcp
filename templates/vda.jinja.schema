@@ -16,7 +16,7 @@
 
 info:
   title: Citrix Cloud Connector Template
-  description: Deploys domain-joined ctx-cc instances
+  description: Deploys domain-joined VDA instances
 
 imports:
 - path: windows.jinja
@@ -31,6 +31,10 @@ required:
 - kms-key
 - gcs-prefix
 - runtime-config
+- vda-download-url
+- machine-catalog
+- delivery-group
+- cloud-controllers
 - bootstrap-from
 - citrix-creds
 
@@ -76,10 +80,29 @@ properties:
   runtime-config:
     type: string
     description: Path of Runtime Config used for variables and waiters.
+  machine-catalog:
+    type: string
+    description: Name of Citrix Machine Catalog in which this machine belongs.
+  delivery-group:
+    type: string
+    description: Name of Citrix Delivery Group in which this machine belongs.
+  hypervisor-connection:
+    type: string
+    description: Name of Citrix Hypervisor Connection for managed GCP features.
+  cloud-connectors:
+    type: array
+    description: List of FQDN's for Citrix Cloud Controllers.
+    minItems: 1
+    uniqueItems: true
+    items:
+      type: string
   minimal:
     type: boolean
     default: False
     description: Whether or not to minimize resources (e.g. for trial account) instead of deploying with redundancy
+  vda-download-url:
+    type: string
+    description: URL from which to doanload VDA installer
   ssd:
     type: boolean
     default: False

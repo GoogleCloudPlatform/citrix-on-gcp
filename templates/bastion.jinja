@@ -15,22 +15,22 @@
 #
 
 resources:
-- name: waiter-ctx-mgmt-{{ properties['suffix'] }}
+- name: waiter-mgmt-{{ properties['suffix'] }}
   type: runtimeconfig.v1beta1.waiter
   properties:
-    waiter: waiter-ctx-mgmt-{{ properties['suffix'] }}
+    waiter: waiter-mgmt-{{ properties['suffix'] }}
     parent: {{ properties['runtime-config'] }}
     timeout: 2400s
     success:
       cardinality:
-        path: bootstrap/ctx-mgmt-{{ properties['suffix'] }}/success
+        path: bootstrap/mgmt-{{ properties['suffix'] }}/success
   metadata:
     dependsOn:
-    - ctx-mgmt-{{ properties['suffix'] }}
-- name: waiter-ctx-resloc
+    - mgmt-{{ properties['suffix'] }}
+- name: waiter-resloc
   type: runtimeconfig.v1beta1.waiter
   properties:
-    waiter: waiter-ctx-resloc
+    waiter: waiter-resloc
     parent: {{ properties['runtime-config'] }} 
     timeout: 2400s
     success:
@@ -38,11 +38,11 @@ resources:
         path: setup/citrix/resloc
   metadata:
     dependsOn:
-    - ctx-mgmt-{{ properties['suffix'] }}
-- name: ctx-mgmt-{{ properties['suffix'] }}
+    - mgmt-{{ properties['suffix'] }}
+- name: mgmt-{{ properties['suffix'] }}
   type: windows.jinja
   properties:
-    name: ctx-mgmt-{{ properties['suffix'] }}
+    name: mgmt-{{ properties['suffix'] }}
     zone: {{ properties['zone'] }}
     machine-type: n1-standard-2
     subnetwork: {{ properties['subnetwork'] }}
@@ -61,10 +61,10 @@ resources:
       value: {{ properties['runtime-config'] }}
 {% if properties['minimal'] %}
     - key: wait-on
-      value: waiter-ctx-dc-1-{{ properties['suffix'] }}
+      value: waiter-dc-1-{{ properties['suffix'] }}
 {% else %}
     - key: wait-on
-      value: waiter-ctx-dc-2-{{ properties['suffix'] }}
+      value: waiter-dc-2-{{ properties['suffix'] }}
 {% endif %}
 {% if properties['bootstrap-from'].startswith('gs://') or
          properties['bootstrap-from'].startswith('https://') or 
@@ -74,7 +74,7 @@ resources:
     - key: windows-startup-script-url
       value: {{ properties['bootstrap-from'] }}/domain-member.ps1
     - key: post-join-script-url
-      value: {{ properties['bootstrap-from'] }}/ctx-setup-apps.ps1
+      value: {{ properties['bootstrap-from'] }}/setup-apps.ps1
 {% else %}
 {% endif %}
     - key: citrix-creds

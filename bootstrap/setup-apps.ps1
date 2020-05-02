@@ -355,7 +355,7 @@ Set-XDCredentials -CustomerId $CtxCustomerId -ProfileType CloudAPI -APIKey $CtxC
 
 Write-Host "Waiting on Citrix Connector..."
 $RuntimeConfig = Get-GoogleMetadata "instance/attributes/runtime-config"
-Wait-RuntimeConfigWaiter -ConfigPath $RuntimeConfig -Waiter "waiter-ctx-connector"
+Wait-RuntimeConfigWaiter -ConfigPath $RuntimeConfig -Waiter "waiter-connector"
 
 
 Write-Host "Getting zone..."

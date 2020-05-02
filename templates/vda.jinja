@@ -16,22 +16,22 @@
 
 resources:
 {% for zone in properties['zones'] %}
-- name: waiter-ctx-vda-{{ loop.index }}-{{ properties['suffix'] }}
+- name: waiter-vda-{{ loop.index }}-{{ properties['suffix'] }}
   type: runtimeconfig.v1beta1.waiter
   properties:
-    waiter: waiter-ctx-vda-{{ loop.index }}-{{ properties['suffix'] }}
+    waiter: waiter-vda-{{ loop.index }}-{{ properties['suffix'] }}
     parent: {{ properties['runtime-config'] }}
     timeout: 2400s
     success:
       cardinality:
-        path: bootstrap/ctx-vda-{{ loop.index }}-{{ properties['suffix'] }}/success
+        path: bootstrap/vda-{{ loop.index }}-{{ properties['suffix'] }}/success
   metadata:
     dependsOn:
-    - ctx-vda-{{ loop.index }}-{{ properties['suffix'] }}
-- name: ctx-vda-{{ loop.index }}-{{ properties['suffix'] }}
+    - vda-{{ loop.index }}-{{ properties['suffix'] }}
+- name: vda-{{ loop.index }}-{{ properties['suffix'] }}
   type: windows.jinja
   properties:
-    name: ctx-vda-{{ loop.index }}-{{ properties['suffix'] }}
+    name: vda-{{ loop.index }}-{{ properties['suffix'] }}
     zone: {{ zone }}
     machine-type: n1-standard-2
     subnetwork: {{ properties['subnetwork'] }}
@@ -50,10 +50,10 @@ resources:
       value: {{ properties['runtime-config'] }}
 {% if properties['minimal'] %}
     - key: wait-on
-      value: waiter-ctx-dc-1-{{ properties['suffix'] }}
+      value: waiter-dc-1-{{ properties['suffix'] }}
 {% else %}
     - key: wait-on
-      value: waiter-ctx-dc-2-{{ properties['suffix'] }}
+      value: waiter-dc-2-{{ properties['suffix'] }}
 {% endif %}
 {% if properties['bootstrap-from'].startswith('gs://') or
          properties['bootstrap-from'].startswith('https://') or
@@ -61,27 +61,27 @@ resources:
     - key: bootstrap-from
       value: {{ properties['bootstrap-from'] }}
     - key: windows-startup-script-url
-      value: {{ properties['bootstrap-from'] }}/ctx-vda-0.ps1
+      value: {{ properties['bootstrap-from'] }}/vda-0.ps1
     - key: post-join-script-url
-      value: {{ properties['bootstrap-from'] }}/ctx-vda-2.ps1
+      value: {{ properties['bootstrap-from'] }}/vda-2.ps1
 {% else %}
 {% endif %}
     - key: citrix-creds
       value: {{ properties['citrix-creds'] }}
     - key: vda-download-url
       value: {{ properties['vda-download-url'] }}
-    - key: ctx-machine-catalog
-      value: {{ properties['ctx-machine-catalog'] }}
-    - key: ctx-delivery-group
-      value: {{ properties['ctx-delivery-group'] }}
-{% if properties['ctx-hypervisor-connection'] %}
-    - key: ctx-hypervisor-connection
-      value: {{ properties['ctx-hypervisor-connection'] }}
+    - key: machine-catalog
+      value: {{ properties['machine-catalog'] }}
+    - key: delivery-group
+      value: {{ properties['delivery-group'] }}
+{% if properties['hypervisor-connection'] %}
+    - key: hypervisor-connection
+      value: {{ properties['hypervisor-connection'] }}
 {% endif %}
-    - key: ctx-cloud-connectors
-      value: {% for host in properties['ctx-cloud-connectors'] %}{{ host }}{{ "," if not loop.last }}{% endfor %}
+    - key: cloud-connectors
+      value: {% for host in properties['cloud-connectors'] %}{{ host }}{{ "," if not loop.last }}{% endfor %}
     - key: mgmt-waiter
-      value: waiter-ctx-mgmt-{{ properties['suffix'] }}
+      value: waiter-mgmt-{{ properties['suffix'] }}
     tags:
     - rdp
     - vda
