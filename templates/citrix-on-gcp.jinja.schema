@@ -121,4 +121,13 @@ properties:
   citrix-creds:
     type: string
     description: GCS location of yaml citrix credentials
+  suffix:
+    type: string
+    description: Disambiguation suffix for resources. "%deploy%" will use deployment name for suffix. Empty suffix is allowed.
+    maxLength: 9
+    default: '%deploy%'
+  omit-suffix:
+    type: boolean
+    description: Flag to disable disambiguation suffix.
+    default: false
 

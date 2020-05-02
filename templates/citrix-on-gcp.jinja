@@ -14,11 +14,22 @@
 #  limitations under the License.
 #
 
-{% set suffix = env['deployment'] %}
-{% set resource_location = "GCP " + suffix + " (" + env['project'] + ")" %}
-{% set machine_catalog = "catalog-" + env['project'] + "-" + suffix %}
-{% set delivery_group = "group-" + env['project'] + "-" + suffix %}
-{% set hosting_connection = "host-" + env['project'] + "-" + suffix %}
+{% if properties['omit-suffix'] %}
+{% set suffix = '' %}
+{% else %}
+{% if properties['suffix'] == '%deploy%' %}
+{% set suffix = '-' + env['deployment'] %}
+{% else %}
+{% set suffix = '-' + properties['suffix'] %}
+{% endif %}
+# trim to max length of 9 to keep copmuter names short enough for netbios
+{% set suffix = suffix[0:9] %}
+{% endif %}
+
+{% set resource_location = "GCP" + suffix + " (" + env['project'] + ")" %}
+{% set machine_catalog = "catalog-" + env['project'] + suffix %}
+{% set delivery_group = "group-" + env['project'] + suffix %}
+{% set hosting_connection = "host-" + env['project'] + suffix %}
 
 resources:
 - name: apis
@@ -35,14 +46,14 @@ resources:
 - name: config
   type: gcp-types/runtimeconfig-v1beta1:projects.configs
   properties:
-    config: {{ suffix }}
+    config: citrix{{ suffix }}
   metadata:
     dependsOn:
     - api-runtimeconfig
 - name: bucket
   type: gcp-types/storage-v1:buckets
   properties:
-    name: citrix-on-gcp-{{ env['project_number'] }}-{{ suffix }}
+    name: citrix-on-gcp-{{ env['project_number'] }}{{ suffix }}
     location: {{ properties['region'] }}
 - name: bucket-cleanup
   action: gcp-types/cloudbuild-v1:cloudbuild.projects.builds.create
@@ -58,7 +69,7 @@ resources:
   action: gcp-types/cloudkms-v1:projects.locations.keyRings
   properties:
     parent: projects/{{ env["project"] }}/locations/global
-    keyRingId: citrix-{{ suffix }}
+    keyRingId: citrix{{ suffix }}
   metadata:
     dependsOn:
     - api-cloudkms
@@ -93,7 +104,7 @@ resources:
 - name: admin-service-account
   type: gcp-types/iam-v1:projects.serviceAccounts
   properties:
-    accountId: admin-{{ suffix }}
+    accountId: bootstrap{{ suffix }}
     displayName: 'Admin service account for bootstrapping domain-joined servers with elevated permissions'
   metadata:
     dependsOn:
@@ -101,7 +112,7 @@ resources:
 - name: citrix-service-account
   type: gcp-types/iam-v1:projects.serviceAccounts
   properties:
-    accountId: citrix-{{ suffix }}
+    accountId: citrix{{ suffix }}
     displayName: 'Service account for Citrix machine catalog for GCP'
   accessControl:
     gcpIamPolicy:
@@ -156,7 +167,7 @@ resources:
 - name: network
   type: network.jinja
   properties:
-    suffix: {{ suffix }}
+    suffix: "{{ suffix }}"
     region: {{ properties['region'] }}
     zone: {{ properties['zone'] }}
     secondary-zone: {{ properties['secondary-zone'] }}
@@ -170,11 +181,11 @@ resources:
 - name: domain-controllers
   type: domain-controllers.jinja
   properties:
-    suffix: {{ suffix }}
+    suffix: "{{ suffix }}"
     region: {{ properties['region'] }}
     primary-zone: {{ properties['zone'] }}
     secondary-zone: {{ properties['secondary-zone'] }}
-    subnetwork: $(ref.citrix-{{ properties['region'] }}-{{ suffix }}.selfLink)
+    subnetwork: $(ref.citrix-{{ properties['region'] }}{{ suffix }}.selfLink)
     service-account: $(ref.admin-service-account.email)
     domain-name: {{ properties['domain-name'] }}
     netbios-name: {{ properties['netbios-name'] }}
@@ -188,13 +199,13 @@ resources:
 - name: bastion
   type: bastion.jinja
   properties:
-    suffix: {{ suffix }}
+    suffix: "{{ suffix }}"
     resource-location: {{ resource_location }}
     machine-catalog: {{ machine_catalog }}
     delivery-group: {{ delivery_group }}
     hosting-connection: {{ hosting_connection }}
     zone: {{ properties['zone'] }}
-    subnetwork: $(ref.citrix-{{ properties['region'] }}-{{ suffix }}.selfLink)
+    subnetwork: $(ref.citrix-{{ properties['region'] }}{{ suffix }}.selfLink)
     service-account: $(ref.admin-service-account.email)
 {% if properties['power-managed'] %}
     hosting-connection-service-account: $(ref.citrix-service-account.email)
@@ -211,13 +222,13 @@ resources:
 - name: cc
   type: cloud-connector.jinja
   properties:
-    suffix: {{ suffix }}
+    suffix: "{{ suffix }}"
     zones:
     - {{ properties['zone'] }}
 {% if not properties['minimal'] %}
     - {{ properties['secondary-zone'] }}
 {% endif %}
-    subnetwork: $(ref.citrix-{{ properties['region'] }}-{{ suffix }}.selfLink)
+    subnetwork: $(ref.citrix-{{ properties['region'] }}{{ suffix }}.selfLink)
     service-account: $(ref.admin-service-account.email)
     domain-name: {{ properties['domain-name'] }}
     netbios-name: {{ properties['netbios-name'] }}
@@ -231,12 +242,12 @@ resources:
 - name: vda
   type: vda.jinja
   properties:
-    suffix: {{ suffix }}
+    suffix: "{{ suffix }}"
     zones:
     {% for i in range(properties['workers']) %}
     - {{ loop.cycle(properties['zone'], properties['secondary-zone']) }}
     {% endfor %}
-    subnetwork: $(ref.citrix-{{ properties['region'] }}-{{ suffix }}.selfLink)
+    subnetwork: $(ref.citrix-{{ properties['region'] }}{{ suffix }}.selfLink)
     service-account: $(ref.admin-service-account.email)
     domain-name: {{ properties['domain-name'] }}
     netbios-name: {{ properties['netbios-name'] }}
@@ -250,9 +261,9 @@ resources:
     hypervisor-connection: {{ hosting_connection }}
 {% endif %}
     cloud-connectors:
-    - cc1-{{ suffix }}.{{ properties['domain-name'] }}
+    - cc1{{ suffix }}.{{ properties['domain-name'] }}
 {% if not properties['minimal'] %}
-    - cc2-{{ suffix }}.{{ properties['domain-name'] }}
+    - cc2{{ suffix }}.{{ properties['domain-name'] }}
 {% endif %}
     minimal: {{ properties['minimal'] }}
     ssd: {{ properties['ssd'] }}
