@@ -250,9 +250,9 @@ resources:
     hypervisor-connection: {{ hosting_connection }}
 {% endif %}
     cloud-connectors:
-    - cc-1-{{ suffix }}.{{ properties['domain-name'] }}
+    - cc1-{{ suffix }}.{{ properties['domain-name'] }}
 {% if not properties['minimal'] %}
-    - cc-2-{{ suffix }}.{{ properties['domain-name'] }}
+    - cc2-{{ suffix }}.{{ properties['domain-name'] }}
 {% endif %}
     minimal: {{ properties['minimal'] }}
     ssd: {{ properties['ssd'] }}

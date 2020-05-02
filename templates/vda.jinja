@@ -16,22 +16,22 @@
 
 resources:
 {% for zone in properties['zones'] %}
-- name: waiter-vda-{{ loop.index }}{{ properties['suffix'] }}
+- name: waiter-vda{{ loop.index }}{{ properties['suffix'] }}
   type: runtimeconfig.v1beta1.waiter
   properties:
-    waiter: waiter-vda-{{ loop.index }}{{ properties['suffix'] }}
+    waiter: waiter-vda{{ loop.index }}{{ properties['suffix'] }}
     parent: {{ properties['runtime-config'] }}
     timeout: 2400s
     success:
       cardinality:
-        path: bootstrap/vda-{{ loop.index }}{{ properties['suffix'] }}/success
+        path: bootstrap/vda{{ loop.index }}{{ properties['suffix'] }}/success
   metadata:
     dependsOn:
-    - vda-{{ loop.index }}{{ properties['suffix'] }}
-- name: vda-{{ loop.index }}{{ properties['suffix'] }}
+    - vda{{ loop.index }}{{ properties['suffix'] }}
+- name: vda{{ loop.index }}{{ properties['suffix'] }}
   type: windows.jinja
   properties:
-    name: vda-{{ loop.index }}{{ properties['suffix'] }}
+    name: vda{{ loop.index }}{{ properties['suffix'] }}
     zone: {{ zone }}
     machine-type: n1-standard-2
     subnetwork: {{ properties['subnetwork'] }}
@@ -50,10 +50,10 @@ resources:
       value: {{ properties['runtime-config'] }}
 {% if properties['minimal'] %}
     - key: wait-on
-      value: waiter-dc-1{{ properties['suffix'] }}
+      value: waiter-dc1{{ properties['suffix'] }}
 {% else %}
     - key: wait-on
-      value: waiter-dc-2{{ properties['suffix'] }}
+      value: waiter-dc2{{ properties['suffix'] }}
 {% endif %}
 {% if properties['bootstrap-from'].startswith('gs://') or
          properties['bootstrap-from'].startswith('https://') or
@@ -86,9 +86,9 @@ resources:
     - rdp
     - vda
     dependencies:
-    - dc-1-address{{ properties['suffix'] }}
+    - dc1-address{{ properties['suffix'] }}
 {% if not properties['minimal'] %}
-    - dc-2-address{{ properties['suffix'] }}
+    - dc2-address{{ properties['suffix'] }}
 {% endif %}
 {% if properties['dependencies']|length > 0 %}
 {% for dependency in properties['dependencies'] %}
