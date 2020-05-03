@@ -58,9 +58,7 @@ Function Set-Setting {
 	[Parameter(Mandatory=$True)][String][ValidateNotNullOrEmpty()]
 	$Path,
 	[Parameter(Mandatory=$True)][String][ValidateNotNullOrEmpty()]
-	$Value,
-	[Parameter()][Boolean]
-	$Secure = $False
+	$Value
 	)
 
 	$GcsPrefix = Get-GoogleMetadata -Path "instance/attributes/gcs-prefix"
@@ -68,22 +66,10 @@ Function Set-Setting {
 		$GcsPrefix = $GcsPrefix -Replace ".$"
 	}
 
-	If ($Secure) {
-		$KmsKey = Get-GoogleMetadata -Path "instance/attributes/kms-key"
-		$TempFile = New-TemporaryFile
-		$TempFileEnc = New-TemporaryFile
-		$Value | Out-File -NoNewLine $TempFile.FullName
-		gcloud kms encrypt --key "$KmsKey" --ciphertext-file $TempFileEnc.FullName --plaintext-file $TempFile.FullName
-		gsutil -q cp $TempFileEnc.FullName "$GcsPrefix/settings/$Path.bin"
-		Remove-Item $TempFileEnc.FullName
-		Remove-Item $TempFile.FullName
-	}
-	Else {
-		$TempFile = New-TemporaryFile
-		$Value | Out-File -NoNewLine $TempFile.FullName
-		gsutil -q cp $TempFile.FullName "$GcsPrefix/settings/$Path"
-		Remove-Item $TempFile.FullName
-	}
+	$TempFile = New-TemporaryFile
+	$Value | Out-File -NoNewLine $TempFile.FullName
+	gsutil -q cp $TempFile.FullName "$GcsPrefix/settings/$Path"
+	Remove-Item $TempFile.FullName
 
 }
 
@@ -91,12 +77,12 @@ Write-Output "Fetching metadata..."
 $DomainName = Get-GoogleMetadata "instance/attributes/domain-name"
 $BootstrapFrom = Get-GoogleMetadata "instance/attributes/bootstrap-from"
 $GcsPrefix = Get-GoogleMetadata "instance/attributes/gcs-prefix"
+If ($GcsPrefix.EndsWith("/")) {
+  $GcsPrefix = $GcsPrefix -Replace ".$"
+}
 
 Write-Output "Fetching admin credentials..."
-$TempFile = New-TemporaryFile
-gsutil -q cp $GcsPrefix/output/domain-admin-password.bin $TempFile.FullName
-$DomainAdminPassword = $(gcloud kms decrypt --key $KmsKey --ciphertext-file $TempFile.FullName --plaintext-file - | ConvertTo-SecureString -AsPlainText -Force)
-Remove-Item $TempFile.FullName
+$DomainAdminPassword = $(gsutil -q cat $GcsPrefix/output/domain-admin-password | ConvertTo-SecureString -AsPlainText -Force)
 $DomainAdminCredentials = New-Object `
         -TypeName System.Management.Automation.PSCredential `
         -ArgumentList "$NetBiosName\Administrator",$DomainAdminPassword

@@ -135,30 +135,17 @@ Function Get-GoogleMetadata() {
 }
 
 Function Get-Setting {
-	Param (
-	[Parameter(Mandatory=$True)][String][ValidateNotNullOrEmpty()]
-	$Path,
-	[Parameter()][Boolean]
-	$Secure = $False
-	)
-
-	$GcsPrefix = Get-GoogleMetadata -Path "instance/attributes/gcs-prefix"
-	If ($GcsPrefix.EndsWith("/")) {
-		$GcsPrefix = $GcsPrefix -Replace ".$"
-	}
-
-	If ($Secure) {
-		$KmsKey = Get-GoogleMetadata -Path "instance/attributes/kms-key"
-		$TempFile = New-TemporaryFile
-		gsutil -q cp "$GcsPrefix/settings/$Path.bin" "$TempFile.FullName"
-		$Value = gcloud kms decrypt --key "$KmsKey" --ciphertext-file "$TempFile.FullName" --plaintext-file - | ConvertTo-SecureString -AsPlainText -Force
-		Remove-Item $TempFile.FullName
-	}
-	Else {
-		$Value = gsutil -q cat "$GcsPrefix/settings/$Path"
-	}
-
-	Return $Value
+        Param (
+        [Parameter(Mandatory=$True)][String][ValidateNotNullOrEmpty()]
+        $Path   
+        )       
+        
+        $GcsPrefix = Get-GoogleMetadata -Path "instance/attributes/gcs-prefix"
+        If ($GcsPrefix.EndsWith("/")) { 
+                $GcsPrefix = $GcsPrefix -Replace ".$"
+        }
+        $Value = gsutil -q cat "$GcsPrefix/settings/$Path"
+        Return $Value
 
 }
 

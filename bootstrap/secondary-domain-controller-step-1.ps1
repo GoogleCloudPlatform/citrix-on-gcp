@@ -116,7 +116,6 @@ gcloud config set component_manager/disable_update_check true
 Write-Output "Fetching metadata parameters..."
 $Domain = Invoke-RestMethod -Headers @{"Metadata-Flavor" = "Google"} -Uri http://169.254.169.254/computeMetadata/v1/instance/attributes/domain-name
 $NetBiosName = Invoke-RestMethod -Headers @{"Metadata-Flavor" = "Google"} -Uri http://169.254.169.254/computeMetadata/v1/instance/attributes/netbios-name
-$KmsKey = Invoke-RestMethod -Headers @{"Metadata-Flavor" = "Google"} -Uri http://169.254.169.254/computeMetadata/v1/instance/attributes/kms-key
 $GcsPrefix = Invoke-RestMethod -Headers @{"Metadata-Flavor" = "Google"} -Uri http://169.254.169.254/computeMetadata/v1/instance/attributes/gcs-prefix
 $RuntimeConfig = Invoke-RestMethod -Headers @{"Metadata-Flavor" = "Google"} -Uri http://169.254.169.254/computeMetadata/v1/instance/attributes/runtime-config
 $Waiter = Invoke-RestMethod -Headers @{"Metadata-Flavor" = "Google"} -Uri http://169.254.169.254/computeMetadata/v1/instance/attributes/wait-on
@@ -135,12 +134,8 @@ Write-Output "Fetching admin credentials..."
 If ($GcsPrefix.EndsWith("/")) {
   $GcsPrefix = $GcsPrefix -Replace ".$"
 }
-$TempFile = New-TemporaryFile
-gsutil -q cp $GcsPrefix/output/domain-admin-password.bin $TempFile.FullName
-$DomainAdminPassword = $(gcloud kms decrypt --key $KmsKey --ciphertext-file $TempFile.FullName --plaintext-file - | ConvertTo-SecureString -AsPlainText -Force)
-gsutil -q cp $GcsPrefix/output/dsrm-admin-password.bin $TempFile.FullName
-$SafeModeAdminPassword = $(gcloud kms decrypt --key $KmsKey --ciphertext-file $TempFile.FullName --plaintext-file - | ConvertTo-SecureString -AsPlainText -Force)
-Remove-Item $TempFile.FullName
+$DomainAdminPassword = $(gsutil -q cat $GcsPrefix/output/domain-admin-password | ConvertTo-SecureString -AsPlainText -Force)
+$SafeModeAdminPassword = $(gsutil -q cat $GcsPrefix/output/dsrm-admin-password | ConvertTo-SecureString -AsPlainText -Force)
 $DomainAdminCredentials = New-Object `
         -TypeName System.Management.Automation.PSCredential `
         -ArgumentList "$NetBiosName\Administrator",$DomainAdminPassword

@@ -56,27 +56,14 @@ Function Get-GoogleMetadata() {
 Function Get-Setting {
         Param (
         [Parameter(Mandatory=$True)][String][ValidateNotNullOrEmpty()]
-        $Path,
-        [Parameter()][Boolean]
-        $Secure = $False
-        )
-
+        $Path   
+        )       
+        
         $GcsPrefix = Get-GoogleMetadata -Path "instance/attributes/gcs-prefix"
-        If ($GcsPrefix.EndsWith("/")) {
+        If ($GcsPrefix.EndsWith("/")) { 
                 $GcsPrefix = $GcsPrefix -Replace ".$"
         }
-
-        If ($Secure) {
-                $KmsKey = Get-GoogleMetadata -Path "instance/attributes/kms-key"
-                $TempFile = New-TemporaryFile
-                gsutil -q cp "$GcsPrefix/settings/$Path.bin" "$TempFile.FullName"
-                $Value = gcloud kms decrypt --key "$KmsKey" --ciphertext-file "$TempFile.FullName" --plaintext-file - | ConvertTo-SecureString -AsPlainText -Force
-                Remove-Item $TempFile.FullName
-        }
-        Else {
-                $Value = gsutil -q cat "$GcsPrefix/settings/$Path"
-        }
-
+        $Value = gsutil -q cat "$GcsPrefix/settings/$Path"
         Return $Value
 
 }
@@ -86,9 +73,7 @@ Function Set-Setting {
         [Parameter(Mandatory=$True)][String][ValidateNotNullOrEmpty()]
         $Path,
         [Parameter(Mandatory=$True)][String][ValidateNotNullOrEmpty()]
-        $Value,
-        [Parameter()][Boolean]
-        $Secure = $False
+        $Value
         )
 
         $GcsPrefix = Get-GoogleMetadata -Path "instance/attributes/gcs-prefix"
@@ -96,22 +81,10 @@ Function Set-Setting {
                 $GcsPrefix = $GcsPrefix -Replace ".$"
         }
 
-        If ($Secure) {
-                $KmsKey = Get-GoogleMetadata -Path "instance/attributes/kms-key"
-                $TempFile = New-TemporaryFile
-                $TempFileEnc = New-TemporaryFile
-                $Value | Out-File -NoNewLine $TempFile.FullName
-                gcloud kms encrypt --key "$KmsKey" --ciphertext-file $TempFileEnc.FullName --plaintext-file $TempFile.FullName
-                gsutil -q cp $TempFileEnc.FullName "$GcsPrefix/settings/$Path.bin"
-                Remove-Item $TempFileEnc.FullName
-                Remove-Item $TempFile.FullName
-        }
-        Else {
-                $TempFile = New-TemporaryFile
-                $Value | Out-File -NoNewLine $TempFile.FullName
-                gsutil -q cp $TempFile.FullName "$GcsPrefix/settings/$Path"
-                Remove-Item $TempFile.FullName
-        }
+        $TempFile = New-TemporaryFile
+        $Value | Out-File -NoNewLine $TempFile.FullName
+        gsutil -q cp $TempFile.FullName "$GcsPrefix/settings/$Path"
+        Remove-Item $TempFile.FullName
 
 }
 
@@ -132,9 +105,7 @@ Install-WindowsFeature -name AD-Domain-Services -IncludeManagementTools
 Write-Host "Fetching metadata parameters..."
 $Domain = Invoke-RestMethod -Headers @{"Metadata-Flavor" = "Google"} -Uri http://169.254.169.254/computeMetadata/v1/instance/attributes/domain-name
 $NetBiosName = Invoke-RestMethod -Headers @{"Metadata-Flavor" = "Google"} -Uri http://169.254.169.254/computeMetadata/v1/instance/attributes/netbios-name
-$KmsKey = Invoke-RestMethod -Headers @{"Metadata-Flavor" = "Google"} -Uri http://169.254.169.254/computeMetadata/v1/instance/attributes/kms-key
 $GcsPrefix = Invoke-RestMethod -Headers @{"Metadata-Flavor" = "Google"} -Uri http://169.254.169.254/computeMetadata/v1/instance/attributes/gcs-prefix
-#$RuntimeConfig = Invoke-RestMethod -Headers @{"Metadata-Flavor" = "Google"} -Uri http://169.254.169.254/computeMetadata/v1/instance/attributes/runtime-config
 
 
 Write-Host "Configuring admin credentials..."
@@ -144,17 +115,17 @@ $LocalAdminPassword = New-RandomPassword
 Set-LocalUser Administrator -Password $LocalAdminPassword
 Enable-LocalUser Administrator
 
-Write-Host "Saving encrypted credentials in GCS..."
+Write-Host "Saving credentials in GCS..."
 If ($GcsPrefix.EndsWith("/")) {
   $GcsPrefix = $GcsPrefix -Replace ".$"
 }
 $TempFile = New-TemporaryFile
 
-Unwrap-SecureString $LocalAdminPassword | gcloud kms encrypt --key $KmsKey --plaintext-file - --ciphertext-file $TempFile.FullName
-gsutil -q cp $TempFile.FullName "$GcsPrefix/output/domain-admin-password.bin"
+Unwrap-SecureString $LocalAdminPassword | Out-File -NoNewLine -Encoding "ASCII" $TempFile.FullName
+gsutil -q cp $TempFile.FullName "$GcsPrefix/output/domain-admin-password"
 
-Unwrap-SecureString $SafeModeAdminPassword | gcloud kms encrypt --key $KmsKey --plaintext-file - --ciphertext-file $TempFile.FullName
-gsutil -q cp $TempFile.FullName "$GcsPrefix/output/dsrm-admin-password.bin"
+Unwrap-SecureString $SafeModeAdminPassword | Out-File -NoNewLine -Encoding "ASCII" $TempFile.FullName
+gsutil -q cp $TempFile.FullName "$GcsPrefix/output/dsrm-admin-password"
 
 Remove-Item $TempFile.FullName -Force
 

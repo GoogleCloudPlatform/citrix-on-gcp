@@ -28,7 +28,6 @@ required:
 - service-account
 - domain-name
 - netbios-name
-- kms-key
 - gcs-prefix
 - runtime-config
 - vda-download-url
@@ -74,9 +73,6 @@ properties:
   gcs-prefix:
     type: string
     description: Cloud Storage prefix for deployment artifacts, e.g. gs://bucket_name/blob_prefix.
-  kms-key:
-    type: string
-    description: Fully qualified name of KMS key used to protect secrets, e.g. projects/{projectsId}/locations/{locationsId}/keyRings/{keyRingsId}/cryptoKeys/{cryptoKeysId}.
   runtime-config:
     type: string
     description: Path of Runtime Config used for variables and waiters.
