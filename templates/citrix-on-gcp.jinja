@@ -196,8 +196,9 @@ resources:
     ssd: {{ properties['ssd'] }}
     bootstrap-from: {{ properties['bootstrap-from'] }}
     domain-controllers: {{ properties['domain-controllers'] }}
-- name: bastion
-  type: bastion.jinja
+{% if properties['fully-configure'] %}
+- name: management
+  type: management.jinja
   properties:
     suffix: "{{ suffix }}"
     resource-location: {{ resource_location }}
@@ -219,6 +220,24 @@ resources:
     ssd: {{ properties['ssd'] }}
     bootstrap-from: {{ properties['bootstrap-from'] }}
     citrix-creds: {{ properties['citrix-creds'] }}
+{% endif %}
+{% if properties['deploy-jump'] %}
+- name: jump
+  type: jump.jinja
+  properties:
+    suffix: "{{ suffix }}"
+    zone: {{ properties['zone'] }}
+    subnetwork: $(ref.citrix-{{ properties['region'] }}{{ suffix }}.selfLink)
+    service-account: $(ref.admin-service-account.email)
+    domain-name: {{ properties['domain-name'] }}
+    netbios-name: {{ properties['netbios-name'] }}
+    kms-key: $(ref.cryptoKey.name)
+    gcs-prefix: gs://$(ref.bucket.name)/
+    runtime-config: $(ref.config.name)
+    minimal: {{ properties['minimal'] }}
+    ssd: {{ properties['ssd'] }}
+    bootstrap-from: {{ properties['bootstrap-from'] }}
+{% endif %}
 - name: cc
   type: cloud-connector.jinja
   properties:
@@ -239,6 +258,8 @@ resources:
     ssd: {{ properties['ssd'] }}
     bootstrap-from: {{ properties['bootstrap-from'] }}
     citrix-creds: {{ properties['citrix-creds'] }}
+    fully-configure: {{ properties['fully-configure'] }}
+{% if properties['deploy-vda'] %}
 - name: vda
   type: vda.jinja
   properties:
@@ -269,4 +290,6 @@ resources:
     ssd: {{ properties['ssd'] }}
     bootstrap-from: {{ properties['bootstrap-from'] }}
     citrix-creds: {{ properties['citrix-creds'] }}
+    fully-configure: {{ properties['fully-configure'] }}
+{% endif %}
 

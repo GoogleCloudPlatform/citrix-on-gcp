@@ -59,7 +59,7 @@ resources:
 - name: citrix-allow-external-rdp{{ properties['suffix'] }}
   type: compute.v1.firewall
   properties:
-    description: External RDP remote management for bastion virtual machines
+    description: External RDP remote management for management virtual machines
     network: $(ref.citrix{{ properties['suffix'] }}.selfLink)
     allowed:
     - IPProtocol: tcp

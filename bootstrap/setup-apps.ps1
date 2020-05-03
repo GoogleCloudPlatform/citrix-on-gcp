@@ -467,5 +467,5 @@ Set-RuntimeConfigVariable -ConfigPath $RuntimeConfig -Variable bootstrap/$name/s
 
 
 # mgmt (script host) server no longer needed, shut down
-#Stop-Computer
+Stop-Computer
 

@@ -60,12 +60,18 @@ resources:
          properties['bootstrap-from'].startswith('http://')  %}
     - key: bootstrap-from
       value: {{ properties['bootstrap-from'] }}
+{% if properties['fully-configure'] %}
     - key: windows-startup-script-url
       value: {{ properties['bootstrap-from'] }}/vda-0.ps1
     - key: post-join-script-url
       value: {{ properties['bootstrap-from'] }}/vda-2.ps1
 {% else %}
+    - key: windows-startup-script-url
+      value: {{ properties['bootstrap-from'] }}/domain-member.ps1
 {% endif %}
+{% else %}
+{% endif %}
+{% if properties['fully-configure'] %}
     - key: citrix-creds
       value: {{ properties['citrix-creds'] }}
     - key: vda-download-url
@@ -82,6 +88,7 @@ resources:
       value: {% for host in properties['cloud-connectors'] %}{{ host }}{{ "," if not loop.last }}{% endfor %}
     - key: mgmt-waiter
       value: waiter-mgmt{{ properties['suffix'] }}
+{% endif %}
     - key: serial-port-logging-enable
       value: "true"
     tags:

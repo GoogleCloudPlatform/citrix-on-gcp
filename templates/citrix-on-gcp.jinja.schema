@@ -22,7 +22,7 @@ imports:
 - path: apis.jinja
 - path: network.jinja
 - path: domain-controllers.jinja
-- path: bastion.jinja
+- path: management.jinja
 - path: cloud-connector.jinja
 - path: vda.jinja
 
@@ -129,5 +129,17 @@ properties:
   omit-suffix:
     type: boolean
     description: Flag to disable disambiguation suffix.
+    default: false
+  deploy-vda:
+    type: boolean
+    description: Flag to control whether vda's are deployed.
+    default: true
+  deploy-jump:
+    type: boolean
+    description: Flag to control whether a jump host is deployed.
+    default: true
+  fully-configure:
+    type: boolean
+    description: Flag to control whether Citrix instances (cc, vda) are fully configured or simply domain-joined..
     default: false
 

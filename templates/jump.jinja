@@ -15,36 +15,23 @@
 #
 
 resources:
-- name: waiter-connector
+- name: waiter-jump{{ properties['suffix'] }}
   type: runtimeconfig.v1beta1.waiter
   properties:
-    waiter: waiter-connector
+    waiter: waiter-jump{{ properties['suffix'] }}
     parent: {{ properties['runtime-config'] }}
     timeout: 2400s
     success:
       cardinality:
-        path: setup/citrix/connector
+        path: bootstrap/jump{{ properties['suffix'] }}/success
   metadata:
     dependsOn:
-    - cc1{{ properties['suffix'] }}
-{% for zone in properties['zones'] %}
-- name: waiter-cc{{ loop.index }}{{ properties['suffix'] }}
-  type: runtimeconfig.v1beta1.waiter
-  properties:
-    waiter: waiter-cc{{ loop.index }}{{ properties['suffix'] }}
-    parent: {{ properties['runtime-config'] }}
-    timeout: 2400s
-    success:
-      cardinality:
-        path: bootstrap/cc{{ loop.index }}{{ properties['suffix'] }}/success
-  metadata:
-    dependsOn:
-    - cc{{ loop.index }}{{ properties['suffix'] }}
-- name: cc{{ loop.index }}{{ properties['suffix'] }}
+    - jump{{ properties['suffix'] }}
+- name: jump{{ properties['suffix'] }}
   type: windows.jinja
   properties:
-    name: cc{{ loop.index }}{{ properties['suffix'] }}
-    zone: {{ zone }}
+    name: jump{{ properties['suffix'] }}
+    zone: {{ properties['zone'] }}
     machine-type: n1-standard-2
     subnetwork: {{ properties['subnetwork'] }}
     service-account: {{ properties['service-account'] }}
@@ -68,27 +55,18 @@ resources:
       value: waiter-dc2{{ properties['suffix'] }}
 {% endif %}
 {% if properties['bootstrap-from'].startswith('gs://') or
-         properties['bootstrap-from'].startswith('https://') or
+         properties['bootstrap-from'].startswith('https://') or 
          properties['bootstrap-from'].startswith('http://')  %}
     - key: bootstrap-from
       value: {{ properties['bootstrap-from'] }}
     - key: windows-startup-script-url
       value: {{ properties['bootstrap-from'] }}/domain-member.ps1
-{% if properties['fully-configure'] %}
-    - key: post-join-script-url
-      value: {{ properties['bootstrap-from'] }}/cloud-connector.ps1
-{% endif %}
 {% else %}
-{% endif %}
-{% if properties['fully-configure'] %}
-    - key: citrix-creds
-      value: {{ properties['citrix-creds'] }}
 {% endif %}
     - key: serial-port-logging-enable
       value: "true"
     tags:
     - rdp
-    - cc
     dependencies:
     - dc1-address{{ properties['suffix'] }}
 {% if not properties['minimal'] %}
@@ -99,5 +77,4 @@ resources:
     - {{ dependency }}
 {% endfor %}
 {% endif %}
-{% endfor %}
 
