@@ -56,6 +56,23 @@ resources:
     - 192.168.0.0/16
     targetTags:
     - dns
+- name: citrix-allow-internal-rdp{{ properties['suffix'] }}
+  type: compute.v1.firewall
+  properties:
+    description: RDP from IAP tunnel addresses or jump host
+    network: $(ref.citrix{{ properties['suffix'] }}.selfLink)
+    allowed:
+    - IPProtocol: tcp
+      ports:
+      - '3389'
+    direction: INGRESS
+    priority: 1000
+    sourceRanges:
+    - 35.235.240.0/20
+    sourceTags:
+    - jump
+    targetTags:
+    - rdp
 - name: citrix-allow-external-rdp{{ properties['suffix'] }}
   type: compute.v1.firewall
   properties:
@@ -68,9 +85,9 @@ resources:
     direction: INGRESS
     priority: 1000
     sourceRanges:
-    - 35.235.240.0/20
+    - 0.0.0.0/0
     targetTags:
-    - rdp
+    - jump
 - name: citrix-allow-internal-dc{{ properties['suffix'] }}
   type: compute.v1.firewall
   properties:

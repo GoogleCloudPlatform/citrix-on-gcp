@@ -48,6 +48,11 @@ resources:
         sourceImage: projects/windows-cloud/global/images/family/windows-2019
     networkInterfaces:
     - subnetwork: {{ properties['subnetwork'] }}
+{% if properties['externalIP'] %}
+      accessConfigs:
+      - name: external-nat
+        type: ONE_TO_ONE_NAT
+{% endif %}
 {% if properties['networkIP']|length > 0 %}
       networkIP: {{ properties['networkIP'] }}
 {% endif %}

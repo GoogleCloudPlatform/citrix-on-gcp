@@ -25,6 +25,7 @@ imports:
 - path: management.jinja
 - path: cloud-connector.jinja
 - path: vda.jinja
+- path: jump.jinja
 
 required:
 - region

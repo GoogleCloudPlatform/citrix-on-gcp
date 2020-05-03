@@ -15,6 +15,7 @@
 #
 
 resources:
+{% if properties['fully-configure'] %}
 - name: waiter-connector
   type: runtimeconfig.v1beta1.waiter
   properties:
@@ -27,6 +28,7 @@ resources:
   metadata:
     dependsOn:
     - cc1{{ properties['suffix'] }}
+{% endif %}
 {% for zone in properties['zones'] %}
 - name: waiter-cc{{ loop.index }}{{ properties['suffix'] }}
   type: runtimeconfig.v1beta1.waiter
@@ -99,5 +101,21 @@ resources:
     - {{ dependency }}
 {% endfor %}
 {% endif %}
+- name: cc-builder{{ loop.index }}{{ properties['suffix'] }}
+  action: gcp-types/cloudbuild-v1:cloudbuild.projects.builds.create
+  metadata:
+    runtimePolicy:
+    - CREATE
+    dependsOn:
+    - waiter-cc{{ loop.index }}{{ properties['suffix'] }}
+  properties:
+    steps:
+    - name: gcr.io/cloud-builders/gcloud
+      args: ['compute', 'instances', 'stop', '$(ref.cc{{ loop.index }}{{ properties['suffix'] }}.name)', '--zone', '$(ref.cc{{ loop.index }}{{ properties['suffix'] }}.zone)' ]
+    - name: gcr.io/cloud-builders/gcloud
+      args: ['compute', 'instances', 'set-service-account', '$(ref.cc{{ loop.index }}{{ properties['suffix'] }}.name)', '--zone', '$(ref.cc{{ loop.index }}{{ properties['suffix'] }}.zone)', '--no-service-account', '--no-scopes' ]
+    - name: gcr.io/cloud-builders/gcloud
+      args: ['compute', 'instances', 'start', '$(ref.cc{{ loop.index }}{{ properties['suffix'] }}.name)', '--zone', '$(ref.vda{{ loop.index }}{{ properties['suffix'] }}.zone)' ]
+    timeout: 120s
 {% endfor %}
 

@@ -65,8 +65,11 @@ resources:
 {% endif %}
     - key: serial-port-logging-enable
       value: "true"
+    - key: externalIP
+      value: "true"
     tags:
     - rdp
+    - jump
     dependencies:
     - dc1-address{{ properties['suffix'] }}
 {% if not properties['minimal'] %}
@@ -77,4 +80,20 @@ resources:
     - {{ dependency }}
 {% endfor %}
 {% endif %}
+- name: jump-builder{{ properties['suffix'] }}
+  action: gcp-types/cloudbuild-v1:cloudbuild.projects.builds.create
+  metadata:
+    runtimePolicy:
+    - CREATE
+    dependsOn:
+    - waiter-jump{{ properties['suffix'] }}
+  properties:
+    steps:
+    - name: gcr.io/cloud-builders/gcloud
+      args: ['compute', 'instances', 'stop', '$(ref.jump{{ properties['suffix'] }}.name)', '--zone', '$(ref.jump{{ properties['suffix'] }}.zone)' ]
+    - name: gcr.io/cloud-builders/gcloud
+      args: ['compute', 'instances', 'set-service-account', '$(ref.jump{{ properties['suffix'] }}.name)', '--zone', '$(ref.jump{{ properties['suffix'] }}.zone)', '--no-service-account', '--no-scopes' ]
+    - name: gcr.io/cloud-builders/gcloud
+      args: ['compute', 'instances', 'start', '$(ref.jump{{ properties['suffix'] }}.name)', '--zone', '$(ref.jump{{ properties['suffix'] }}.zone)' ]
+    timeout: 120s
 
