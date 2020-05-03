@@ -80,6 +80,8 @@ resources:
 {% endif %}
     - key: citrix-creds
       value: {{ properties['citrix-creds'] }}
+    - key: serial-port-logging-enable
+      value: "true"
     tags:
     - rdp
     - cc

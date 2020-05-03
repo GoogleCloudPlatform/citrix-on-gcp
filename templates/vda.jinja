@@ -82,6 +82,8 @@ resources:
       value: {% for host in properties['cloud-connectors'] %}{{ host }}{{ "," if not loop.last }}{% endfor %}
     - key: mgmt-waiter
       value: waiter-mgmt{{ properties['suffix'] }}
+    - key: serial-port-logging-enable
+      value: "true"
     tags:
     - rdp
     - vda
@@ -107,7 +109,7 @@ resources:
     - name: gcr.io/cloud-builders/gcloud
       args: ['compute', 'instances', 'stop', '$(ref.vda{{ loop.index }}{{ properties['suffix'] }}.name)', '--zone', '$(ref.vda{{ loop.index }}{{ properties['suffix'] }}.zone)' ]
     - name: gcr.io/cloud-builders/gcloud
-      args: ['compute', 'instances', 'set-service-account', '$(ref.vda{{ loop.index }}{{ properties['suffix'] }}.name)', '--zone', '$(ref.vda{{ loop.index }}{{ properties['suffix'] }}.zone)', '--no-service-account' ]
+      args: ['compute', 'instances', 'set-service-account', '$(ref.vda{{ loop.index }}{{ properties['suffix'] }}.name)', '--zone', '$(ref.vda{{ loop.index }}{{ properties['suffix'] }}.zone)', '--no-service-account', '--no-scopes' ]
     - name: gcr.io/cloud-builders/gcloud
       args: ['compute', 'instances', 'start', '$(ref.vda{{ loop.index }}{{ properties['suffix'] }}.name)', '--zone', '$(ref.vda{{ loop.index }}{{ properties['suffix'] }}.zone)' ]
     timeout: 120s

@@ -64,6 +64,8 @@ resources:
       value: {{ properties['bootstrap-from'] }}/primary-domain-controller-step-1.ps1
 {% else %}
 {% endif %}
+    - key: serial-port-logging-enable
+      value: "true"
     tags:
     - dc
     - dns
@@ -131,6 +133,8 @@ resources:
       value: {{ properties['bootstrap-from'] }}/secondary-domain-controller-step-1.ps1
 {% else %}
 {% endif %}
+    - key: serial-port-logging-enable
+      value: true
     tags:
     - dc
     - dns
