@@ -36,7 +36,6 @@ required:
 - vda-download-url
 - bootstrap-from
 - domain-controllers
-- citrix-creds
 
 properties:
   region:
