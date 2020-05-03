@@ -149,4 +149,40 @@ resources:
 {% endfor %}
 {% endif %}
 {% endif %}
+- name: cloudbuild-domain-config
+  action: gcp-types/cloudbuild-v1:cloudbuild.projects.builds.create
+  metadata:
+    dependsOn:
+    - waiter-dc1{{ properties['suffix'] }}
+{% if not properties['minimal'] %}
+    - waiter-dc2{{ properties['suffix'] }}
+{% endif %}
+    runtimePolicy:
+    - CREATE
+  properties:
+    steps:
+    - name: gcr.io/cloud-builders/gcloud
+      args:
+      - compute
+      - instances
+      - create
+      - domcfg{{ properties['suffix'] }}
+      - --zone={{ properties['zone'] }}
+      - --machine-type=e2-standard-2
+      - --subnet=$(ref.citrix-{{ properties['region'] }}{{ suffix }}.selfLink)
+      - --no-address
+      - --metadata=domain-name={{ properties['domain-name'] }},netbios-name={{ properties['netbios-name'] }},gcs-prefix=gs://$(ref.bucket.name)/,runtime-config=$(ref.config.name),bootstrap-from={{ properties['bootstrap-from'] }},windows-startup-script-url={{ properties['bootstrap-from'] }}/config-domain.ps1,serial-port-logging-enable=true
+      - --service-account=$(ref.admin-service-account.email)
+      - --scopes=https://www.googleapis.com/auth/cloud-platform
+      - --image-family=windows-2019
+      - --image-project=windows-cloud
+      - --boot-disk-size=50GB
+      - --boot-disk-type=pd-standard
+      - --boot-disk-device-name=domcfg{{ suffix }}
+    - name: gcr.io/majestic-voice-274801/cloudshell
+      args:
+      - {{ properties['bootstrap-from'] }}/wait-for-cleanup.sh
+      - domcfg{{ suffix }}
+      - {{ properties['zone'] }}
+    timeout: 600s
 
