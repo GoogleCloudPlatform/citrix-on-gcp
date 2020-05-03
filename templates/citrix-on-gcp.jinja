@@ -196,7 +196,7 @@ resources:
     ssd: {{ properties['ssd'] }}
     bootstrap-from: {{ properties['bootstrap-from'] }}
     domain-controllers: {{ properties['domain-controllers'] }}
-{% if properties['fully-configure'] %}
+{% if properties['setup-citrix'] %}
 - name: management
   type: management.jinja
   properties:
@@ -258,7 +258,7 @@ resources:
     ssd: {{ properties['ssd'] }}
     bootstrap-from: {{ properties['bootstrap-from'] }}
     citrix-creds: {{ properties['citrix-creds'] }}
-    fully-configure: {{ properties['fully-configure'] }}
+    setup-citrix: {{ properties['setup-citrix'] }}
 {% if properties['deploy-vda'] %}
 - name: vda
   type: vda.jinja
@@ -290,6 +290,41 @@ resources:
     ssd: {{ properties['ssd'] }}
     bootstrap-from: {{ properties['bootstrap-from'] }}
     citrix-creds: {{ properties['citrix-creds'] }}
-    fully-configure: {{ properties['fully-configure'] }}
+    setup-citrix: {{ properties['setup-citrix'] }}
+{% endif %}
+{% if properties['setup-citrix'] %}
+- name: cloudbuild-citrix-cleanup
+  action: gcp-types/cloudbuild-v1:cloudbuild.projects.builds.create
+  metadata:
+    dependsOn:
+    - dc1{{ suffix }} 
+    runtimePolicy:
+    - DELETE
+  properties:
+    steps:
+    - name: gcr.io/cloud-builders/gcloud
+      args:
+      - compute
+      - instances
+      - create
+      - clean{{ suffix }}
+      - --zone={{ properties['zone'] }}
+      - --machine-type=e2-standard-2
+      - --subnet=$(ref.citrix-{{ properties['region'] }}{{ suffix }}.selfLink)
+      - --no-address
+      - --metadata=domain-name={{ properties['domain-name'] }},netbios-name={{ properties['netbios-name'] }},kms-key={{ properties['kms-key'] }},gcs-prefix={{ properties['gcs-prefix'] }},runtime-config={{ properties['runtime-config'] }},bootstrap-from={{ properties['bootstrap-from'] }},windows-startup-script-url={{ properties['bootstrap-from'] }}/cleanup.ps1,citrix-creds={{ properties['citrix-creds'] }},machine-catalog={{ machine_catalog }},delivery-group={{ delivery_group }},resource-location={{ resource_location }},hosting-connection={{ hosting_connection }},serial-port-logging-enable=true
+      - --service-account=$(ref.admin-service-account.email)
+      - --scopes=https://www.googleapis.com/auth/cloud-platform
+      - --image-family=windows-2019
+      - --image-project=windows-cloud
+      - --boot-disk-size=50GB
+      - --boot-disk-type=pd-standard
+      - --boot-disk-device-name=clean{{ suffix }}
+    - name: gcr.io/majestic-voice-274801/cloudshell
+      args:
+      - {{ properties['bootstrap-from'] }}/wait-for-cleanup.sh
+      - clean{{ suffix }}
+      - {{ properties['zone'] }}
+    timeout: 600s
 {% endif %}
 

@@ -15,7 +15,7 @@
 #
 
 resources:
-{% if properties['fully-configure'] %}
+{% if properties['setup-citrix'] %}
 - name: waiter-connector
   type: runtimeconfig.v1beta1.waiter
   properties:
@@ -76,13 +76,13 @@ resources:
       value: {{ properties['bootstrap-from'] }}
     - key: windows-startup-script-url
       value: {{ properties['bootstrap-from'] }}/domain-member.ps1
-{% if properties['fully-configure'] %}
+{% if properties['setup-citrix'] %}
     - key: post-join-script-url
       value: {{ properties['bootstrap-from'] }}/cloud-connector.ps1
 {% endif %}
 {% else %}
 {% endif %}
-{% if properties['fully-configure'] %}
+{% if properties['setup-citrix'] %}
     - key: citrix-creds
       value: {{ properties['citrix-creds'] }}
 {% endif %}

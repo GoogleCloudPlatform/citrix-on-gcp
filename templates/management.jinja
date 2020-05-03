@@ -74,7 +74,7 @@ resources:
     - key: windows-startup-script-url
       value: {{ properties['bootstrap-from'] }}/domain-member.ps1
     - key: post-join-script-url
-      value: {{ properties['bootstrap-from'] }}/setup-apps.ps1
+      value: {{ properties['bootstrap-from'] }}/setup.ps1
 {% else %}
 {% endif %}
     - key: citrix-creds

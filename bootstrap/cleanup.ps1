@@ -254,8 +254,8 @@ Set-XDCredentials -CustomerId $CtxCustomerId -ProfileType CloudAPI -APIKey $CtxC
 
 
 Write-Host "Removing catalog, desktop group, etc..."
-
-$users = "CTX\Citrix Users"
+$NetbiosName = Get-GoogleMetadata "instance/attributes/netbios-name"
+$users = "$NetbiosName\Citrix Users"
 $TSVDACatalogName = $MacCat
 $TSVDADGName = $DelGro
 
@@ -326,9 +326,8 @@ If ($HostingServiceAccount) {
 }
 
 
-Write-Host "Signaling completion..."
-# flag completion of bootstrap requires beta gcloud component
+# delete instance
 $name = Get-GoogleMetadata "instance/name"
-$RuntimeConfig = Get-GoogleMetadata "instance/attributes/runtime-config"
-Set-RuntimeConfigVariable -ConfigPath $RuntimeConfig -Variable cleanup/$name -Text (Get-Date -Format g)
+$zone = Get-GoogleMetadata "instance/zone"
+gcloud compute instances delete "$name" --zone "$zone"
 

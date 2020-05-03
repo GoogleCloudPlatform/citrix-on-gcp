@@ -60,7 +60,7 @@ resources:
          properties['bootstrap-from'].startswith('http://')  %}
     - key: bootstrap-from
       value: {{ properties['bootstrap-from'] }}
-{% if properties['fully-configure'] %}
+{% if properties['setup-citrix'] %}
     - key: windows-startup-script-url
       value: {{ properties['bootstrap-from'] }}/vda-0.ps1
     - key: post-join-script-url
@@ -71,7 +71,7 @@ resources:
 {% endif %}
 {% else %}
 {% endif %}
-{% if properties['fully-configure'] %}
+{% if properties['setup-citrix'] %}
     - key: citrix-creds
       value: {{ properties['citrix-creds'] }}
     - key: vda-download-url
