@@ -23,7 +23,6 @@ resources:
   metadata:
     dependsOn:
     - api-compute
-    - api-cloudkms
     - api-runtimeconfig
     - config
 {% for subnet in properties['subnets'] %}

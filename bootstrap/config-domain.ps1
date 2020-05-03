@@ -73,6 +73,9 @@ Function Set-Setting {
 
 }
 
+Write-Host "Adding AD powershell tools..."
+Add-WindowsFeature RSAT-AD-PowerShell
+
 Write-Output "Fetching metadata..."
 $DomainName = Get-GoogleMetadata "instance/attributes/domain-name"
 $BootstrapFrom = Get-GoogleMetadata "instance/attributes/bootstrap-from"
@@ -87,9 +90,17 @@ $DomainAdminCredentials = New-Object `
         -TypeName System.Management.Automation.PSCredential `
         -ArgumentList "$NetBiosName\Administrator",$DomainAdminPassword
 
+While (-Not $Domain) {
+  $Domain = Get-ADDomain -Identity $DomainName
+  If (-Not $Domain) {
+    Write-Host "Failed to get domain. Waiting to retry..."
+    Sleep 10
+  }
+}
+
 Write-Host "Running script on PDC to populate domain..."
 # download and run (as domain admin) user creation script
-Invoke-Command -ComputerName (Get-ADDomain -Identity $DomainName).PDCEmulator -Credential $DomainAdminCredentials -ArgumentList "$BootstrapFrom/create-domain-users.ps1" -ScriptBlock {
+Invoke-Command -ComputerName $Domain.PDCEmulator -Credential $DomainAdminCredentials -ArgumentList "$BootstrapFrom/create-domain-users.ps1" -ScriptBlock {
         Param (
                 $ScriptUrl
         )
