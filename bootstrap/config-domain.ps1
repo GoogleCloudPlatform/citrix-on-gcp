@@ -78,6 +78,7 @@ Add-WindowsFeature RSAT-AD-PowerShell
 
 Write-Output "Fetching metadata..."
 $DomainName = Get-GoogleMetadata "instance/attributes/domain-name"
+$NetbiosName = Get-GoogleMetadata "instance/attributes/netbios-name"
 $BootstrapFrom = Get-GoogleMetadata "instance/attributes/bootstrap-from"
 $GcsPrefix = Get-GoogleMetadata "instance/attributes/gcs-prefix"
 If ($GcsPrefix.EndsWith("/")) {

@@ -25,6 +25,7 @@ resources:
     - api-compute
     - api-runtimeconfig
     - config
+    - add-iam-policy
 {% for subnet in properties['subnets'] %}
 - name: citrix-{{ subnet['region'] }}{{ properties['suffix'] }}
   type: compute.v1.subnetwork

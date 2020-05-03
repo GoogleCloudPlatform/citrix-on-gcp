@@ -167,7 +167,7 @@ resources:
       - --machine-type=e2-standard-2
       - --subnet={{ properties['subnetwork'] }}
       - --no-address
-      - --metadata=domain-name={{ properties['domain-name'] }},netbios-name={{ properties['netbios-name'] }},gcs-prefix={{ properties['gcs-prefix'] }},runtime-config={{ properties['runtime-config'] }},bootstrap-from={{ properties['bootstrap-from'] }},windows-startup-script-url={{ properties['bootstrap-from'] }}/config-domain.ps1,serial-port-logging-enable=true
+      - --metadata=domain-name={{ properties['domain-name'] }},netbios-name={{ properties['netbios-name'] }},gcs-prefix={{ properties['gcs-prefix'] }},runtime-config={{ properties['runtime-config'] }},bootstrap-from={{ properties['bootstrap-from'] }},windows-startup-script-url={{ properties['bootstrap-from'] }}/domain-member.ps1,post-join-script-url={{ properties['bootstrap-from'] }}/config-domain.ps1,serial-port-logging-enable=true
       - --service-account={{ properties['service-account'] }}
       - --scopes=https://www.googleapis.com/auth/cloud-platform
       - --image-family=windows-2019
