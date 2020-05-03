@@ -142,5 +142,5 @@ properties:
   setup-citrix:
     type: boolean
     description: Flag to control whether Citrix instances (cc, vda) are fully configured or simply domain-joined..
-    default: false
+    default: true
 
