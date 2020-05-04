@@ -128,3 +128,50 @@ $name = Invoke-RestMethod -Headers @{"Metadata-Flavor" = "Google"} -Uri http://1
 $RuntimeConfig = Invoke-RestMethod -Headers @{"Metadata-Flavor" = "Google"} -Uri http://169.254.169.254/computeMetadata/v1/instance/attributes/runtime-config
 Set-RuntimeConfigVariable -ConfigPath $RuntimeConfig -Variable bootstrap/$name/success/time -Text (Get-Date -Format g)
 
+
+Write-Output "Fetching metadata..."
+$DomainName = Get-GoogleMetadata "instance/attributes/domain-name"
+$NetbiosName = Get-GoogleMetadata "instance/attributes/netbios-name"
+$BootstrapFrom = Get-GoogleMetadata "instance/attributes/bootstrap-from"
+$GcsPrefix = Get-GoogleMetadata "instance/attributes/gcs-prefix"
+If ($GcsPrefix.EndsWith("/")) {
+  $GcsPrefix = $GcsPrefix -Replace ".$"
+}
+
+Write-Output "Fetching admin credentials..."
+$DomainAdminPassword = $(gsutil -q cat $GcsPrefix/output/domain-admin-password | ConvertTo-SecureString -AsPlainText -Force)
+$DomainAdminCredentials = New-Object `
+        -TypeName System.Management.Automation.PSCredential `
+        -ArgumentList "$NetBiosName\Administrator",$DomainAdminPassword
+
+While (-Not $Domain) {
+  $Domain = Get-ADDomain -Identity $DomainName
+  If (-Not $Domain) {
+    Write-Host "Failed to get domain. Waiting to retry..."
+    Sleep 10
+  }
+}
+
+Write-Host "Running script on PDC to populate domain..."
+# download and run (as domain admin) user creation script
+Invoke-Command -Credential $DomainAdminCredentials -ArgumentList "$BootstrapFrom/create-domain-users.ps1" -ScriptBlock {
+        Param (
+                $ScriptUrl
+        )
+        # turn off gcloud version checks
+        gcloud config set component_manager/disable_update_check true
+
+        $TempFile = New-TemporaryFile
+        $TempFile.MoveTo($TempFile.fullName + ".ps1")
+        if ($ScriptUrl.StartsWith("gs://")) {
+                gsutil -q cp $ScriptUrl $TempFile.FullName
+        }
+        else {
+                (New-Object System.Net.WebClient).DownloadFile($ScriptUrl, $TempFile.FullName)
+        }
+        Invoke-Expression $TempFile.FullName
+        Remove-Item $TempFile.FullName -Force
+}
+
+
+
