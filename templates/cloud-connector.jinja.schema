@@ -31,7 +31,6 @@ required:
 - gcs-prefix
 - runtime-config
 - bootstrap-from
-- citrix-creds
 
 properties:
   suffix:

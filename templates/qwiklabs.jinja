@@ -16,18 +16,20 @@
 
 outputs:
 - name: Domain
-  value: $(ref.citrix-on-gcp-lab.domain)
+  value: $(ref.citrix-on-gcp.domain-name)
 - name: Domain Admin
-  value: $(ref.citrix-on-gcp-lab.netbios-name)\Administrator
+  value: $(ref.citrix-on-gcp.netbios-name)\Administrator
 - name: Domain Admin Password Location
   value: gs://$(ref.bucket.name)/domain-admin-password
 - name: Domain Users Location
   value: gs://$(ref.bucket.name)/domain-users
 
 resources:
-- name: citrix-on-gcp-lab
-  type: templates/citrix-on-gcp.jinja
+- name: citrix-on-gcp
+  type: citrix-on-gcp.jinja
   properties:
     setup-citrix: False
     omit-suffix: True
+    domain: example.com
+    netbios-name: EXAMPLE
 

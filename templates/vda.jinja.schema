@@ -35,7 +35,6 @@ required:
 - delivery-group
 - cloud-controllers
 - bootstrap-from
-- citrix-creds
 
 properties:
   suffix:
