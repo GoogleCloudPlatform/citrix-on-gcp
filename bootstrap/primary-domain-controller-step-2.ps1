@@ -93,6 +93,17 @@ Function Wait-RuntimeConfigWaiter {
 	Return $RuntimeWaiter
 }
 
+Function Get-GoogleMetadata() {
+        Param (
+        [Parameter(Mandatory=$True)][String] $Path
+        )
+        Try {
+                Return Invoke-RestMethod -Headers @{"Metadata-Flavor" = "Google"} -Uri http://169.254.169.254/computeMetadata/v1/$Path
+        }
+        Catch {
+                Return $Null
+        }
+}
 
 Write-Host "Bootstrap script started..."
 
