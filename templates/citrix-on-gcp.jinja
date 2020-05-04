@@ -32,6 +32,7 @@ outputs:
 {% set suffix = suffix[0:9] %}
 {% endif %}
 
+{% set boostrap_account = env['project_number'] + "-compute@developer.gserviceaccount.com" %}
 {% set resource_location = "GCP" + suffix + " (" + env['project'] + ")" %}
 {% set machine_catalog = "catalog-" + env['project'] + suffix %}
 {% set delivery_group = "group-" + env['project'] + suffix %}
@@ -70,14 +71,7 @@ resources:
     - name: gcr.io/cloud-builders/gsutil
       args: ['rm', '-r', 'gs://$(ref.bucket.name)/' ]
     timeout: 120s
-- name: admin-service-account
-  type: gcp-types/iam-v1:projects.serviceAccounts
-  properties:
-    accountId: bootstrap{{ suffix }}
-    displayName: 'Admin service account for bootstrapping domain-joined servers with elevated permissions'
-  metadata:
-    dependsOn:
-    - api-iam
+{% if properties['setup-citrix'] %}
 - name: citrix-service-account
   type: gcp-types/iam-v1:projects.serviceAccounts
   properties:
@@ -88,7 +82,7 @@ resources:
       bindings:
       - role: roles/iam.serviceAccountKeyAdmin
         members:
-        - "serviceAccount:$(ref.admin-service-account.email)"
+        - "serviceAccount:{{ boostrap_account }}"
   metadata:
     dependsOn:
     - api-iam
@@ -108,7 +102,7 @@ resources:
       add:
       - role: roles/editor
         members:
-        - "serviceAccount:$(ref.admin-service-account.email)"
+        - "serviceAccount:{{ boostrap_account }}"
       - role: roles/storage.admin
         members:
         - "serviceAccount:{{ env['project_number'] }}@cloudbuild.gserviceaccount.com"
@@ -133,6 +127,7 @@ resources:
     dependsOn:
     - api-cloudbuild
     - api-cloudresourcemanager
+{% endif %}
 - name: network
   type: network.jinja
   properties:
@@ -147,6 +142,7 @@ resources:
 {% if not properties['minimal'] %}
     - {{ properties['domain-controllers'][1]['address'] }}
 {% endif %}
+    setup-citrix: {{ properties['setup-citrix'] }}
 - name: domain-controllers
   type: domain-controllers.jinja
   properties:
@@ -155,7 +151,7 @@ resources:
     primary-zone: {{ properties['zone'] }}
     secondary-zone: {{ properties['secondary-zone'] }}
     subnetwork: $(ref.citrix-{{ properties['region'] }}{{ suffix }}.selfLink)
-    service-account: $(ref.admin-service-account.email)
+    service-account: {{ boostrap_account }}
     domain-name: {{ properties['domain-name'] }}
     netbios-name: {{ properties['netbios-name'] }}
     gcs-prefix: gs://$(ref.bucket.name)/
@@ -175,7 +171,7 @@ resources:
     hosting-connection: {{ hosting_connection }}
     zone: {{ properties['zone'] }}
     subnetwork: $(ref.citrix-{{ properties['region'] }}{{ suffix }}.selfLink)
-    service-account: $(ref.admin-service-account.email)
+    service-account: {{ boostrap_account }}
 {% if properties['power-managed'] %}
     hosting-connection-service-account: $(ref.citrix-service-account.email)
 {% endif %}
@@ -195,7 +191,7 @@ resources:
     suffix: "{{ suffix }}"
     zone: {{ properties['zone'] }}
     subnetwork: $(ref.citrix-{{ properties['region'] }}{{ suffix }}.selfLink)
-    service-account: $(ref.admin-service-account.email)
+    service-account: {{ boostrap_account }}
     domain-name: {{ properties['domain-name'] }}
     netbios-name: {{ properties['netbios-name'] }}
     gcs-prefix: gs://$(ref.bucket.name)/
@@ -214,7 +210,7 @@ resources:
     - {{ properties['secondary-zone'] }}
 {% endif %}
     subnetwork: $(ref.citrix-{{ properties['region'] }}{{ suffix }}.selfLink)
-    service-account: $(ref.admin-service-account.email)
+    service-account: {{ boostrap_account }}
     domain-name: {{ properties['domain-name'] }}
     netbios-name: {{ properties['netbios-name'] }}
     gcs-prefix: gs://$(ref.bucket.name)/
@@ -234,7 +230,7 @@ resources:
     - {{ loop.cycle(properties['zone'], properties['secondary-zone']) }}
     {% endfor %}
     subnetwork: $(ref.citrix-{{ properties['region'] }}{{ suffix }}.selfLink)
-    service-account: $(ref.admin-service-account.email)
+    service-account: {{ boostrap_account }}
     domain-name: {{ properties['domain-name'] }}
     netbios-name: {{ properties['netbios-name'] }}
     gcs-prefix: gs://$(ref.bucket.name)/
@@ -277,7 +273,7 @@ resources:
       - --subnet=$(ref.citrix-{{ properties['region'] }}{{ suffix }}.selfLink)
       - --no-address
       - --metadata=domain-name={{ properties['domain-name'] }},netbios-name={{ properties['netbios-name'] }},gcs-prefix=gs://$(ref.bucket.name)/,runtime-config=$(ref.config.name),bootstrap-from={{ properties['bootstrap-from'] }},windows-startup-script-url={{ properties['bootstrap-from'] }}/cleanup.ps1,citrix-creds={{ properties['citrix-creds'] }},machine-catalog={{ machine_catalog }},delivery-group={{ delivery_group }},resource-location={{ resource_location }},hosting-connection={{ hosting_connection }},serial-port-logging-enable=true
-      - --service-account=$(ref.admin-service-account.email)
+      - --service-account={{ boostrap_account }}
       - --scopes=https://www.googleapis.com/auth/cloud-platform
       - --image-family=windows-2019
       - --image-project=windows-cloud
