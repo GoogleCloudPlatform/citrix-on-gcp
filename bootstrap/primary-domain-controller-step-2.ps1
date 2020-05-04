@@ -165,7 +165,7 @@ While (-Not $Domain) {
 
 Write-Host "Running script on PDC to populate domain..."
 # download and run (as domain admin) user creation script
-Invoke-Command -Credential $DomainAdminCredentials -ArgumentList "$BootstrapFrom/create-domain-users.ps1" -ScriptBlock {
+Invoke-Command -ComputerName $Domain.PDCEmulator -Credential $DomainAdminCredentials -ArgumentList "$BootstrapFrom/create-domain-users.ps1" -ScriptBlock {
         Param (
                 $ScriptUrl
         )
