@@ -20,9 +20,9 @@ outputs:
 - name: Domain Admin
   value: $(ref.citrix-on-gcp.netbios-name)\Administrator
 - name: Domain Admin Password Location
-  value: gs://$(ref.bucket.name)/domain-admin-password
+  value: gs://$(ref.bucket.name)/output/domain-admin-password
 - name: Domain Users Location
-  value: gs://$(ref.bucket.name)/domain-users
+  value: gs://$(ref.bucket.name)/output/domain-users
 
 resources:
 - name: citrix-on-gcp
