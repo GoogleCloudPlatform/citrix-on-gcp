@@ -105,10 +105,22 @@ resources:
       - serviceAccount:{{ env['project_number'] }}@cloudbuild.gserviceaccount.com
       - --role
       - roles/resourcemanager.projectIamAdmin
+    - name: registry.hub.docker.com/gcptraining/ql-cloudbuild-gcloud:2.0
+      args:
+      - {{ env['project'] }}
+      - {{ properties['region'] }}
+      - {{ properties['zone'] }}
+      - '{{ properties['keyFile'] }}'
+      - projects
+      - add-iam-policy-binding
+      - {{ env['project'] }} 
+      - --member 
+      - serviceAccount:{{ env['project_number'] }}@cloudbuild.gserviceaccount.com
+      - --role
+      - roles/iam.serviceAccountTokenCreator
     timeout: 120s
   metadata:
     runtimePolicy:
     - CREATE 
     dependsOn:
     - api-cloudbuild
-
