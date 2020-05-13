@@ -26,7 +26,7 @@ outputs:
 - name: Domain User Password
   value: $(ref.citrix-on-gcp.domain-user-password)
 - name: Citrix Cloud Workspace URL
-  value: ""
+  value: "$(ref.output-citrix-cloud.workspace-url)"
 
 resources:
 - name: citrix-on-gcp
@@ -36,4 +36,42 @@ resources:
     omit-suffix: True
     domain: example.com
     netbios-name: EXAMPLE
+- name: citrix-cloud
+  action: gcp-types/cloudbuild-v1:cloudbuild.projects.builds.create
+  metadata:
+    runtimePolicy:
+    - CREATE
+    dependsOn:
+    - api-cloudbuild
+  properties:
+    steps:
+    - name: gcr.io/majestic-voice-274801/curl-iap
+      args:
+      - -o
+      - citrix-cloud.json
+      - -X
+      - POST
+      - -H
+      - "content-type: application/json"
+      - --data-binary
+      - {"lab-id":"50110","duration":90,"ql-email":"{{ properties["userName"] }}@qwiklabs.net","ql-password":"{{ properties["password"] }}","ql-project":"{{ env["project"] }}"}
+      - https://majestic-voice-274801.uc.r.appspot.com/citrix-cloud/v1/tenant-sessions
+    - name: google/cloud-sdk
+      args:
+      - gsutil
+      - cp
+      - citrix-cloud.json
+      - gs://$(ref.bucket.name)/output/
+    timeout: 120s
+- name: output-citrix-cloud
+  action: gcp-types/storage-v1:storage.objects.get
+  properties:
+    bucket: $(ref.bucket.name)
+    object: output/citrix-cloud.json
+    alt: media
+  metadata:
+    dependsOn:
+    - citrix-cloud
+    runtimePolicy:
+    - CREATE
 

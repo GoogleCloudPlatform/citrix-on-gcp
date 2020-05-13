@@ -27,6 +27,8 @@ outputs:
   value: $(ref.output-domain-users.users[0].username)
 - name: domain-user-password
   value: $(ref.output-domain-users.users[0].password)
+- name: bucket
+  value: $(ref.bucket.name)
 
 
 {% if properties['omit-suffix'] %}
