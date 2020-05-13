@@ -96,7 +96,7 @@ Set-Setting "domains/$Domain/netbios-name" $Netbios
 	Add-ADGroupMember -Identity "Citrix Users" -Members $UserName
 	$DomainUsers += "- username: $UserName`n  password: $(Unwrap-SecureString $Password)`n"
 	Set-Setting "domains/$Domain/users/$UserName/password" $(Unwrap-SecureString $Password)
-	$users += @{username="$UserName@$Domain"; password="$Password"}
+	$users += @{username="$UserName@$Domain"; password="$(Unwrap-SecureString $Password)"}
 }
 
 If ($GcsPrefix.EndsWith("/")) {

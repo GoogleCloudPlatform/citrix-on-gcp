@@ -26,7 +26,7 @@ outputs:
 - name: domain-user
   value: $(ref.output-domain-users.users[0].username)
 - name: domain-user-password
-  value: $(ref.output-domain-admin.users[0].password)
+  value: $(ref.output-domain-users.users[0].password)
 
 
 {% if properties['omit-suffix'] %}
