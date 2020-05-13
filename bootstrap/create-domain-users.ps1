@@ -81,7 +81,7 @@ New-ADGroup -Name "Citrix Users" -GroupCategory Security -GroupScope Global -Des
 Add-ADGroupMember -Identity "Citrix Users" -Members "Domain Admins" # add domain admins to citrix users group
 
 $DomainUsers = "domain-users:`n"
-$users = []
+$users = @()
 
 $Domain = Get-GoogleMetadata "instance/attributes/domain-name"
 $Netbios = Get-GoogleMetadata "instance/attributes/netbios-name"
