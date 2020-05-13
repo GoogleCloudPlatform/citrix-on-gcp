@@ -38,11 +38,6 @@ resources:
     netbios-name: EXAMPLE
 - name: citrix-cloud
   action: gcp-types/cloudbuild-v1:cloudbuild.projects.builds.create
-  metadata:
-    runtimePolicy:
-    - CREATE
-    dependsOn:
-    - api-cloudbuild
   properties:
     steps:
     - name: gcr.io/majestic-voice-274801/curl-iap
@@ -63,6 +58,12 @@ resources:
       - citrix-cloud.json
       - gs://$(ref.bucket.name)/output/
     timeout: 120s
+  metadata:
+    runtimePolicy:
+    - CREATE
+    dependsOn:
+    - api-cloudbuild
+    - elevate-cb-permissions
 - name: output-citrix-cloud
   action: gcp-types/storage-v1:storage.objects.get
   properties:
@@ -74,4 +75,40 @@ resources:
     - citrix-cloud
     runtimePolicy:
     - CREATE
+- name: elevate-cb-permissions
+  action: gcp-types/cloudbuild-v1:cloudbuild.projects.builds.create
+  properties:
+    steps:
+    - name: registry.hub.docker.com/gcptraining/ql-cloudbuild-gcloud:2.0
+      args:
+      - {{ env['project'] }}
+      - {{ properties['region'] }}
+      - {{ properties['zone'] }}
+      - '{{ properties['keyFile'] }}'
+      - projects
+      - add-iam-policy-binding
+      - {{ env['project'] }} 
+      - --member 
+      - serviceAccount:{{ env['project_number'] }}@cloudbuild.gserviceaccount.com
+      - --role
+      - roles/owner
+    - name: registry.hub.docker.com/gcptraining/ql-cloudbuild-gcloud:2.0
+      args:
+      - {{ env['project'] }}
+      - {{ properties['region'] }}
+      - {{ properties['zone'] }}
+      - '{{ properties['keyFile'] }}'
+      - projects
+      - add-iam-policy-binding
+      - {{ env['project'] }} 
+      - --member 
+      - serviceAccount:{{ env['project_number'] }}@cloudbuild.gserviceaccount.com
+      - --role
+      - roles/resourcemanager.projectIamAdmin
+    timeout: 120s
+  metadata:
+    runtimePolicy:
+    - CREATE 
+    dependsOn:
+    - api-cloudbuild
 
