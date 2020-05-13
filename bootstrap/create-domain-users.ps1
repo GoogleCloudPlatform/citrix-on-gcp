@@ -81,6 +81,7 @@ New-ADGroup -Name "Citrix Users" -GroupCategory Security -GroupScope Global -Des
 Add-ADGroupMember -Identity "Citrix Users" -Members "Domain Admins" # add domain admins to citrix users group
 
 $DomainUsers = "domain-users:`n"
+$users = []
 
 $Domain = Get-GoogleMetadata "instance/attributes/domain-name"
 $Netbios = Get-GoogleMetadata "instance/attributes/netbios-name"
@@ -95,6 +96,7 @@ Set-Setting "domains/$Domain/netbios-name" $Netbios
 	Add-ADGroupMember -Identity "Citrix Users" -Members $UserName
 	$DomainUsers += "- username: $UserName`n  password: $(Unwrap-SecureString $Password)`n"
 	Set-Setting "domains/$Domain/users/$UserName/password" $(Unwrap-SecureString $Password)
+	$users += @{username="$UserName@$Domain"; password="$Password"}
 }
 
 If ($GcsPrefix.EndsWith("/")) {
@@ -104,6 +106,9 @@ $TempFile = New-TemporaryFile
 
 $DomainUsers | Out-File -Encoding "ASCII" $TempFile.FullName
 gsutil -q cp $TempFile.FullName "$GcsPrefix/output/domain-users"
+
+@{users=$users} | ConvertTo-Json | Out-File -Encoding "ASCII" $TempFile.FullName
+gsutil -q cp $TempFile.FullName "$GcsPrefix/output/domain-users.json"
 
 Remove-Item $TempFile.FullName -Force
 

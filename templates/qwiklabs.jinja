@@ -19,10 +19,14 @@ outputs:
   value: $(ref.citrix-on-gcp.domain-name)
 - name: Domain Admin
   value: $(ref.citrix-on-gcp.netbios-name)\Administrator
-- name: Domain Admin Password Location
-  value: gs://$(ref.bucket.name)/output/domain-admin-password
-- name: Domain Users Location
-  value: gs://$(ref.bucket.name)/output/domain-users
+- name: Domain Admin Password
+  value: $()
+- name: Domain User
+  value: $()
+- name: Domain User Password
+  value: $()
+- name: Citrix Cloud Workspace URL
+  value: ""
 
 resources:
 - name: citrix-on-gcp

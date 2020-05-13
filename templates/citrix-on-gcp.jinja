@@ -19,6 +19,15 @@ outputs:
   value: {{ properties['domain-name'] }}
 - name: netbios-name
   value: {{ properties['netbios-name'] }}
+- name: domain-admin
+  value: $(ref.output-domain-admin.admin_user)
+- name: domain-admin-password
+  value: $(ref.output-domain-admin.admin_password)
+- name: domain-user
+  value: $(ref.output-domain-users.users[0].username)
+- name: domain-user-password
+  value: $(ref.output-domain-admin.users[0].password)
+
 
 {% if properties['omit-suffix'] %}
 {% set suffix = '' %}
@@ -49,6 +58,28 @@ resources:
     - dns
     - iam
     - runtimeconfig
+- name: output-domain-admin
+  action: gcp-types/storage-v1:storage.objects.get
+  properties:
+    bucket: $(ref.bucket.name)
+    object: output/domain-admin.json
+    alt: media
+  metadata:
+    dependsOn:
+    - waiter-dc1{{ suffix }}
+    runtimePolicy:
+    - CREATE
+- name: output-domain-users
+  action: gcp-types/storage-v1:storage.objects.get
+  properties:
+    bucket: $(ref.bucket.name)
+    object: output/domain-users.json
+    alt: media
+  metadata:
+    dependsOn:
+    - waiter-dc1{{ suffix }}
+    runtimePolicy:
+    - CREATE
 - name: config
   type: gcp-types/runtimeconfig-v1beta1:projects.configs
   properties:

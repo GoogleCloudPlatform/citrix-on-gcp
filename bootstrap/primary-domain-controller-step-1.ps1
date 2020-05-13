@@ -121,11 +121,16 @@ If ($GcsPrefix.EndsWith("/")) {
 }
 $TempFile = New-TemporaryFile
 
-Unwrap-SecureString $LocalAdminPassword | Out-File -NoNewLine -Encoding "ASCII" $TempFile.FullName
+$admin_pwd = Unwrap-SecureString $LocalAdminPassword
+$admin_pwd | Out-File -NoNewLine -Encoding "ASCII" $TempFile.FullName
 gsutil -q cp $TempFile.FullName "$GcsPrefix/output/domain-admin-password"
 
-Unwrap-SecureString $SafeModeAdminPassword | Out-File -NoNewLine -Encoding "ASCII" $TempFile.FullName
+$dsrm_pwd = Unwrap-SecureString $SafeModeAdminPassword
+$dsrm_pwd | Out-File -NoNewLine -Encoding "ASCII" $TempFile.FullName
 gsutil -q cp $TempFile.FullName "$GcsPrefix/output/dsrm-admin-password"
+
+@{domain="$Domain"; netbiosname="$NetbiosName"; admin_user="$NetbiosName\Administrator"; admin_password="$admin_pwd"; dsrm_password="$dsrm_pwd"} | ConvertTo-Json | Out-File -NoNewLine -Encoding "ASCII" $TempFile.FullName
+gsutil -q cp $TempFile.FullName "$GcsPrefix/output/domain-admin.json"
 
 Remove-Item $TempFile.FullName -Force
 

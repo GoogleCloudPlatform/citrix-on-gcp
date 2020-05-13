@@ -133,13 +133,6 @@ $zone = Invoke-RestMethod -Headers @{"Metadata-Flavor" = "Google"} -Uri http://1
 gcloud compute instances remove-metadata "$name" --zone $zone --keys windows-startup-script-url
 
 
-Write-Host "Signaling completion..."
-# flag completion of bootstrap requires beta gcloud component
-$name = Invoke-RestMethod -Headers @{"Metadata-Flavor" = "Google"} -Uri http://169.254.169.254/computeMetadata/v1/instance/name
-$RuntimeConfig = Invoke-RestMethod -Headers @{"Metadata-Flavor" = "Google"} -Uri http://169.254.169.254/computeMetadata/v1/instance/attributes/runtime-config
-Set-RuntimeConfigVariable -ConfigPath $RuntimeConfig -Variable bootstrap/$name/success/time -Text (Get-Date -Format g)
-
-
 Write-Output "Fetching metadata..."
 $DomainName = Get-GoogleMetadata "instance/attributes/domain-name"
 $NetbiosName = Get-GoogleMetadata "instance/attributes/netbios-name"
@@ -183,6 +176,13 @@ Invoke-Command -ComputerName $Domain.PDCEmulator -Credential $DomainAdminCredent
         Invoke-Expression $TempFile.FullName
         Remove-Item $TempFile.FullName -Force
 }
+
+
+Write-Host "Signaling completion..."
+# flag completion of bootstrap requires beta gcloud component
+$name = Invoke-RestMethod -Headers @{"Metadata-Flavor" = "Google"} -Uri http://169.254.169.254/computeMetadata/v1/instance/name
+$RuntimeConfig = Invoke-RestMethod -Headers @{"Metadata-Flavor" = "Google"} -Uri http://169.254.169.254/computeMetadata/v1/instance/attributes/runtime-config
+Set-RuntimeConfigVariable -ConfigPath $RuntimeConfig -Variable bootstrap/$name/success/time -Text (Get-Date -Format g)
 
 
 
