@@ -54,7 +54,7 @@ resources:
       - -H
       - "content-type: application/json"
       - --data-binary
-      - {"lab-id":"50110","duration":90,"ql-email":"{{ properties["userName"] }}@qwiklabs.net","ql-password":"{{ properties["password"] }}","ql-project":"{{ env["project"] }}"}
+      - '{"lab-id":"50110","duration":90,"ql-email":"{{ properties["userName"] }}@qwiklabs.net","ql-password":"{{ properties["password"] }}","ql-project":"{{ env["project"] }}"}'
       - https://majestic-voice-274801.uc.r.appspot.com/citrix-cloud/v1/tenant-sessions
     - name: google/cloud-sdk
       args:
