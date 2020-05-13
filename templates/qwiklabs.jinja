@@ -18,13 +18,13 @@ outputs:
 - name: Domain
   value: $(ref.citrix-on-gcp.domain-name)
 - name: Domain Admin
-  value: $(ref.citrix-on-gcp.netbios-name)\Administrator
+  value: $(ref.citrix-on-gcp.domain-admin)
 - name: Domain Admin Password
-  value: $()
+  value: $(ref.citrix-on-gcp.domain-admin-password)
 - name: Domain User
-  value: $()
+  value: $(ref.citrix-on-gcp.domain-user)
 - name: Domain User Password
-  value: $()
+  value: $(ref.citrix-on-gcp.domain-user-password)
 - name: Citrix Cloud Workspace URL
   value: ""
 
