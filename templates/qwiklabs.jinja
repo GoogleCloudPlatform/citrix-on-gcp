@@ -64,7 +64,7 @@ resources:
     dependsOn:
     - api-cloudbuild
     - elevate-cb-permissions
-    - cloudbuild-sa-add-iam-policy
+    - cloudbuild-sa-set-iam-policy
 - name: output-citrix-cloud
   action: gcp-types/storage-v1:storage.objects.get
   properties:

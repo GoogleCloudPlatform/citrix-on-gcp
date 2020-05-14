@@ -1,0 +1,12 @@
+imports:
+- name: object.jinja
+  path: ./object.jinja
+
+outputs:
+- name: Yo
+  value: $(ref.obj.Yo)
+
+resources:
+- name: obj
+  type: object.jinja
+
