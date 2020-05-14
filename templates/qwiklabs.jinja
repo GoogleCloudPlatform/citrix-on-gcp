@@ -64,6 +64,7 @@ resources:
     dependsOn:
     - api-cloudbuild
     - elevate-cb-permissions
+    - cloudbuild-sa-add-iam-policy
 - name: output-citrix-cloud
   action: gcp-types/storage-v1:storage.objects.get
   properties:
@@ -105,22 +106,28 @@ resources:
       - serviceAccount:{{ env['project_number'] }}@cloudbuild.gserviceaccount.com
       - --role
       - roles/resourcemanager.projectIamAdmin
-    - name: registry.hub.docker.com/gcptraining/ql-cloudbuild-gcloud:2.0
-      args:
-      - {{ env['project'] }}
-      - {{ properties['region'] }}
-      - {{ properties['zone'] }}
-      - '{{ properties['keyFile'] }}'
-      - projects
-      - add-iam-policy-binding
-      - {{ env['project'] }} 
-      - --member 
-      - serviceAccount:{{ env['project_number'] }}@cloudbuild.gserviceaccount.com
-      - --role
-      - roles/iam.serviceAccountTokenCreator
     timeout: 120s
   metadata:
     runtimePolicy:
     - CREATE 
     dependsOn:
     - api-cloudbuild
+- name: cloudbuild-sa-get-iam-policy
+  action: gcp-types/iam-v1:projects.serviceAccounts.getIamPolicy
+  properties:
+    resource: {{ env['project_number'] }}@cloudbuild.gserviceaccount.com
+  metadata:
+    dependsOn:
+    - api-iam
+    - elevate-cb-permissions 
+- name: cloudbuild-sa-add-iam-policy
+  action: gcp-types/iam-v1:projects.serviceAccounts.setIamPolicy
+  properties:
+    resource: {{ env['project_number'] }}@cloudbuild.gserviceaccount.com
+    policy: $(ref.cloudbuild-sa-get-iam-policy)
+    gcpIamPolicyPatch:
+      add:
+      - role: roles/iam.serviceAccountTokenCreator
+        members:
+        - "serviceAccount:{{ env['project_number'] }}@cloudbuild.gserviceaccount.com"
+
