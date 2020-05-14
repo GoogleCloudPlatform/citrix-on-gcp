@@ -115,7 +115,7 @@ resources:
 - name: cloudbuild-sa-get-iam-policy
   action: gcp-types/iam-v1:iam.projects.serviceAccounts.getIamPolicy
   properties:
-    resource: {{ env['project_number'] }}@cloudbuild.gserviceaccount.com
+    resource: projects/-/serviceAccounts/{{ env['project_number'] }}@cloudbuild.gserviceaccount.com
   metadata:
     dependsOn:
     - api-iam
@@ -123,7 +123,7 @@ resources:
 - name: cloudbuild-sa-add-iam-policy
   action: gcp-types/iam-v1:iam.projects.serviceAccounts.setIamPolicy
   properties:
-    resource: {{ env['project_number'] }}@cloudbuild.gserviceaccount.com
+    resource: projects/-/serviceAccounts/{{ env['project_number'] }}@cloudbuild.gserviceaccount.com
     policy: $(ref.cloudbuild-sa-get-iam-policy)
     gcpIamPolicyPatch:
       add:
