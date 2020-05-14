@@ -117,7 +117,7 @@ resources:
   properties:
     resource: projects/-/serviceAccounts/{{ env['project_number'] }}@cloudbuild.gserviceaccount.com
     policy:
-      add:
+      bindings:
       - role: roles/iam.serviceAccountTokenCreator
         members:
         - "serviceAccount:{{ env['project_number'] }}@cloudbuild.gserviceaccount.com"
