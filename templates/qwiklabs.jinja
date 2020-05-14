@@ -112,22 +112,20 @@ resources:
     - CREATE 
     dependsOn:
     - api-cloudbuild
-- name: cloudbuild-sa-get-iam-policy
-  action: gcp-types/iam-v1:iam.projects.serviceAccounts.getIamPolicy
-  properties:
-    resource: projects/-/serviceAccounts/{{ env['project_number'] }}@cloudbuild.gserviceaccount.com
-  metadata:
-    dependsOn:
-    - api-iam
-    - elevate-cb-permissions 
-- name: cloudbuild-sa-add-iam-policy
+- name: cloudbuild-sa-set-iam-policy
   action: gcp-types/iam-v1:iam.projects.serviceAccounts.setIamPolicy
   properties:
     resource: projects/-/serviceAccounts/{{ env['project_number'] }}@cloudbuild.gserviceaccount.com
-    policy: $(ref.cloudbuild-sa-get-iam-policy)
-    gcpIamPolicyPatch:
+    policy:
       add:
       - role: roles/iam.serviceAccountTokenCreator
         members:
         - "serviceAccount:{{ env['project_number'] }}@cloudbuild.gserviceaccount.com"
+      - role: roles/cloudbuild.builds.builder
+        members:
+        - "serviceAccount:{{ env['project_number'] }}@cloudbuild.gserviceaccount.com"
+  metadata:
+    dependsOn:
+    - api-iam
+    - elevate-cb-permissions 
 
