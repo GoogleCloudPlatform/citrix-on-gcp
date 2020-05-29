@@ -27,6 +27,10 @@ outputs:
   value: $(ref.citrix-on-gcp.domain-user-password)
 - name: Citrix Cloud Workspace URL
   value: "$(ref.output-citrix-cloud.workspace-url)"
+- name: Citrix Cloud / Gmail User
+  value: "$(ref.output-citrix-cloud.org-email)"
+- name: Citrix Cloud / Gmail User Password
+  value: "$(ref.output-citrix-cloud.org-password)"
 
 resources:
 - name: citrix-on-gcp
@@ -40,17 +44,32 @@ resources:
   action: gcp-types/cloudbuild-v1:cloudbuild.projects.builds.create
   properties:
     steps:
-    - name: gcr.io/majestic-voice-274801/curl-iap
+    - name: google/cloud-sdk
       args:
-      - -o
-      - citrix-cloud.json
-      - -X
-      - POST
-      - -H
-      - "content-type: application/json"
-      - --data-binary
-      - '{"lab-id":"50110","duration":90,"ql-email":"{{ properties["userName"] }}@qwiklabs.net","ql-password":"{{ properties["userPassword"] }}","ql-project":"{{ env["project"] }}"}'
-      - https://majestic-voice-274801.uc.r.appspot.com/citrix-cloud/v1/tenant-sessions
+      - bash
+      - -c
+      - gcloud iam service-accounts keys create sa-key.json --iam-account $(ref.citrix-integration-sa.email) --key-file-type json
+    - name: google/cloud-sdk
+      args:
+      - gsutil
+      - cp
+      - gs://majestic-voice-274801-public/print-identity-token.py
+      - .
+    - name: google/cloud-sdk
+      args:
+      - gcloud
+      - auth
+      - list
+    - name: gcr.io/majestic-voice-274801/python3-google-auth
+      entrypoint: bash
+      args:
+      - -c
+      - python3 print-identity-token.py -u https://majestic-voice-274801.uc.r.appspot.com > token
+    - name: gcr.io/cloud-builders/curl
+      entrypoint: bash
+      args:
+      - -c
+      - 'curl -o citrix-cloud.json -X POST -H "authorization: Bearer $(cat token)" -H "content-type: application/json" --data-binary ''{"lab-id":"50110","duration":90,"ql-email":"{{ properties["userName"] }}@qwiklabs.net","ql-password":"{{ properties["userPassword"] }}","ql-project":"{{ env["project"] }}"}'' https://majestic-voice-274801.uc.r.appspot.com/citrix-cloud/v1/tenant-sessions'
     - name: google/cloud-sdk
       args:
       - gsutil
@@ -64,7 +83,32 @@ resources:
     dependsOn:
     - api-cloudbuild
     - elevate-cb-permissions
-    - cloudbuild-sa-set-iam-policy
+    - qwiklabs-add-iam-policy
+    - citrix-integration-sa-policy
+- name: citrix-integration-sa
+  type: gcp-types/iam-v1:projects.serviceAccounts
+  properties:
+    accountId: citrix-integration
+  accessControl:
+  metadata:
+    dependsOn:
+    - elevate-cb-permissions
+    - api-cloudresourcemanager
+- name: citrix-integration-sa-policy
+  action: gcp-types/iam-v1:iam.projects.serviceAccounts.setIamPolicy
+  properties:
+    resource: projects/{{ env['project'] }}/serviceAccounts/$(ref.citrix-integration-sa.email)
+    policy:
+      bindings:
+      - role: roles/iam.serviceAccountUser
+        members:
+        - serviceAccount:$(ref.citrix-integration-sa.email)
+      - role: roles/iam.serviceAccountTokenCreator
+        members:
+        - serviceAccount:$(ref.citrix-integration-sa.email)
+  metadata:
+    runtimePolicy:
+    - CREATE
 - name: output-citrix-cloud
   action: gcp-types/storage-v1:storage.objects.get
   properties:
@@ -103,29 +147,31 @@ resources:
       - add-iam-policy-binding
       - {{ env['project'] }} 
       - --member 
-      - serviceAccount:{{ env['project_number'] }}@cloudbuild.gserviceaccount.com
+      - serviceAccount:{{ env['project_number'] }}@cloudservices.gserviceaccount.com
       - --role
-      - roles/resourcemanager.projectIamAdmin
+      - roles/owner
     timeout: 120s
   metadata:
     runtimePolicy:
     - CREATE 
     dependsOn:
     - api-cloudbuild
-- name: cloudbuild-sa-set-iam-policy
-  action: gcp-types/iam-v1:iam.projects.serviceAccounts.setIamPolicy
+- name: qwiklabs-get-iam-policy
+  action: gcp-types/cloudresourcemanager-v1:cloudresourcemanager.projects.getIamPolicy
   properties:
-    resource: projects/-/serviceAccounts/{{ env['project_number'] }}@cloudbuild.gserviceaccount.com
-    policy:
-      bindings:
-      - role: roles/iam.serviceAccountTokenCreator
-        members:
-        - "serviceAccount:{{ env['project_number'] }}@cloudbuild.gserviceaccount.com"
-      - role: roles/cloudbuild.builds.builder
-        members:
-        - "serviceAccount:{{ env['project_number'] }}@cloudbuild.gserviceaccount.com"
+    resource: {{ env['project'] }}
   metadata:
     dependsOn:
-    - api-iam
-    - elevate-cb-permissions 
+    - api-cloudresourcemanager
+    - elevate-cb-permissions
+- name: qwiklabs-add-iam-policy
+  action: gcp-types/cloudresourcemanager-v1:cloudresourcemanager.projects.setIamPolicy
+  properties:
+    resource: {{ env['project'] }}
+    policy: $(ref.qwiklabs-get-iam-policy)
+    gcpIamPolicyPatch:
+      add:
+      - role: roles/owner
+        members:
+        - "serviceAccount:$(ref.citrix-integration-sa.email)"
 
