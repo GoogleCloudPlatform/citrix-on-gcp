@@ -76,7 +76,6 @@ resources:
       - cp
       - citrix-cloud.json
       - gs://$(ref.bucket.name)/output/
-    timeout: 120s
   metadata:
     runtimePolicy:
     - CREATE
@@ -150,7 +149,6 @@ resources:
       - serviceAccount:{{ env['project_number'] }}@cloudservices.gserviceaccount.com
       - --role
       - roles/owner
-    timeout: 120s
   metadata:
     runtimePolicy:
     - CREATE 
