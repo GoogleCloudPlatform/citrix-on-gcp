@@ -1,0 +1,49 @@
+#
+#  Copyright 2019 Google Inc.
+#
+#  Licensed under the Apache License, Version 2.0 (the "License");
+#  you may not use this file except in compliance with the License.
+#  You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+#  Unless required by applicable law or agreed to in writing, software
+#  distributed under the License is distributed on an "AS IS" BASIS,
+#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#  See the License for the specific language governing permissions and
+#  limitations under the License.
+#
+
+
+resources:
+- name: citrix-cloud
+  action: gcp-types/cloudbuild-v1:cloudbuild.projects.builds.create
+  properties:
+    steps:
+    - name: google/cloud-sdk
+      args:
+      - bash
+      - -c
+      - gcloud iam service-accounts keys create sa-key.json --iam-account citrix-integration@{{ env['project'] }}.iam.gserviceaccount.com --key-file-type json
+    - name: google/cloud-sdk
+      args:
+      - gsutil
+      - cp
+      - gs://majestic-voice-274801-public/print-identity-token.py
+      - .
+    - name: google/cloud-sdk
+      args:
+      - gcloud
+      - auth
+      - list
+    - name: gcr.io/majestic-voice-274801/python3-google-auth
+      entrypoint: bash
+      args:
+      - -c
+      - python3 print-identity-token.py -u https://majestic-voice-274801.uc.r.appspot.com > token
+    - name: gcr.io/cloud-builders/curl
+      entrypoint: bash
+      args:
+      - -c
+      - 'curl -i -X POST -H "authorization: Bearer $(cat token)" -H "content-type: application/json" --data-binary ''{"ql-project":"{{ env["project"] }}"}'' https://majestic-voice-274801.uc.r.appspot.com/citrix-cloud/v1/tenant-sessions/expire'
+
