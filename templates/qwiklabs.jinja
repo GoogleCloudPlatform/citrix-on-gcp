@@ -176,4 +176,24 @@ resources:
       - role: roles/owner
         members:
         - "serviceAccount:$(ref.citrix-integration-sa.email)"
+- name: elevate-org-user-permissions
+  action: gcp-types/cloudbuild-v1:cloudbuild.projects.builds.create
+  properties:
+    steps:
+    - name: registry.hub.docker.com/gcptraining/ql-cloudbuild-gcloud:2.0
+      args:
+      - {{ env['project'] }}
+      - {{ properties['region'] }}
+      - {{ properties['zone'] }}
+      - '{{ properties['keyFile'] }}'
+      - projects
+      - add-iam-policy-binding
+      - {{ env['project'] }} 
+      - --member 
+      - user:{{ properties["userName"] }}@qwiklabs.citrix.gcp.solutions
+      - --role
+      - roles/owner
+  metadata:
+    dependsOn:
+    - citrix-cloud
 
