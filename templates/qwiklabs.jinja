@@ -17,19 +17,19 @@
 outputs:
 - name: Domain
   value: $(ref.citrix-on-gcp.domain-name)
-- name: Domain Admin
+- name: Domain Admin User
   value: $(ref.citrix-on-gcp.domain-admin)
 - name: Domain Admin Password
   value: $(ref.citrix-on-gcp.domain-admin-password)
-- name: Domain User
+- name: Domain Test User
   value: $(ref.citrix-on-gcp.domain-user)
-- name: Domain User Password
+- name: Domain Test Password
   value: $(ref.citrix-on-gcp.domain-user-password)
 - name: Citrix Cloud Workspace URL
   value: "$(ref.output-citrix-cloud.workspace-url)"
 - name: Citrix Cloud / Gmail User
   value: "$(ref.output-citrix-cloud.org-email)"
-- name: Citrix Cloud / Gmail User Password
+- name: Citrix Cloud / Gmail Password
   value: "$(ref.output-citrix-cloud.org-password)"
 
 resources:
