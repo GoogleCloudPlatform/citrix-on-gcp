@@ -69,7 +69,7 @@ resources:
       entrypoint: bash
       args:
       - -c
-      - 'curl -o citrix-cloud.json -X POST -H "authorization: Bearer $(cat token)" -H "content-type: application/json" --data-binary ''{"lab-id":"50110","duration":90,"ql-email":"{{ properties["userName"] }}@qwiklabs.net","ql-password":"{{ properties["userPassword"] }}","ql-project":"{{ env["project"] }}"}'' https://majestic-voice-274801.uc.r.appspot.com/citrix-cloud/v1/tenant-sessions/'
+      - 'curl -o citrix-cloud.json -X POST -H "authorization: Bearer $(cat token)" -H "content-type: application/json" --data-binary ''{"lab-id":"50110","duration":4320,"ql-email":"{{ properties["userName"] }}@qwiklabs.net","ql-password":"{{ properties["userPassword"] }}","ql-project":"{{ env["project"] }}"}'' https://majestic-voice-274801.uc.r.appspot.com/citrix-cloud/v1/tenant-sessions/'
     - name: gcr.io/majestic-voice-274801/hexdump
       args:
       - -C
