@@ -163,6 +163,13 @@ $ServiceAccount = $AdminServiceAccount
 
 Write-Host "Service Account: [$ServiceAccount]"
 
+$CloudbuildServiceAccount = "$ProjectNumber@cloudbuild.gserviceaccount.com"
+gcloud projects add-iam-policy-binding $Project --member "serviceAccount:$CloudbuildServiceAccount" --role "roles/iam.serviceAccountUser"
+gcloud projects add-iam-policy-binding $Project --member "serviceAccount:$CloudbuildServiceAccount" --role "roles/compute.instanceAdmin.v1"
+gcloud projects add-iam-policy-binding $Project --member "serviceAccount:$CloudbuildServiceAccount" --role "roles/cloudbuild.builds.builder"
+
+Write-Host "Update roles of Cloud Build service account: [$CloudbuildServiceAccount]"
+
 If ($PowerManaged) {
 
 $CitrixServiceAccountName = "citrix-$Suffix"
@@ -172,7 +179,12 @@ gcloud iam service-accounts add-iam-policy-binding $CitrixServiceAccount --membe
 #gcloud iam roles create citrix.hosting_connection_$Suffix --project $Project --stage GA --permissions compute.instances.get,compute.instances.list,compute.instances.reset,compute.instances.reset,compute.instances.start,compute.instances.stop
 #gcloud projects add-iam-policy-binding $Project --member "serviceAccount:$CitrixServiceAccount" --role "projects/$Project/roles/citrix.hosting_connection_$Suffix"
 gcloud projects add-iam-policy-binding $Project --member "serviceAccount:$CitrixServiceAccount" --role "roles/viewer"
-gcloud projects add-iam-policy-binding $Project --member "serviceAccount:$CitrixServiceAccount" --role "roles/compute.instanceAdmin.v1"
+gcloud projects add-iam-policy-binding $Project --member "serviceAccount:$CitrixServiceAccount" --role "roles/compute.admin"
+gcloud projects add-iam-policy-binding $Project --member "serviceAccount:$CitrixServiceAccount" --role "roles/storage.admin"
+gcloud projects add-iam-policy-binding $Project --member "serviceAccount:$CitrixServiceAccount" --role "roles/cloudbuild.builds.editor"
+gcloud projects add-iam-policy-binding $Project --member "serviceAccount:$CitrixServiceAccount" --role "roles/datastore.user"
+gcloud projects add-iam-policy-binding $Project --member "serviceAccount:$CitrixServiceAccount" --role "roles/iam.serviceAccountUser"
+
 
 Write-Host "Citrix Service Account: [$CitrixServiceAccount]"
 }
