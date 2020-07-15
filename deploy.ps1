@@ -82,7 +82,7 @@ If (-not $Project) {
 Write-Host "Project: [$Project]"
 
 # enable required api's
-$RequiredAPIs = "compute","cloudkms","deploymentmanager","runtimeconfig","cloudresourcemanager","iam"
+$RequiredAPIs = "compute","cloudkms","deploymentmanager","runtimeconfig","cloudresourcemanager","iam","cloudbuild"
 $EnabledAPIs = @(gcloud services list --project $Project | Select-Object -Skip 1 | Select-String -Pattern "^[^.]+" | % { $_.Matches } | % { $_.Value })
 $DisabledAPIs = @($RequiredAPIs | ?{$EnabledAPIs -notcontains $_} | Sort-Object)
 If ($DisabledAPIs.Length -Gt 0) {
