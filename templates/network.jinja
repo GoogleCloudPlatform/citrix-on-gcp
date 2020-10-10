@@ -181,10 +181,25 @@ resources:
     - 192.168.0.0/16
     targetTags:
     - smb
-- name: citrix-deny-all-sink{{ properties['suffix'] }}
+- name: citrix-deny-internal-log{{ properties['suffix'] }}
   type: compute.v1.firewall
   properties:
-    description: Low-priority deny all with logging to catch firewall issues
+    description: Low-priority deny all with logging to catch firewall issues from internal addresses
+    network: $(ref.citrix{{ properties['suffix'] }}.selfLink)
+    denied:
+    - IPProtocol: all
+    logConfig:
+      enable: true
+    direction: INGRESS
+    priority: 65533
+    sourceRanges:
+    - 10.0.0.0/8
+    - 172.16.0.0/12
+    - 192.168.0.0/16
+- name: citrix-deny-external-log{{ properties['suffix'] }}
+  type: compute.v1.firewall
+  properties:
+    description: Low-priority deny all with logging to catch firewall issues from external addresses
     network: $(ref.citrix{{ properties['suffix'] }}.selfLink)
     denied:
     - IPProtocol: all

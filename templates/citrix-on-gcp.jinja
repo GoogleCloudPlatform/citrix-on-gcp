@@ -291,6 +291,14 @@ resources:
   metadata:
     dependsOn:
     - dc1{{ suffix }} 
+    - cc1{{ suffix }}
+    - vda1{{ suffix }}
+    - mgmt{{ suffix }}
+    - citrix-on-gcp-router{{ suffix }}
+{% if not properties['minimal'] %}
+    - dc2{{ suffix }} 
+    - cc2{{ suffix }}
+{% endif %}
     runtimePolicy:
     - DELETE
   properties:
