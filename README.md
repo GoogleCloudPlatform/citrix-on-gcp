@@ -1,3 +1,5 @@
+# ***THIS REPOSITORY IS NO LONGER BEING MAINTAINED***
+
 ## Overview
 This repository contains scripts and templates to simplify deployment of the resources described in Citrix's [Deploying Citrix Cloud XenApp and XenDesktop Service on the Google Cloud Platform](https://www.citrix.com/content/dam/citrix/en_us/documents/guide/deploying-citrix-cloud-xenapp-and-xendesktop-service-on-the-google-cloud-platform.pdf) published December 2017.
 
